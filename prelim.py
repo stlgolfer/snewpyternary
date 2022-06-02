@@ -16,9 +16,16 @@ import math
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
 
+# simulation details
 modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
+ntbins = 100 # number of time bins
+deltat = (1*u.s) # time bin size
+d = 10 # in pc, distance to SN
+detector = "halo2" # refrain from using "all"
+
+
 snowglobes_out_name = "snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
 tball_suffix = 'kpc.tar.bz2'
@@ -37,16 +44,17 @@ snowglobes.generate_fluence(model_path=modelFilePath,model_type="Nakazato_2013",
 
 tball_complete = snowglobes.generate_time_series(model_path=modelFilePath,model_type="Nakazato_2013",
                             transformation_type="NoTransformation",
-                            d=10,
+                            d=d,
                             output_filename=snowglobes_out_name,
-                            ntbins=1000
+                            ntbins=ntbins,
+                            deltat=deltat
                             )
 
 # also need to run the simulation so that we get the correct output
 snowglobes.simulate(SNOwGLoBESdir=snowglobes_dir,
                     tarball_path=tball_complete,
                     detector_effects=smearing,
-                    detector_input="halo2"
+                    detector_input=detector
                     )
 
 '''
@@ -58,6 +66,7 @@ tables = snowglobes.collate(tarball_path=modelFilePathBase+snowglobes_out_name+t
 data_files = list(tables.keys())
 plotting_data = []
 scale = 0
+
 
 '''
 so what we have to do is go through each time bin, sum each particle's event
@@ -76,9 +85,9 @@ for file in data_files: # which effectively goes through each time bin
         #tables.get(file).data[]
         data = e_bins.get("data") # 2D array for data
         # now go through each available particles
-        a=np.sum(data[1])
-        b=np.sum(data[2])
-        c=np.sum(data[3])
+        a=np.sum(data[2])
+        b=np.sum(data[3])
+        c=np.sum(data[4])
         plotting_data.append((a,b,c))
         if (max(a,b,c)>scale):
             scale=math.ceil(max(a,b,c))
@@ -95,8 +104,14 @@ figure, tax = ternary.figure(scale=scale)
 tax.boundary(linewidth=2.0)
 tax.gridlines(color="blue", multiple=math.floor(scale/5))
 tax.set_title(file)
+# pretty surer data is organized as (bottom,left,right)
+### TODO: make sure that data_files[1] actually points to something that can get the header
+tax.bottom_axis_label(tables.get(data_files[1]).get("header").split(" ")[2])
+tax.left_axis_label(tables.get(data_files[1]).get("header").split(" ")[3])
+tax.right_axis_label(tables.get(data_files[1]).get("header").split(" ")[4])
 
 tax.scatter(points=plotting_data, color='green',label='yuh')
 tax.ticks(axis='lbr', linewidth=1, multiple=5)
+tax.clear_matplotlib_ticks()
 
 tax.show()
