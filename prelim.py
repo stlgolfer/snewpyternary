@@ -115,3 +115,4 @@ tax.clear_matplotlib_ticks()
 tax.get_axes().axis('off') # disables regular matlab plot axes
 
 tax.show()
+tax.savefig("./last_chart.png")
