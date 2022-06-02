@@ -10,6 +10,8 @@ from snewpy.neutrino import Flavor, MassHierarchy
 from snewpy.models import Nakazato_2013
 from snewpy.flavor_transformation import NoTransformation # just use NoTransformation for now to keep things simple
 import os
+import ternary
+import math
 
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
@@ -19,24 +21,82 @@ modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 snowglobes_out_name = "snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
-tball_suffix = '.tar.bz2'
+tball_suffix = 'kpc.tar.bz2'
 #print(os.environ['SNOWGLOBES'])
 smearing = False
 model
 
+'''
 # we have the model loaded, so let's try to generate the fluence files using SNEWPY
 snowglobes.generate_fluence(model_path=modelFilePath,model_type="Nakazato_2013",
                             transformation_type="NoTransformation",
                             d=10,
                             output_filename=snowglobes_out_name
                             )
+'''
+
+tball_complete = snowglobes.generate_time_series(model_path=modelFilePath,model_type="Nakazato_2013",
+                            transformation_type="NoTransformation",
+                            d=10,
+                            output_filename=snowglobes_out_name,
+                            ntbins=1000
+                            )
 
 # also need to run the simulation so that we get the correct output
 snowglobes.simulate(SNOwGLoBESdir=snowglobes_dir,
-                    tarball_path=modelFilePathBase+snowglobes_out_name+tball_suffix,
+                    tarball_path=tball_complete,
                     detector_effects=smearing,
-                    detector_input="all"
+                    detector_input="halo2"
                     )
 
-snowglobes.collate(tarball_path=modelFilePathBase+snowglobes_out_name+tball_suffix,
-                   smearing=False,skip_plots=False,SNOwGLoBESdir=snowglobes_dir)
+'''
+this method is too collated--as a first try we just need the event calculations
+'''
+tables = snowglobes.collate(tarball_path=modelFilePathBase+snowglobes_out_name+tball_suffix,
+                   smearing=smearing,skip_plots=True,SNOwGLoBESdir=snowglobes_dir)
+
+data_files = list(tables.keys())
+plotting_data = []
+scale = 0
+
+'''
+so what we have to do is go through each time bin, sum each particle's event
+count, then append to plotting_data. Then, we will have a list of time-evolved
+count
+'''
+
+for file in data_files: # which effectively goes through each time bin
+    # we want to only have the ones that end in 'unweighted' for now
+    if ("unweighted" in file):
+        # now fetch the time bin's energy chart
+        e_bins = tables.get(file)
+        
+        # first we need to get the points by iterating through the points
+        header = list(e_bins.get("header").split(" ")) # header in dictionary
+        #tables.get(file).data[]
+        data = e_bins.get("data") # 2D array for data
+        # now go through each available particles
+        a=np.sum(data[1])
+        b=np.sum(data[2])
+        c=np.sum(data[3])
+        plotting_data.append((a,b,c))
+        if (max(a,b,c)>scale):
+            scale=math.ceil(max(a,b,c))
+        '''
+        for x in range(len(data[0])+1,3): # we can exclude the energy bins
+            proto_tuple.append((np.sum(data[x])))
+        plotting_data.append(tuple(proto_tuple)) # converts that into a tuple
+        '''
+            
+        
+
+# then we can generate a ternary plot for this
+figure, tax = ternary.figure(scale=scale)
+tax.boundary(linewidth=2.0)
+tax.gridlines(color="blue", multiple=math.floor(scale/5))
+tax.set_title(file)
+
+tax.scatter(points=plotting_data, color='green',label='yuh')
+tax.ticks(axis='lbr', linewidth=1, multiple=5)
+
+tax.show()
