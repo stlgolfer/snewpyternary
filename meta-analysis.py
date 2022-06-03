@@ -42,13 +42,13 @@ detector_list = ['scint20kt','ar40kt','wc100kt30prct']
 flavor_transformation_dict = {'NoTransformation': NoTransformation(), 'AdiabaticMSW_NMO': AdiabaticMSW(mh=MassHierarchy.NORMAL), 'AdiabaticMSW_IMO': AdiabaticMSW(mh=MassHierarchy.INVERTED), 'NonAdiabaticMSWH_NMO': NonAdiabaticMSWH(mh=MassHierarchy.NORMAL), 'NonAdiabaticMSWH_IMO': NonAdiabaticMSWH(mh=MassHierarchy.INVERTED), 'TwoFlavorDecoherence': TwoFlavorDecoherence(), 'ThreeFlavorDecoherence': ThreeFlavorDecoherence(), 'NeutrinoDecay_NMO': NeutrinoDecay(mh=MassHierarchy.NORMAL), 'NeutrinoDecay_IMO': NeutrinoDecay(mh=MassHierarchy.INVERTED)}
 transform_list = list(flavor_transformation_dict.keys())
 
-for d in detector_list:
-    # for each detector config, simulate all types of transformations
-    for transform in transform_list:
-        plot_title = "Nakazato_2013 Events " + weighting + " "  + d + " " + transform
-        plot_data = t.create_detector_event_scatter(modelFilePath,model_type, d, model,transformation=transform)
-        # then we can generate a ternary plot for this
-        t.create_default_detector_plot(plot_data,plot_title)
+# for d in detector_list:
+#     # for each detector config, simulate all types of transformations
+#     for transform in transform_list:
+#         plot_title = "Nakazato_2013 Events " + weighting + " "  + d + " " + transform
+#         plot_data = t.create_detector_event_scatter(modelFilePath,model_type, d, model,transformation=transform)
+#         # then we can generate a ternary plot for this
+#         t.create_default_detector_plot(plot_data,plot_title)
 
 # create flux plot as well
 for transform in transform_list:

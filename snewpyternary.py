@@ -185,7 +185,7 @@ def create_flux_scatter(modelFilePath,
         NuX = np.sum(time_bin[2])+np.sum(time_bin[3])
         aNuE = np.sum(time_bin[4])
         aNuX = np.sum(time_bin[5])+np.sum(time_bin[6])
-        a=math.log(NuX) if use_log else NuX
+        a=math.log(NuX+aNuX) if use_log else NuX
         b=math.log(aNuE) if use_log else aNuE
         c=math.log(NuE) if use_log else NuE
         total = a+b+c
