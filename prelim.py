@@ -23,7 +23,7 @@ model = Nakazato_2013(modelFilePath)
 ntbins = 20 # number of time bins
 deltat = (1*u.s) # time bin size, details found in SNEWPY article
 d = 10 # in pc, distance to SN
-detector = "halo1" # refrain from using "all"
+detector = "scint20kt" # refrain from using "all"
 
 snowglobes_out_name = "snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
@@ -88,31 +88,24 @@ for file in data_files: # which effectively goes through each time bin
         c=np.sum(data[3])
         total = a+b+c
         plotting_data.append((100*a/total,100*b/total,100*c/total))
-        '''
-        if (max(a,b,c)>scale):
-            scale=math.ceil(max(a,b,c))
-        
-        for x in range(len(data[0])+1,3): # we can exclude the energy bins
-            proto_tuple.append((np.sum(data[x])))
-        plotting_data.append(tuple(proto_tuple)) # converts that into a tuple
-        '''
 
 # then we can generate a ternary plot for this
+plot_title = "Nakazato_2013 Events unweighted " + detector
 figure, tax = ternary.figure(scale=scale)
 tax.boundary(linewidth=2.0)
 tax.gridlines(color="blue", multiple=math.floor(scale/5))
-tax.set_title("Nakazato_2013")
+tax.set_title(plot_title)
 # data is organized in top, right, left
 
 ### TODO: make sure that data_files[1] actually points to something that can get the header
 tax.bottom_axis_label(tables.get(data_files[1]).get("header").split(" ")[1])
-tax.left_axis_label(tables.get(data_files[1]).get("header").split(" ")[2])
-tax.right_axis_label(tables.get(data_files[1]).get("header").split(" ")[3])
+tax.right_axis_label(tables.get(data_files[1]).get("header").split(" ")[2])
+tax.left_axis_label(tables.get(data_files[1]).get("header").split(" ")[3])
 
-tax.scatter(points=plotting_data, color='green',label='yuh')
+tax.scatter(points=plotting_data, color="red", label='yuh')
 tax.ticks(axis='lbr', linewidth=1, multiple=math.floor(scale/5))
 tax.clear_matplotlib_ticks()
 tax.get_axes().axis('off') # disables regular matlab plot axes
 
 tax.show()
-tax.savefig("./last_chart.png")
+tax.savefig('./plots/' + plot_title)
