@@ -13,6 +13,11 @@ import os
 import ternary
 import math
 
+import io
+import tarfile
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
 
@@ -20,15 +25,15 @@ import snewpy.snowglobes as snowglobes
 Creates normalized ternary scatter plot data from a snowglobes simulation
 '''
 def create_detector_event_scatter(
-        modelFilePathBase,
         modelFilePath,
+        model_type,
         detector,
         model,
         deltat=1*u.s,
         d=10,
         transformation="NoTransformation",
         smearing=False,
-        weighting="unweighted",
+        weighting="unweighted"
         ):
     
     if detector == 'all':
@@ -55,12 +60,14 @@ def create_detector_event_scatter(
                                 )
     '''
     
-    tball_complete = snowglobes.generate_time_series(model_path=modelFilePath,model_type="Nakazato_2013",
-                                transformation_type=transformation,
-                                d=d,
-                                output_filename=snowglobes_out_name,
-                                deltat=deltat
-                                )
+    tball_complete = snowglobes.generate_time_series(
+        model_path=modelFilePath,
+        model_type=model_type,
+        transformation_type=transformation,
+        d=d,
+        output_filename=snowglobes_out_name,
+        deltat=deltat
+        )
     print("NEW SNOwGLoBES Simulation\n=============================")
     print("Using detector schema: " + detector)
     print("Using transform: " + transformation)
@@ -133,3 +140,75 @@ def create_default_detector_plot(plot_data,plot_title,save=True):
     tax.show()
     if save:
         tax.savefig('./plots/' + plot_title)
+        
+def create_flux_scatter(modelFilePath,
+                        modeltype,
+                        model,
+                        deltat=1*u.s,
+                        d=10,
+                        transform="NoTransformation",
+                        smearing=False):
+    print("NEW SNOwGLoBES FLUENCE TIME SERIES GENERATION\n=============================")
+    #print("Using detector schema: " + detector)
+    print("Using transform: " + transform)
+    print("=============================")
+    tarball_path = snowglobes.generate_time_series(
+        model_path=modelFilePath,
+        model_type=modeltype,
+        transformation_type=transform,
+        d=d,
+        deltat=deltat
+        )
+    fluence_data = []
+    with TemporaryDirectory(prefix='snowglobes') as tempdir:
+        with tarfile.open(tarball_path) as tar:
+            tar.extractall(tempdir)
+
+        flux_files = list(Path(tempdir).glob('*.dat'))
+        for flux in flux_files:
+            fluence_data.append(np.loadtxt(str(flux),unpack=True))
+            print('NEW FLUENCE\n================\n'+str(flux)+'\n')
+            f=open(str(flux), "r")
+            print(f.readline()) # prints .dat data file header info
+            labels = f.readline()
+            print(labels) # prints .dat file info
+
+    # now that we have all the fluences loaded per time bin, we now need to
+    # integrate the fluence to get the total flux
+    # data comes out backwards, so first need to flip it
+    fluence_data.reverse() # now they're in the correct time sequence
+    scale = 100
+    use_log = False
+    plotting_data = []
+    for time_bin in fluence_data:
+        NuE = np.sum(time_bin[1])
+        NuX = np.sum(time_bin[2])+np.sum(time_bin[3])
+        aNuE = np.sum(time_bin[4])
+        aNuX = np.sum(time_bin[5])+np.sum(time_bin[6])
+        a=math.log(NuX) if use_log else NuX
+        b=math.log(aNuE) if use_log else aNuE
+        c=math.log(NuE) if use_log else NuE
+        total = a+b+c
+        plotting_data.append((scale*a/total,scale*b/total,scale*c/total))
+    return plotting_data
+
+def create_default_flux_plot(plotting_data,plot_title,save=True):
+    scale=100
+    figure, tax = ternary.figure(scale=scale)
+    tax.boundary(linewidth=2.0)
+    tax.gridlines(color="blue", multiple=scale/10)
+    tax.set_title(plot_title)
+    # data is organized in top, right, left
+
+    ### TODO: make sure that data_files[1] actually points to something that can get the header
+    tax.bottom_axis_label(r'$\nu_x$')
+    tax.right_axis_label(r'$\bar{\nu_e}$')
+    tax.left_axis_label(r'$\nu_e$')
+
+    tax.scatter(points=plotting_data, color="red")
+    tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
+    tax.clear_matplotlib_ticks()
+    tax.get_axes().axis('off') # disables regular matlab plot axes
+
+    tax.show()
+    tax.savefig('./plots/' + plot_title)
