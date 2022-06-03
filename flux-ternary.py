@@ -39,8 +39,8 @@ d = 10 # in pc, distance to SN
 snowglobes_dir = os.environ['SNOWGLOBES']
 tball_suffix = 'kpc.tar.bz2'
 #print(os.environ['SNOWGLOBES'])
-smearing = True
 model
+transform = "NoTransformation"
 
 '''
 # we have the model loaded, so let's try to generate the fluence files using SNEWPY
@@ -52,12 +52,11 @@ snowglobes.generate_fluence(model_path=modelFilePath,model_type="Nakazato_2013",
 '''
 
 tarball_path = snowglobes.generate_time_series(model_path=modelFilePath,model_type="Nakazato_2013",
-                            transformation_type="NoTransformation",
+                            transformation_type=transform,
                             d=d,
                             deltat=deltat
                             )
 fluence_data = []
-labels_data = None
 with TemporaryDirectory(prefix='snowglobes') as tempdir:
     with tarfile.open(tarball_path) as tar:
         tar.extractall(tempdir)
@@ -70,33 +69,29 @@ with TemporaryDirectory(prefix='snowglobes') as tempdir:
         print(f.readline()) # prints .dat data file header info
         labels = f.readline()
         print(labels) # prints .dat file info
-        
-        # generate labels_data if not already; uniformity in files means we
-        # only need to do this once
-        if (labels_data == None):
-            labels_data=labels.split("	")
-        f.close()
+
 # now that we have all the fluences loaded per time bin, we now need to
 # integrate the fluence to get the total flux
 # data comes out backwards, so first need to flip it
 fluence_data.reverse() # now they're in the correct time sequence
-
+scale = 100
+use_log = False
 plotting_data = []
 for time_bin in fluence_data:
     NuE = np.sum(time_bin[1])
     NuX = np.sum(time_bin[2])+np.sum(time_bin[3])
     aNuE = np.sum(time_bin[4])
     aNuX = np.sum(time_bin[5])+np.sum(time_bin[6])
-    a=NuX
-    b=aNuE
-    c=NuE
+    a=math.log(NuX) if use_log else NuX
+    b=math.log(aNuE) if use_log else aNuE
+    c=math.log(NuE) if use_log else NuE
     total = a+b+c
-    plotting_data.append((100*a/total,100*b/total,100*c/total))
+    plotting_data.append((scale*a/total,scale*b/total,scale*c/total))
     
-plot_title = "Nakazato_2013 Fluxes"
-figure, tax = ternary.figure(scale=100)
+plot_title = "Nakazato_2013 Fluxes " + transform
+figure, tax = ternary.figure(scale=scale)
 tax.boundary(linewidth=2.0)
-tax.gridlines(color="blue", multiple=20)
+tax.gridlines(color="blue", multiple=scale/10)
 tax.set_title(plot_title)
 # data is organized in top, right, left
 
@@ -106,7 +101,7 @@ tax.right_axis_label(r'$\bar{\nu_e}$')
 tax.left_axis_label(r'$\nu_e$')
 
 tax.scatter(points=plotting_data, color="red")
-tax.ticks(axis='lbr', linewidth=1, multiple=20)
+tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
 tax.clear_matplotlib_ticks()
 tax.get_axes().axis('off') # disables regular matlab plot axes
 
