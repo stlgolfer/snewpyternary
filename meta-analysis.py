@@ -42,6 +42,24 @@ detector_list = ['scint20kt','ar40kt','wc100kt30prct']
 flavor_transformation_dict = {'NoTransformation': NoTransformation(), 'AdiabaticMSW_NMO': AdiabaticMSW(mh=MassHierarchy.NORMAL), 'AdiabaticMSW_IMO': AdiabaticMSW(mh=MassHierarchy.INVERTED), 'NonAdiabaticMSWH_NMO': NonAdiabaticMSWH(mh=MassHierarchy.NORMAL), 'NonAdiabaticMSWH_IMO': NonAdiabaticMSWH(mh=MassHierarchy.INVERTED), 'TwoFlavorDecoherence': TwoFlavorDecoherence(), 'ThreeFlavorDecoherence': ThreeFlavorDecoherence(), 'NeutrinoDecay_NMO': NeutrinoDecay(mh=MassHierarchy.NORMAL), 'NeutrinoDecay_IMO': NeutrinoDecay(mh=MassHierarchy.INVERTED)}
 transform_list = list(flavor_transformation_dict.keys())
 
+def handle_scintillator(data):
+    # must return a list of a, b, c
+    ibd = np.sum(data[1])
+    nue_plus_es=np.sum(data[2])+np.sum(data[3])+np.sum(data[6])
+    nc = np.sum(data[5])
+    return [ibd,nue_plus_es,nc]
+
+transform = 'AdiabaticMSW_NMO'
+plot_data = t.create_detector_event_scatter(modelFilePath,model_type, 'scint20kt', model,dataCalc=handle_scintillator)
+figure, tax = t.create_default_detector_plot(plot_data, ['ibd','nue+es','nc'],
+                                             '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
+                                             save=True)
+
+# for saving figures with captions
+# fig = tax.get_figure()
+# fig.text(x=0.5,y=0.001,s="Some subtext goes here")
+# fig.savefig(fname='./plots/test.png')
+
 # for d in detector_list:
 #     # for each detector config, simulate all types of transformations
 #     for transform in transform_list:
@@ -51,6 +69,6 @@ transform_list = list(flavor_transformation_dict.keys())
 #         t.create_default_detector_plot(plot_data,plot_title)
 
 # create flux plot as well
-for transform in transform_list:
-    flux_scatter_data = t.create_flux_scatter(modelFilePath, model_type, model,transform=transform)
-    t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
+# for transform in transform_list:
+#     flux_scatter_data = t.create_flux_scatter(modelFilePath, model_type, model,transform=transform)
+#     t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))

@@ -30,7 +30,12 @@ def create_detector_event_scatter(
         d=10,
         transformation="NoTransformation",
         smearing=True,
-        weighting="weighted"
+        weighting="weighted",
+        i1=1,
+        i2=2,
+        i3=3,
+        dataCalc=None,
+        headers=None
         ):
     '''
     Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
@@ -38,7 +43,9 @@ def create_detector_event_scatter(
     in each time bin generated, a progenitor flux vs energy diagram is created.
     Then, this data is simmulated as though a detector would see the fluxes
     on Earth. Each time bin in the simulated output (now event rates vs energy)
-    is integrated for the specified detector channel and then normalized
+    is integrated for the specified detector channel. From these detector channels,
+    an indirect measurement is made for the nue, nuebar, and NC event counts.
+    and then normalized
     against the other channels to create a ternary scatter point.
 
     Parameters
@@ -108,29 +115,45 @@ def create_detector_event_scatter(
     count, then append to plotting_data. Then, we will have a list of time-evolved
     count
     '''
-    
+    print("\nNote that the data columns are as follows: a0, a1, a2, a2, ...")
+    showing_columns = True
     for file in data_files: # which effectively goes through each time bin
         # we want to only have the ones that end in 'unweighted' for now
         if (weighting in file):
             # now fetch the time bin's energy chart
             e_bins = tables.get(file)
             
+            if showing_columns:
+                header = list(e_bins.get("header").split(" ")) # header in dictionary
+                print(header)
+                print('Continuing with {0} {1} {2}'.format(i1,i2,i3))
+                showing_columns = False
+            
             # first we need to get the points by iterating through the points
-            header = list(e_bins.get("header").split(" ")) # header in dictionary
-            print(header)
             #tables.get(file).data[]
             data = e_bins.get("data") # 2D array for data
             # now go through each available particles
-            a=np.sum(data[1])
-            b=np.sum(data[2])
-            c=np.sum(data[3])
+            a = 0
+            b = 0
+            c = 0
+            
+            if (dataCalc == None):
+                a=np.sum(data[i1])
+                b=np.sum(data[i2])
+                c=np.sum(data[i3])
+            else:
+                results = dataCalc(data)
+                a= results[0]
+                b=results[1]
+                c=results[2]
+                
             total = a+b+c
             plotting_data.append((100*a/total,100*b/total,100*c/total))
             
     # now retrieve header files
     header_info = tables.get(data_files[1]).get("header").split(" ")
             
-    return plotting_data, [header_info[1],header_info[2],header_info[3]]
+    return plotting_data, [header_info[i1],header_info[i2],header_info[i3]]
 
 def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     '''
@@ -293,3 +316,4 @@ def create_default_flux_plot(plotting_data,plot_title,save=True):
 
     tax.show()
     tax.savefig('./plots/' + plot_title)
+    return figure, tax
