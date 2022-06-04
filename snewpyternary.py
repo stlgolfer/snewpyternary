@@ -30,7 +30,7 @@ def create_detector_event_scatter(
         deltat=1*u.s,
         d=10,
         transformation="NoTransformation",
-        smearing=True,
+        smearing=False,
         weighting="weighted"
         ):
     '''

@@ -42,22 +42,48 @@ detector_list = ['scint20kt','ar40kt','wc100kt30prct']
 flavor_transformation_dict = {'NoTransformation': NoTransformation(), 'AdiabaticMSW_NMO': AdiabaticMSW(mh=MassHierarchy.NORMAL), 'AdiabaticMSW_IMO': AdiabaticMSW(mh=MassHierarchy.INVERTED), 'NonAdiabaticMSWH_NMO': NonAdiabaticMSWH(mh=MassHierarchy.NORMAL), 'NonAdiabaticMSWH_IMO': NonAdiabaticMSWH(mh=MassHierarchy.INVERTED), 'TwoFlavorDecoherence': TwoFlavorDecoherence(), 'ThreeFlavorDecoherence': ThreeFlavorDecoherence(), 'NeutrinoDecay_NMO': NeutrinoDecay(mh=MassHierarchy.NORMAL), 'NeutrinoDecay_IMO': NeutrinoDecay(mh=MassHierarchy.INVERTED)}
 transform_list = list(flavor_transformation_dict.keys())
 
-def handle_scintillator(data):
+def h_scint20kt(data):
     # must return a list of a, b, c
     ibd = data['ibd']
     nue_plus_es=data['nue_C12']+data['nue_C13']+data['e']
     nc = data['nc']
     return [ibd,nue_plus_es,nc]
 
-transform = 'AdiabaticMSW_NMO'
+def h_ar40kt(data):
+    return [data['nue_Ar40'],data['nuebar_Ar40'],data['nc']]
+
+def h_wc100kt30prct(data):
+    ibd = data['ibd']
+    nue_plus_es=data['nue_O16']+data['e']
+    nc = data['nc']
+    return [ibd,nue_plus_es,nc]
+
+transform = 'NoTransformation'
+# plot_data = t.create_detector_event_scatter(modelFilePath,model_type,
+#                                             'scint20kt',
+#                                             model,
+#                                             data_calc=h_scint20kt)
+# figure, tax = t.create_default_detector_plot(plot_data,
+#                                              ['ibd','nue+es','nc'],
+#                                              '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
+#                                              save=True)
+
+# plot_data = t.create_detector_event_scatter(modelFilePath,model_type,
+#                                             'ar40kt',
+#                                             model,
+#                                             data_calc=h_ar40kt)
+# t.create_default_detector_plot(plot_data,
+#                                ['nue','nuebar','nc'],
+#                                '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform))
+
 plot_data = t.create_detector_event_scatter(modelFilePath,model_type,
-                                            'scint20kt',
+                                            'wc100kt30prct',
                                             model,
-                                            data_calc=handle_scintillator)
-figure, tax = t.create_default_detector_plot(plot_data,
-                                             ['ibd','nue+es','nc'],
-                                             '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
-                                             save=True)
+                                            data_calc=h_wc100kt30prct)
+t.create_default_detector_plot(plot_data,
+                                ['ibd','nue+es','nc'],
+                                '{model} {detector} {transform}'.format(model=model_type,detector='wc100kt30prct',transform=transform))
+
 
 # for saving figures with captions
 # fig = tax.get_figure()
