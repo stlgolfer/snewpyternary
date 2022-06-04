@@ -19,6 +19,9 @@ import os
 import ternary
 import math
 from snewpy.flavor_transformation import *
+from tempfile import TemporaryDirectory
+from PIL import Image
+import glob
 
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
@@ -83,6 +86,22 @@ plot_data = t.create_detector_event_scatter(modelFilePath,model_type,
 t.create_default_detector_plot(plot_data,
                                 ['ibd','nue+es','nc'],
                                 '{model} {detector} {transform}'.format(model=model_type,detector='wc100kt30prct',transform=transform))
+# now let's try and create a bunch of plots to make an animation
+tempdir='/home/phyics/Documents/more-snewpy-ternary-plots/tmp'
+print(tempdir)
+for f_no in range(1,len(plot_data)):
+    print(f'Processing frame no {f_no} of {len(plot_data)}')
+    t.create_default_detector_plot(
+        plot_data[:f_no],
+        ['ibd','nue+es','nc'],
+        str(f_no),
+        out_dir=tempdir,
+        save=True
+        )
+# now we have all the frames, so compile them
+frames=[Image.open(image) for image in glob.glob(f'{tempdir}/*.png')]
+frames[0].save("the ting.gif", format="GIF", append_images=frames,save_all=True,duration=100,loop=0)
+    
 
 
 # for saving figures with captions

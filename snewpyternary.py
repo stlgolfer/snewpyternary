@@ -151,7 +151,7 @@ def create_detector_event_scatter(
             
     return plotting_data
 
-def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
+def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True,out_dir="./plots"):
     '''
     From ternary detetector event scatter plot data, a ternary plot is created
 
@@ -190,7 +190,7 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
 
     tax.show()
     if save:
-        tax.savefig('./plots/' + plot_title)
+        tax.savefig(out_dir + plot_title)
     return figure, tax
         
 def create_flux_scatter(modelFilePath,
@@ -274,7 +274,7 @@ def create_flux_scatter(modelFilePath,
         plotting_data.append((scale*a/total,scale*b/total,scale*c/total))
     return plotting_data
 
-def create_default_flux_plot(plotting_data,plot_title,save=True):
+def create_default_flux_plot(plotting_data,plot_title,save=True,out_dir='./plots'):
     '''
     Creates a ternary plot from the truth flux data
 
@@ -311,5 +311,5 @@ def create_default_flux_plot(plotting_data,plot_title,save=True):
     tax.get_axes().axis('off') # disables regular matlab plot axes
 
     tax.show()
-    tax.savefig('./plots/' + plot_title)
+    tax.savefig(out_dir + plot_title)
     return figure, tax
