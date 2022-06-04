@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>snewpyternary module &mdash; snewpyternary  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ternary-example module" href="ternary-example.html" />
+    <link rel="prev" title="meta-analysis module" href="meta-analysis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> snewpyternary
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">more-snewpy-ternary-plots</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="meta-analysis.html">meta-analysis module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">snewpyternary module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ternary-example.html">ternary-example module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">snewpyternary</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">more-snewpy-ternary-plots</a> &raquo;</li>
+      <li>snewpyternary module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/snewpyternary.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-snewpyternary">
+<span id="snewpyternary-module"></span><h1>snewpyternary module<a class="headerlink" href="#module-snewpyternary" title="Permalink to this headline"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="snewpyternary.create_default_detector_plot">
+<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_default_detector_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_titles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_default_detector_plot" title="Permalink to this definition"></a></dt>
+<dd><p>From ternary detetector event scatter plot data, a ternary plot is created</p>
+<dl class="simple">
+<dt>plot_data<span class="classifier">list of 3-tuples</span></dt><dd><p>Scatter data produced by create_detector_event_scatter</p>
+</dd>
+<dt>plot_title<span class="classifier">str</span></dt><dd><p>Plot title</p>
+</dd>
+<dt>axes_titles<span class="classifier">list</span></dt><dd><p>List of axes titles in b,r,l order</p>
+</dd>
+<dt>save<span class="classifier">bool, optional</span></dt><dd><p>Save the output file to ./plots/. The default is True.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>figure, tax</dt><dd><p>The figure and tax variables created by ternary.figure()</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="snewpyternary.create_default_flux_plot">
+<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_default_flux_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plotting_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_default_flux_plot" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a ternary plot from the truth flux data</p>
+<dl class="simple">
+<dt>plotting_data<span class="classifier">list</span></dt><dd><p>List of 3-tuples–the scatter points.</p>
+</dd>
+<dt>plot_title<span class="classifier">str</span></dt><dd><p>The name of the plot.</p>
+</dd>
+<dt>save<span class="classifier">bool, optional</span></dt><dd><p>Save the output file to ./plots/. The default is True.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>figure, tax</dt><dd><p>The figure and tax variables created by ternary.figure()</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="snewpyternary.create_detector_event_scatter">
+<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_detector_event_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modelFilePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltat=&lt;Quantity</span> <span class="pre">1.</span> <span class="pre">s&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformation='NoTransformation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smearing=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weighting='weighted'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_detector_event_scatter" title="Permalink to this definition"></a></dt>
+<dd><p>Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
+a “truth flux” is created for a specified number of time bins. That is,
+in each time bin generated, a progenitor flux vs energy diagram is created.
+Then, this data is simmulated as though a detector would see the fluxes
+on Earth. Each time bin in the simulated output (now event rates vs energy)
+is integrated for the specified detector channel and then normalized
+against the other channels to create a ternary scatter point.</p>
+<dl class="simple">
+<dt>modelFilePath<span class="classifier">str</span></dt><dd><p>Path to the SNEWPY model. Must be an absolute path</p>
+</dd>
+<dt>model_type<span class="classifier">str</span></dt><dd><p>SNEWPY name of the model</p>
+</dd>
+<dt>detector<span class="classifier">str</span></dt><dd><p>SNOwGLoBES detector type. This detector must be available in $SNOWGLOBES</p>
+</dd>
+<dt>model<span class="classifier">snewpy.models</span></dt><dd><p>The SNEWPY class abstraction of the model you’re working with</p>
+</dd>
+<dt>deltat<span class="classifier">astropy.unit, optional</span></dt><dd><p>Time bin width. The default is 1*u.s.</p>
+</dd>
+<dt>d<span class="classifier">int, optional</span></dt><dd><p>simulated distance to progenitor. The default is 10.</p>
+</dd>
+<dt>transformation<span class="classifier">snewpy.transformation, optional</span></dt><dd><p>Flavor transformation prescription. The default is “NoTransformation”.</p>
+</dd>
+<dt>smearing<span class="classifier">bool, optional</span></dt><dd><p>Use detector smearing matrix. The default is True.</p>
+</dd>
+<dt>weighting<span class="classifier">str “weighted” or “unweighted”, optional</span></dt><dd><p>Use detector data weights. The default is “weighted”.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>list, list</dt><dd><p>The ternary scatter plot data, and the array of axis titles</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="snewpyternary.create_flux_scatter">
+<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_flux_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modelFilePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modeltype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltat=&lt;Quantity</span> <span class="pre">1.</span> <span class="pre">s&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform='NoTransformation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smearing=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_flux_scatter" title="Permalink to this definition"></a></dt>
+<dd><p>Similar to create_detector_event_scatter, although here we are just plotting
+the truth fluxes–the fluxes at the progenitor. A time series is created
+by SNOwGLoBES to make the flux vs energy graphs in time bins, then these
+fluxes are integrated along the time bins to create the normalized
+scatter plot data</p>
+<dl class="simple">
+<dt>modelFilePath<span class="classifier">star</span></dt><dd><p>Path to the SNEWPY model. Must be an absolute path.</p>
+</dd>
+<dt>modeltype<span class="classifier">str</span></dt><dd><p>SNEWPY name of the model.</p>
+</dd>
+<dt>model<span class="classifier">snewpy.models</span></dt><dd><p>The SNEWPY class abstraction of the model you’re working with.</p>
+</dd>
+<dt>deltat<span class="classifier">astropy.Quantity(), optional</span></dt><dd><p>Time bin width. The default is 1*u.s.. The default is 1*u.s.</p>
+</dd>
+<dt>d<span class="classifier">int, optional</span></dt><dd><p>Simulated distance to progenitor. The default is 10. The default is 10.</p>
+</dd>
+<dt>transform<span class="classifier">snewpy.transformation, optional</span></dt><dd><p>Flavor transformation prescription. The default is “NoTransformation”. The default is “NoTransformation”.</p>
+</dd>
+<dt>smearing<span class="classifier">bool, optional</span></dt><dd><p>Use detector smearing matrix. The default is True. The default is False.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>plotting_data<span class="classifier">list</span></dt><dd><p>The ternary scatter plot data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="meta-analysis.html" class="btn btn-neutral float-left" title="meta-analysis module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ternary-example.html" class="btn btn-neutral float-right" title="ternary-example module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Alex M.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

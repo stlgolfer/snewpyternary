@@ -21,9 +21,6 @@ from tempfile import TemporaryDirectory
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
 
-'''
-Creates normalized ternary scatter plot data from a snowglobes simulation
-'''
 def create_detector_event_scatter(
         modelFilePath,
         model_type,
@@ -32,33 +29,50 @@ def create_detector_event_scatter(
         deltat=1*u.s,
         d=10,
         transformation="NoTransformation",
-        smearing=False,
-        weighting="unweighted"
+        smearing=True,
+        weighting="weighted"
         ):
+    '''
+    Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
+    a "truth flux" is created for a specified number of time bins. That is,
+    in each time bin generated, a progenitor flux vs energy diagram is created.
+    Then, this data is simmulated as though a detector would see the fluxes
+    on Earth. Each time bin in the simulated output (now event rates vs energy)
+    is integrated for the specified detector channel and then normalized
+    against the other channels to create a ternary scatter point.
+
+    Parameters
+    ----------
+    modelFilePath : str
+        Path to the SNEWPY model. Must be an absolute path
+    model_type : str
+        SNEWPY name of the model
+    detector : str
+        SNOwGLoBES detector type. This detector must be available in $SNOWGLOBES
+    model : snewpy.models
+        The SNEWPY class abstraction of the model you're working with
+    deltat : astropy.unit, optional
+        Time bin width. The default is 1*u.s.
+    d : int, optional
+        simulated distance to progenitor. The default is 10.
+    transformation : snewpy.transformation, optional
+        Flavor transformation prescription. The default is "NoTransformation".
+    smearing : bool, optional
+        Use detector smearing matrix. The default is True.
+    weighting : str "weighted" or "unweighted", optional
+        Use detector data weights. The default is "weighted".
+
+    Returns
+    -------
+    list, list
+        The ternary scatter plot data, and the array of axis titles
+
+    '''
     
     if detector == 'all':
         raise("Cannot accept 'all' as detector type")
-    # simulation details
-    #modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
-    #modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
-    #model = Nakazato_2013(modelFilePath)
-    #deltat = (1*u.s) # time bin size, details found in SNEWPY article
-    #d = 10 # in pc, distance to SN
-    #detector = "scint20kt" # refrain from using "all"
     snowglobes_out_name="snowglobes-output"
     snowglobes_dir = os.environ['SNOWGLOBES']
-    #print(os.environ['SNOWGLOBES'])
-    #smearing = True
-    #model
-    
-    '''
-    # we have the model loaded, so let's try to generate the fluence files using SNEWPY
-    snowglobes.generate_fluence(model_path=modelFilePath,model_type="Nakazato_2013",
-                                transformation_type="NoTransformation",
-                                d=10,
-                                output_filename=snowglobes_out_name
-                                )
-    '''
     
     tball_complete = snowglobes.generate_time_series(
         model_path=modelFilePath,
@@ -116,11 +130,29 @@ def create_detector_event_scatter(
     # now retrieve header files
     header_info = tables.get(data_files[1]).get("header").split(" ")
             
-    return [plotting_data, [header_info[1],header_info[2],header_info[3]]]
+    return plotting_data, [header_info[1],header_info[2],header_info[3]]
 
-'''
-'''
-def create_default_detector_plot(plot_data,plot_title,save=True):
+def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
+    '''
+    From ternary detetector event scatter plot data, a ternary plot is created
+
+    Parameters
+    ----------
+    plot_data : list of 3-tuples
+        Scatter data produced by create_detector_event_scatter
+    plot_title : str
+        Plot title
+    axes_titles : list
+        List of axes titles in b,r,l order
+    save : bool, optional
+        Save the output file to ./plots/. The default is True.
+
+    Returns
+    -------
+    figure, tax
+        The figure and tax variables created by ternary.figure()
+
+    '''
     figure, tax = ternary.figure(scale=100)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=10)
@@ -128,9 +160,9 @@ def create_default_detector_plot(plot_data,plot_title,save=True):
     # data is organized in top, right, left
 
     ### TODO: make sure that data_files[1] actually points to something that can get the header
-    tax.bottom_axis_label(plot_data[1][0])
-    tax.right_axis_label(plot_data[1][1])
-    tax.left_axis_label(plot_data[1][2])
+    tax.bottom_axis_label(axes_titles[0])
+    tax.right_axis_label(axes_titles[1])
+    tax.left_axis_label(axes_titles[2])
 
     tax.scatter(points=plot_data[0], color="red")
     tax.ticks(axis='lbr', linewidth=1, multiple=10)
@@ -140,6 +172,7 @@ def create_default_detector_plot(plot_data,plot_title,save=True):
     tax.show()
     if save:
         tax.savefig('./plots/' + plot_title)
+    return figure, tax
         
 def create_flux_scatter(modelFilePath,
                         modeltype,
@@ -148,6 +181,36 @@ def create_flux_scatter(modelFilePath,
                         d=10,
                         transform="NoTransformation",
                         smearing=False):
+    '''
+    Similar to create_detector_event_scatter, although here we are just plotting
+    the truth fluxes--the fluxes at the progenitor. A time series is created
+    by SNOwGLoBES to make the flux vs energy graphs in time bins, then these
+    fluxes are integrated along the time bins to create the normalized
+    scatter plot data
+
+    Parameters
+    ----------
+    modelFilePath : star
+        Path to the SNEWPY model. Must be an absolute path.
+    modeltype : str
+        SNEWPY name of the model.
+    model : snewpy.models
+        The SNEWPY class abstraction of the model you’re working with.
+    deltat : astropy.Quantity(), optional
+        Time bin width. The default is 1*u.s.. The default is 1*u.s.
+    d : int, optional
+        Simulated distance to progenitor. The default is 10. The default is 10.
+    transform : snewpy.transformation, optional
+        Flavor transformation prescription. The default is “NoTransformation”. The default is "NoTransformation".
+    smearing : bool, optional
+        Use detector smearing matrix. The default is True. The default is False.
+
+    Returns
+    -------
+    plotting_data : list
+        The ternary scatter plot data.
+
+    '''
     print("NEW SNOwGLoBES FLUENCE TIME SERIES GENERATION\n=============================")
     #print("Using detector schema: " + detector)
     print("Using transform: " + transform)
@@ -193,6 +256,24 @@ def create_flux_scatter(modelFilePath,
     return plotting_data
 
 def create_default_flux_plot(plotting_data,plot_title,save=True):
+    '''
+    Creates a ternary plot from the truth flux data
+
+    Parameters
+    ----------
+    plotting_data : list
+        List of 3-tuples--the scatter points.
+    plot_title : str
+        The name of the plot.
+    save : bool, optional
+        Save the output file to ./plots/. The default is True.
+
+    Returns
+    -------
+    figure, tax
+        The figure and tax variables created by ternary.figure()
+
+    '''
     scale=100
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
