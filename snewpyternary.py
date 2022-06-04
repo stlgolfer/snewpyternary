@@ -26,16 +26,12 @@ def create_detector_event_scatter(
         model_type,
         detector,
         model,
+        data_calc,
         deltat=1*u.s,
         d=10,
         transformation="NoTransformation",
         smearing=True,
-        weighting="weighted",
-        i1=1,
-        i2=2,
-        i3=3,
-        dataCalc=None,
-        headers=None
+        weighting="weighted"
         ):
     '''
     Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
@@ -44,9 +40,11 @@ def create_detector_event_scatter(
     Then, this data is simmulated as though a detector would see the fluxes
     on Earth. Each time bin in the simulated output (now event rates vs energy)
     is integrated for the specified detector channel. From these detector channels,
-    an indirect measurement is made for the nue, nuebar, and NC event counts.
-    and then normalized
-    against the other channels to create a ternary scatter point.
+    you must supply the data calculations since the data across detectors is not 
+    uniform. To help with this, this method returns a dictionary of summed channel
+    data to pick from.
+    and then normalized against the other channels to create a ternary scatter point.
+    
 
     Parameters
     ----------
@@ -68,11 +66,15 @@ def create_detector_event_scatter(
         Use detector smearing matrix. The default is True.
     weighting : str "weighted" or "unweighted", optional
         Use detector data weights. The default is "weighted".
+    data_calc : def
+        Data calculation algorithm, since not all detector channel data is
+        uniform. Passes a dictionary of available detector channels with their
+        summed event rates in a given time bin
 
     Returns
     -------
-    list, list
-        The ternary scatter plot data, and the array of axis titles
+    list
+        The ternary scatter plot data
 
     '''
     
@@ -126,34 +128,28 @@ def create_detector_event_scatter(
             if showing_columns:
                 header = list(e_bins.get("header").split(" ")) # header in dictionary
                 print(header)
-                print('Continuing with {0} {1} {2}'.format(i1,i2,i3))
                 showing_columns = False
             
             # first we need to get the points by iterating through the points
             #tables.get(file).data[]
             data = e_bins.get("data") # 2D array for data
-            # now go through each available particles
-            a = 0
-            b = 0
-            c = 0
             
-            if (dataCalc == None):
-                a=np.sum(data[i1])
-                b=np.sum(data[i2])
-                c=np.sum(data[i3])
-            else:
-                results = dataCalc(data)
-                a= results[0]
-                b=results[1]
-                c=results[2]
-                
+            dict_data = {}
+            # build dictionary of available channels
+            for i in range(len(header)):
+                dict_data[header[i]]=np.sum(data[i])
+            results = data_calc(dict_data)
+            a= results[0]
+            b=results[1]
+            c=results[2]
+            
             total = a+b+c
             plotting_data.append((100*a/total,100*b/total,100*c/total))
             
     # now retrieve header files
-    header_info = tables.get(data_files[1]).get("header").split(" ")
+    #header_info = tables.get(data_files[1]).get("header").split(" ")
             
-    return plotting_data, [header_info[i1],header_info[i2],header_info[i3]]
+    return plotting_data
 
 def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     '''
@@ -187,7 +183,7 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     tax.right_axis_label(axes_titles[1])
     tax.left_axis_label(axes_titles[2])
 
-    tax.scatter(points=plot_data[0], color="red")
+    tax.scatter(points=plot_data, color="red")
     tax.ticks(axis='lbr', linewidth=1, multiple=10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes

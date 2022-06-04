@@ -44,14 +44,18 @@ transform_list = list(flavor_transformation_dict.keys())
 
 def handle_scintillator(data):
     # must return a list of a, b, c
-    ibd = np.sum(data[1])
-    nue_plus_es=np.sum(data[2])+np.sum(data[3])+np.sum(data[6])
-    nc = np.sum(data[5])
+    ibd = data['ibd']
+    nue_plus_es=data['nue_C12']+data['nue_C13']+data['e']
+    nc = data['nc']
     return [ibd,nue_plus_es,nc]
 
 transform = 'AdiabaticMSW_NMO'
-plot_data = t.create_detector_event_scatter(modelFilePath,model_type, 'scint20kt', model,dataCalc=handle_scintillator)
-figure, tax = t.create_default_detector_plot(plot_data, ['ibd','nue+es','nc'],
+plot_data = t.create_detector_event_scatter(modelFilePath,model_type,
+                                            'scint20kt',
+                                            model,
+                                            data_calc=handle_scintillator)
+figure, tax = t.create_default_detector_plot(plot_data,
+                                             ['ibd','nue+es','nc'],
                                              '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
                                              save=True)
 
