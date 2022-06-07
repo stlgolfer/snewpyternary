@@ -69,7 +69,7 @@ def create_detector_event_scatter(
     data_calc : def
         Data calculation algorithm, since not all detector channel data is
         uniform. Passes a dictionary of available detector channels with their
-        summed event rates in a given time bin
+        event rates in a given time bin organized by energy bin
 
     Returns
     -------
@@ -112,6 +112,7 @@ def create_detector_event_scatter(
     data_files = list(tables.keys())
     plotting_data = []
     processed_raw = []
+    labeled_data_by_energy = []
     
     '''
     so what we have to do is go through each time bin, sum each particle's event
@@ -122,7 +123,12 @@ def create_detector_event_scatter(
     showing_columns = True
     for file in data_files: # which effectively goes through each time bin
         # we want to only have the ones that end in 'unweighted' for now
-        if (weighting in file):
+        # need to process the filename. though 'weighted' and 'unweighted' will
+        # both have the word 'weighted' in them, so we have to split on '_'
+        # and then split again so we can extract the last word of the file name
+        title_split = file.split('_')
+        #print(title_split[len(title_split)-1].split('.')[0])
+        if (title_split[len(title_split)-1].split('.')[0]==weighting):
             # now fetch the time bin's energy chart
             e_bins = tables.get(file)
             
@@ -138,8 +144,9 @@ def create_detector_event_scatter(
             dict_data = {}
             # build dictionary of available channels
             for i in range(len(header)):
-                dict_data[header[i]]=np.sum(data[i])
+                dict_data[header[i]]=data[i]
             results = data_calc(dict_data)
+            labeled_data_by_energy.append(dict_data)
             a= results[0]
             b=results[1]
             c=results[2]
@@ -151,7 +158,7 @@ def create_detector_event_scatter(
     # now retrieve header files
     #header_info = tables.get(data_files[1]).get("header").split(" ")
             
-    return plotting_data, processed_raw
+    return plotting_data, processed_raw,labeled_data_by_energy
 
 def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     '''

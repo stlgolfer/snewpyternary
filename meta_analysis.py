@@ -34,7 +34,6 @@ snowglobes_out_name="snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
 print(os.environ['SNOWGLOBES'])
 smearing = True
-weighting = "unweighted"
 model
 
 detector_list = ['scint20kt','ar40kt','wc100kt30prct']
@@ -44,18 +43,18 @@ transform_list = list(flavor_transformation_dict.keys())
 
 def h_scint20kt(data):
     # must return a list of a, b, c
-    ibd = data['ibd']
-    nue_plus_es=data['nue_C12']+data['nue_C13']+data['e']
-    nc = data['nc']
+    ibd = np.sum(data['ibd'])
+    nue_plus_es=np.sum(data['nue_C12'])+np.sum(data['nue_C13']+data['e'])
+    nc = np.sum(data['nc'])
     return [ibd,nue_plus_es,nc]
 
 def h_ar40kt(data):
-    return [data['nue_Ar40'],data['nuebar_Ar40'],data['nc']]
+    return [np.sum(data['nue_Ar40']),np.sum(data['nuebar_Ar40']),np.sum(data['nc'])]
 
 def h_wc100kt30prct(data):
-    ibd = data['ibd']
-    nue_plus_es=data['nue_O16']+data['e']
-    nc = data['nc']
+    ibd = np.sum(data['ibd'])
+    nue_plus_es=np.sum(data['nue_O16'])+np.sum(data['e'])
+    nc = np.sum(data['nc'])
     return [ibd,nue_plus_es,nc]
 
 transform = 'NoTransformation'
@@ -97,6 +96,8 @@ t.create_regular_plot(raw_data,
                       ['ibd','nue+es','nc'],
                       '{model} {detector} {transform}'.format(model=model_type,detector='wc100kt30prct',transform=transform),
                       ylab="Event Counts",save=True)
+
+
 # for saving figures with captions
 # fig = tax.get_figure()
 # fig.text(x=0.5,y=0.001,s="Some subtext goes here")
