@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy import units as u
 from snewpy.neutrino import Flavor, MassHierarchy
-from snewpy.models import Nakazato_2013
+from snewpy.models import Nakazato_2013, OConnor_2015
 from snewpy.flavor_transformation import NoTransformation # just use NoTransformation for now to keep things simple
 import snewpyternary as t
 import os
@@ -24,17 +24,18 @@ from snewpy.flavor_transformation import *
 import snewpy.snowglobes as snowglobes
 
 #simulation details
-modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
-modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
-model = Nakazato_2013(modelFilePath)
-model_type="Nakazato_2013"
-deltat = (1*u.s) # time bin size, details found in SNEWPY article
+modelFilePathBase = "./SNEWPY_models/OConnor_2015/"
+modelFilePath = modelFilePathBase + "M1_neutrinos.dat"
+model = OConnor_2015(modelFilePath)
+model_type="OConnor_2015"
+ntbins = 20
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
 print(os.environ['SNOWGLOBES'])
 smearing = True
 model
+print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time)-1]}')
 
 detector_list = ['scint20kt','ar40kt','wc100kt30prct']
 # pulled the following from snowglobes-snewpy integration code
@@ -59,9 +60,10 @@ def h_wc100kt30prct(data):
 
 transform = 'NoTransformation'
 # create scintillator detector analysis
-plot_data, raw_data = t.create_detector_event_scatter(modelFilePath,model_type,
+plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
                                             'scint20kt',
                                             model,
+                                            ntbins=ntbins,
                                             data_calc=h_scint20kt)
 figure, tax = t.create_default_detector_plot(plot_data,
                                               ['ibd','nue+es','nc'],
@@ -73,9 +75,10 @@ t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
 
 
 # create argon detector analysis
-plot_data, raw_data = t.create_detector_event_scatter(modelFilePath,model_type,
+plot_data, raw_data, l_data  = t.create_detector_event_scatter(modelFilePath,model_type,
                                             'ar40kt',
                                             model,
+                                            ntbins=ntbins,
                                             data_calc=h_ar40kt)
 t.create_default_detector_plot(plot_data,
                                 ['nue','nuebar','nc'],
@@ -85,9 +88,10 @@ t.create_regular_plot(raw_data, ['nue','nuebar','nc'],
                       ylab="Event Counts",save=True)
 
 # create water detector analysis
-plot_data, raw_data = t.create_detector_event_scatter(modelFilePath,model_type,
+plot_data, raw_data, l_data  = t.create_detector_event_scatter(modelFilePath,model_type,
                                             'wc100kt30prct',
                                             model,
+                                            ntbins=ntbins,
                                             data_calc=h_wc100kt30prct)
 t.create_default_detector_plot(plot_data,
                                 ['ibd','nue+es','nc'],
@@ -115,7 +119,7 @@ t.create_regular_plot(raw_data,
 # for transform in transform_list:
 #     flux_scatter_data = t.create_flux_scatter(modelFilePath, model_type, model,transform=transform)
 #     t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
-flux_scatter_data,raw_data = t.create_flux_scatter(modelFilePath, model_type, model,transform=transform)
+flux_scatter_data,raw_data = t.create_flux_scatter(modelFilePath, model_type, model, ntbins=ntbins, transform=transform)
 t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
 fig = t.create_regular_plot(raw_data, ['NuX', 'aNuE', 'NuE'], f'{model_type} Truth Flux {transform}', ylab="Total Integrated Flux flavor/cm^2")
 # fig.savefig(f'./plots/{model_type} Truth Flux {transform}')

@@ -28,7 +28,7 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-deltat = (1*u.s) # time bin size, details found in SNEWPY article
+ntbins= 20
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
@@ -48,6 +48,7 @@ transform = 'NoTransformation'
 plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
                                             'scint20kt',
                                             model,
+                                            ntbins=ntbins,
                                             data_calc=h_scint20kt)
 
 # now iterate over select time slices

@@ -27,7 +27,7 @@ def create_detector_event_scatter(
         detector,
         model,
         data_calc,
-        deltat=1*u.s,
+        ntbins,
         d=10,
         transformation="NoTransformation",
         smearing=False,
@@ -89,7 +89,7 @@ def create_detector_event_scatter(
         transformation_type=transformation,
         d=d,
         output_filename=snowglobes_out_name,
-        deltat=deltat
+        ntbins=ntbins
         )
     print("NEW SNOwGLoBES Simulation\n=============================")
     print("Using detector schema: " + detector)
@@ -247,7 +247,7 @@ def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=False):
 def create_flux_scatter(modelFilePath,
                         modeltype,
                         model,
-                        deltat=1*u.s,
+                        ntbins,
                         d=10,
                         transform="NoTransformation",
                         smearing=False):
@@ -292,7 +292,7 @@ def create_flux_scatter(modelFilePath,
         model_type=modeltype,
         transformation_type=transform,
         d=d,
-        deltat=deltat
+        ntbins=ntbins
         )
     fluence_data = []
     with TemporaryDirectory(prefix='snowglobes') as tempdir:
