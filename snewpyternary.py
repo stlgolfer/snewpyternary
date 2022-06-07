@@ -73,8 +73,8 @@ def create_detector_event_scatter(
 
     Returns
     -------
-    list
-        The ternary scatter plot data
+    list, list
+        The ternary scatter plot data and the unnormalized data
 
     '''
     
@@ -111,6 +111,7 @@ def create_detector_event_scatter(
     
     data_files = list(tables.keys())
     plotting_data = []
+    processed_raw = []
     
     '''
     so what we have to do is go through each time bin, sum each particle's event
@@ -142,6 +143,7 @@ def create_detector_event_scatter(
             a= results[0]
             b=results[1]
             c=results[2]
+            processed_raw.append((results[0],results[1],results[2]))
             
             total = a+b+c
             plotting_data.append((100*a/total,100*b/total,100*c/total))
@@ -149,7 +151,7 @@ def create_detector_event_scatter(
     # now retrieve header files
     #header_info = tables.get(data_files[1]).get("header").split(" ")
             
-    return plotting_data
+    return plotting_data, processed_raw
 
 def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     '''
@@ -192,6 +194,48 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     if save:
         tax.savefig('./plots/' + plot_title)
     return figure, tax
+
+def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=False):
+    '''
+    Creates a matplotlib scatter plot of simulated, un-normalized data
+    from the ternary scatter plot generators
+
+    Parameters
+    ----------
+    plot_data : list of 3-tuples
+        Unnormalized data from simulation
+    axes_titles : list
+        In same order of plot_data, the data labels
+    plot_title : str
+        Name of the plot
+    ylab : str
+        The y-axis label
+    save : bool
+        save the plot or not to './plots'
+
+    Returns
+    -------
+
+    '''
+    a = []
+    b = []
+    c = []
+    for time_bin in plot_data:
+        a.append(list(time_bin)[0])
+        b.append(list(time_bin)[1])
+        c.append(list(time_bin)[2])
+    time_axis = np.arange(1,len(a)+1,step=1)
+    plt.plot(time_axis,a,label=axes_titles[0])
+    plt.plot(time_axis,b,label=axes_titles[1])
+    plt.plot(time_axis,c,label=axes_titles[2])
+    plt.title(label=plot_title)
+    plt.xlabel("Time Bin")
+    plt.ylabel(ylab)
+    plt.legend()
+    if save:
+        plt.savefig(f'./plots/{plot_title}')
+    plt.show()
+    return
         
 def create_flux_scatter(modelFilePath,
                         modeltype,
@@ -228,6 +272,8 @@ def create_flux_scatter(modelFilePath,
     -------
     plotting_data : list
         The ternary scatter plot data.
+    results : list
+        The unnormalized data in NuX, aNuE, NuE order
 
     '''
     print("NEW SNOwGLoBES FLUENCE TIME SERIES GENERATION\n=============================")
@@ -262,6 +308,7 @@ def create_flux_scatter(modelFilePath,
     scale = 100
     use_log = False
     plotting_data = []
+    raw = []
     for time_bin in fluence_data:
         NuE = np.sum(time_bin[1])
         NuX = np.sum(time_bin[2])+np.sum(time_bin[3])
@@ -272,7 +319,8 @@ def create_flux_scatter(modelFilePath,
         c=math.log(NuE) if use_log else NuE
         total = a+b+c
         plotting_data.append((scale*a/total,scale*b/total,scale*c/total))
-    return plotting_data
+        raw.append((NuX+aNuX,aNuE,NuE))
+    return plotting_data, raw
 
 def create_default_flux_plot(plotting_data,plot_title,save=True):
     '''

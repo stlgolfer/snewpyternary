@@ -59,32 +59,44 @@ def h_wc100kt30prct(data):
     return [ibd,nue_plus_es,nc]
 
 transform = 'NoTransformation'
-# plot_data = t.create_detector_event_scatter(modelFilePath,model_type,
-#                                             'scint20kt',
-#                                             model,
-#                                             data_calc=h_scint20kt)
-# figure, tax = t.create_default_detector_plot(plot_data,
-#                                              ['ibd','nue+es','nc'],
-#                                              '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
-#                                              save=True)
+# create scintillator detector analysis
+plot_data, raw_data = t.create_detector_event_scatter(modelFilePath,model_type,
+                                            'scint20kt',
+                                            model,
+                                            data_calc=h_scint20kt)
+figure, tax = t.create_default_detector_plot(plot_data,
+                                              ['ibd','nue+es','nc'],
+                                              '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
+                                              save=True)
+t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
+                      '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
+                      ylab="Event Counts",save=True)
 
-# plot_data = t.create_detector_event_scatter(modelFilePath,model_type,
-#                                             'ar40kt',
-#                                             model,
-#                                             data_calc=h_ar40kt)
-# t.create_default_detector_plot(plot_data,
-#                                ['nue','nuebar','nc'],
-#                                '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform))
 
-plot_data = t.create_detector_event_scatter(modelFilePath,model_type,
+# create argon detector analysis
+plot_data, raw_data = t.create_detector_event_scatter(modelFilePath,model_type,
+                                            'ar40kt',
+                                            model,
+                                            data_calc=h_ar40kt)
+t.create_default_detector_plot(plot_data,
+                                ['nue','nuebar','nc'],
+                                '{model} {detector} {transform}'.format(model=model_type,detector='ar40kt',transform=transform))
+t.create_regular_plot(raw_data, ['nue','nuebar','nc'],
+                      '{model} {detector} {transform}'.format(model=model_type,detector='ar40kt',transform=transform),
+                      ylab="Event Counts",save=True)
+
+# create water detector analysis
+plot_data, raw_data = t.create_detector_event_scatter(modelFilePath,model_type,
                                             'wc100kt30prct',
                                             model,
                                             data_calc=h_wc100kt30prct)
 t.create_default_detector_plot(plot_data,
                                 ['ibd','nue+es','nc'],
                                 '{model} {detector} {transform}'.format(model=model_type,detector='wc100kt30prct',transform=transform))
-
-
+t.create_regular_plot(raw_data,
+                      ['ibd','nue+es','nc'],
+                      '{model} {detector} {transform}'.format(model=model_type,detector='wc100kt30prct',transform=transform),
+                      ylab="Event Counts",save=True)
 # for saving figures with captions
 # fig = tax.get_figure()
 # fig.text(x=0.5,y=0.001,s="Some subtext goes here")
@@ -102,3 +114,8 @@ t.create_default_detector_plot(plot_data,
 # for transform in transform_list:
 #     flux_scatter_data = t.create_flux_scatter(modelFilePath, model_type, model,transform=transform)
 #     t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
+flux_scatter_data,raw_data = t.create_flux_scatter(modelFilePath, model_type, model,transform=transform)
+t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
+fig = t.create_regular_plot(raw_data, ['NuX', 'aNuE', 'NuE'], f'{model_type} Truth Flux {transform}', ylab="Total Integrated Flux flavor/cm^2")
+# fig.savefig(f'./plots/{model_type} Truth Flux {transform}')
+# fig.show()
