@@ -56,8 +56,8 @@ def create_detector_event_scatter(
         SNOwGLoBES detector type. This detector must be available in $SNOWGLOBES
     model : snewpy.models
         The SNEWPY class abstraction of the model you're working with
-    deltat : astropy.unit, optional
-        Time bin width. The default is 1*u.s.
+    ntbins : int
+        Number of time bins to use for simulation
     d : int, optional
         simulated distance to progenitor. The default is 10.
     transformation : snewpy.transformation, optional
@@ -110,6 +110,8 @@ def create_detector_event_scatter(
                        smearing=smearing,skip_plots=True,SNOwGLoBESdir=snowglobes_dir)
     
     data_files = list(tables.keys())
+    # similar to the flux issues, these are read in reverse order
+    data_files.reverse()
     plotting_data = []
     processed_raw = []
     labeled_data_by_energy = []
@@ -266,8 +268,8 @@ def create_flux_scatter(modelFilePath,
         SNEWPY name of the model.
     model : snewpy.models
         The SNEWPY class abstraction of the model you’re working with.
-    deltat : astropy.Quantity(), optional
-        Time bin width. The default is 1*u.s.. The default is 1*u.s.
+    ntbins : int
+        Number of time bins for simulation
     d : int, optional
         Simulated distance to progenitor. The default is 10. The default is 10.
     transform : snewpy.transformation, optional

@@ -24,10 +24,10 @@ from snewpy.flavor_transformation import *
 import snewpy.snowglobes as snowglobes
 
 #simulation details
-modelFilePathBase = "./SNEWPY_models/OConnor_2015/"
-modelFilePath = modelFilePathBase + "M1_neutrinos.dat"
-model = OConnor_2015(modelFilePath)
-model_type="OConnor_2015"
+modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
+modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
+model = Nakazato_2013(modelFilePath)
+model_type="Nakazato_2013"
 ntbins = 20
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
