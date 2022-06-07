@@ -51,19 +51,28 @@ plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,mode
                                             data_calc=h_scint20kt)
 
 # now iterate over select time slices
-selected_bins = [0, 3, 10, 12, 18]
+selected_bins = [0,5,10,15,19] #np.arange(0,19,step=1)
 for bin_no in selected_bins:
     nue_plus_es_energy = np.add(np.add(l_data[bin_no]['nue_C12'],l_data[bin_no]['nue_C13']),l_data[bin_no]['e'])
     plt.plot(l_data[bin_no]['Energy'],nue_plus_es_energy,label="NuE+ES")
     plt.plot(l_data[bin_no]['Energy'],l_data[bin_no]['ibd'],label="ibd")
     plt.plot(l_data[bin_no]['Energy'],l_data[bin_no]['nc'],label="nc")
+    
+    # now also calculate event integrals
+    ibd_integral = np.sum(l_data[bin_no]['ibd'])
+    nue_plus_es_integral = np.sum(nue_plus_es_energy)
+    nc_integral = np.sum(l_data[bin_no]['nc'])
+    
     plt.xlabel('Energy (GeV)')
-    plt.ylabel('Flux at Earth in flavor/cm^2')
+    plt.ylabel('Event Rate')
     time_actual = (bin_no+1)-0.5 # in seconds, taken from the left side of the time bin
     title = f'{model_type} scint20kt t={time_actual} (left in s)'
     plt.title(title)
+    caption = f"Total Event Rate: {ibd_integral+nue_plus_es_integral+nc_integral}\nBin No: {bin_no}"
+    y_max = float(list(plt.gca().get_ylim())[1])
+    plt.text(0,-1*0.32*y_max,caption,ha='left')
     plt.legend()
-    plt.savefig(f'./plots/time_slices/{title}.png')
+    plt.savefig(f'./plots/time_slices/{title}.png',bbox_inches='tight')
     plt.show()
 
 
