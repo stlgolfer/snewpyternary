@@ -81,7 +81,8 @@ plot_data, raw_data, l_data  = t.create_detector_event_scatter(modelFilePath,mod
                                             data_calc=h_ar40kt)
 t.create_default_detector_plot(plot_data,
                                 ['nue','nuebar','nc'],
-                                '{model} {detector} {transform}'.format(model=model_type,detector='ar40kt',transform=transform))
+                                '{model} {detector} {transform} Ternary'.format(model=model_type,detector='ar40kt',transform=transform),
+                                save=True)
 t.create_regular_plot(raw_data, ['nue','nuebar','nc'],
                       '{model} {detector} {transform}'.format(model=model_type,detector='ar40kt',transform=transform),
                       ylab="Event Counts",save=True)
@@ -114,4 +115,4 @@ t.create_regular_plot(raw_data,
 #     t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
 flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, ntbins=ntbins, transform=transform)
 t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
-fig = t.create_regular_plot(raw_data, ['NuX', 'aNuE', 'NuE'], f'{model_type} Truth Flux {transform}', ylab="Total Integrated Flux flavor/cm^2")
+t.create_regular_plot(raw_data, ['NuX', 'aNuE', 'NuE'], f'{model_type} Truth Flux {transform}', ylab="Total Integrated Flux flavor/cm^2")

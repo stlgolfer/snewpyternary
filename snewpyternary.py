@@ -53,7 +53,7 @@ def create_detector_event_scatter(
         ntbins,
         d=10,
         transformation="NoTransformation",
-        smearing=False,
+        smearing=True,
         weighting="weighted"
         ):
     '''
@@ -226,10 +226,10 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
 
     tax.show()
     if save:
-        tax.savefig('./plots/' + plot_title)
+        tax.savefig(f'./plots/{plot_title}')
     return figure, tax
 
-def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=False):
+def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=True):
     '''
     Creates a matplotlib scatter plot of simulated, un-normalized data
     from the ternary scatter plot generators
@@ -276,8 +276,7 @@ def create_flux_scatter(modelFilePath,
                         model,
                         ntbins,
                         d=10,
-                        transform="NoTransformation",
-                        smearing=False):
+                        transform="NoTransformation"):
     '''
     Similar to create_detector_event_scatter, although here we are just plotting
     the truth fluxes--the fluxes at the progenitor. A time series is created
@@ -299,8 +298,6 @@ def create_flux_scatter(modelFilePath,
         Simulated distance to progenitor. The default is 10. The default is 10.
     transform : snewpy.transformation, optional
         Flavor transformation prescription. The default is “NoTransformation”. The default is "NoTransformation".
-    smearing : bool, optional
-        Use detector smearing matrix. The default is True. The default is False.
 
     Returns
     -------
@@ -394,5 +391,6 @@ def create_default_flux_plot(plotting_data,plot_title,save=True):
     tax.get_axes().axis('off') # disables regular matlab plot axes
 
     tax.show()
-    tax.savefig('./plots/' + plot_title)
+    if save:
+        tax.savefig(f'./plots/{plot_title}')
     return figure, tax
