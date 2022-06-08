@@ -12,6 +12,7 @@ from snewpy.flavor_transformation import NoTransformation # just use NoTransform
 import os
 import ternary
 import math
+from functools import cmp_to_key
 
 import io
 import tarfile
@@ -20,6 +21,28 @@ from tempfile import TemporaryDirectory
 
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
+
+def sort_data_file_names(f):
+    '''
+    Key-sorting function for sorting snowglobes data_files
+
+    Parameters
+    ----------
+    f : the key
+        The key from the file_name collection
+
+    Returns
+    -------
+    int
+        returns the xx of the tbinxx sequence in the file name
+
+    '''
+    splits = str(f).split('.')
+    for s in splits:
+        if 'tbin' in s:
+            #print(s[4:])
+            return int(s[4:])
+    return 0
 
 def create_detector_event_scatter(
         modelFilePath,
@@ -110,8 +133,10 @@ def create_detector_event_scatter(
                        smearing=smearing,skip_plots=True,SNOwGLoBESdir=snowglobes_dir)
     
     data_files = list(tables.keys())
-    # similar to the flux issues, these are read in reverse order
-    data_files.reverse()
+    # similar to the flux issues, these are read in reverse order, but let's
+    # make sure that they're in the correct order
+    data_files.sort(key=sort_data_file_names,reverse=False)
+    
     plotting_data = []
     processed_raw = []
     labeled_data_by_energy = []
@@ -302,6 +327,7 @@ def create_flux_scatter(modelFilePath,
             tar.extractall(tempdir)
 
         flux_files = list(Path(tempdir).glob('*.dat'))
+        flux_files.sort(key=sort_data_file_names)
         for flux in flux_files:
             fluence_data.append(np.loadtxt(str(flux),unpack=True))
             print('NEW FLUENCE\n================\n'+str(flux)+'\n')
@@ -313,7 +339,7 @@ def create_flux_scatter(modelFilePath,
     # now that we have all the fluences loaded per time bin, we now need to
     # integrate the fluence to get the total flux
     # data comes out backwards, so first need to flip it
-    fluence_data.reverse() # now they're in the correct time sequence
+    #fluence_data.reverse() # now they're in the correct time sequence
     scale = 100
     use_log = False
     plotting_data = []

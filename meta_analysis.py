@@ -73,7 +73,6 @@ t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
                       '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
                       ylab="Event Counts",save=True)
 
-
 # create argon detector analysis
 plot_data, raw_data, l_data  = t.create_detector_event_scatter(modelFilePath,model_type,
                                             'ar40kt',
@@ -101,12 +100,6 @@ t.create_regular_plot(raw_data,
                       '{model} {detector} {transform}'.format(model=model_type,detector='wc100kt30prct',transform=transform),
                       ylab="Event Counts",save=True)
 
-
-# for saving figures with captions
-# fig = tax.get_figure()
-# fig.text(x=0.5,y=0.001,s="Some subtext goes here")
-# fig.savefig(fname='./plots/test.png')
-
 # for d in detector_list:
 #     # for each detector config, simulate all types of transformations
 #     for transform in transform_list:
@@ -119,8 +112,6 @@ t.create_regular_plot(raw_data,
 # for transform in transform_list:
 #     flux_scatter_data = t.create_flux_scatter(modelFilePath, model_type, model,transform=transform)
 #     t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
-flux_scatter_data,raw_data = t.create_flux_scatter(modelFilePath, model_type, model, ntbins=ntbins, transform=transform)
+flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, ntbins=ntbins, transform=transform)
 t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
 fig = t.create_regular_plot(raw_data, ['NuX', 'aNuE', 'NuE'], f'{model_type} Truth Flux {transform}', ylab="Total Integrated Flux flavor/cm^2")
-# fig.savefig(f'./plots/{model_type} Truth Flux {transform}')
-# fig.show()
