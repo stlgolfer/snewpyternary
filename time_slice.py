@@ -22,39 +22,35 @@ import tarfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import snewpyternary as t
+import data_handlers as handlers
 
 #simulation details
 modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-ntbins= 20
+deltat=1*u.s
+detector = 'wc100kt30prct'
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
 print(os.environ['SNOWGLOBES'])
-smearing = True
+smearing = 'smeared'
 model
-
-def h_scint20kt(data):
-    # must return a list of a, b, c
-    ibd = np.sum(data['ibd'])
-    nue_plus_es=np.sum(data['nue_C12'])+np.sum(data['nue_C13']+data['e'])
-    nc = np.sum(data['nc'])
-    return [ibd,nue_plus_es,nc]
+print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time)-1]}')
 
 transform = 'NoTransformation'
 # create scintillator detector analysis
 plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
-                                            'scint20kt',
+                                            detector,
                                             model,
-                                            ntbins=ntbins,
-                                            data_calc=h_scint20kt)
+                                            deltat=deltat,
+                                            data_calc=handlers.h_wc100kt30prct,smearing=smearing)
 
 # now iterate over select time slices
-selected_bins = [0,5,10,15,19] #np.arange(0,19,step=1)
+selected_bins = [0,5,10,15,19] #np.arange(0,19,step=1)#np.arange(0,model.time[-1],step=1)
 for bin_no in selected_bins:
-    nue_plus_es_energy = np.add(np.add(l_data[bin_no]['nue_C12'],l_data[bin_no]['nue_C13']),l_data[bin_no]['e'])
+    nue_plus_es_energy = np.add(l_data[bin_no]['nue_O16'],l_data[bin_no]['e'])
     plt.plot(l_data[bin_no]['Energy'],nue_plus_es_energy,label="NuE+ES")
     plt.plot(l_data[bin_no]['Energy'],l_data[bin_no]['ibd'],label="ibd")
     plt.plot(l_data[bin_no]['Energy'],l_data[bin_no]['nc'],label="nc")
@@ -67,7 +63,7 @@ for bin_no in selected_bins:
     plt.xlabel('Energy (GeV)')
     plt.ylabel('Event Rate')
     time_actual = (bin_no+1)-0.5 # in seconds, taken from the left side of the time bin
-    title = f'{model_type} scint20kt t={time_actual} (left in s)'
+    title = f'{model_type} {detector} t={time_actual} (left in s)'
     plt.title(title)
     caption = f"Total Event Rate: {ibd_integral+nue_plus_es_integral+nc_integral}\nBin No: {bin_no}"
     y_max = float(list(plt.gca().get_ylim())[1])
@@ -80,8 +76,8 @@ for bin_no in selected_bins:
 # now we take a time slice and plot its energy
 figure, tax = t.create_default_detector_plot(plot_data,
                                               ['ibd','nue+es','nc'],
-                                              '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
+                                              '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
                                               save=True)
 t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
-                      '{model} {detector} {transform}'.format(model=model_type,detector='scint20kt',transform=transform),
+                      '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
                       ylab="Event Counts",save=True)

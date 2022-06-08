@@ -50,10 +50,10 @@ def create_detector_event_scatter(
         detector,
         model,
         data_calc,
-        ntbins,
+        deltat,
         d=10,
         transformation="NoTransformation",
-        smearing=True,
+        smearing="smeared",
         weighting="weighted"
         ):
     '''
@@ -79,14 +79,14 @@ def create_detector_event_scatter(
         SNOwGLoBES detector type. This detector must be available in $SNOWGLOBES
     model : snewpy.models
         The SNEWPY class abstraction of the model you're working with
-    ntbins : int
-        Number of time bins to use for simulation
+    deltat : astropy.units
+        Time in each time bin
     d : int, optional
         simulated distance to progenitor. The default is 10.
     transformation : snewpy.transformation, optional
         Flavor transformation prescription. The default is "NoTransformation".
-    smearing : bool, optional
-        Use detector smearing matrix. The default is True.
+    smearing : str, optional
+        Use detector smearing matrix. Either 'smeared' or 'unsmeared'. The default is 'smeared'.
     weighting : str "weighted" or "unweighted", optional
         Use detector data weights. The default is "weighted".
     data_calc : def
@@ -112,7 +112,7 @@ def create_detector_event_scatter(
         transformation_type=transformation,
         d=d,
         output_filename=snowglobes_out_name,
-        ntbins=ntbins
+        deltat=deltat
         )
     print("NEW SNOwGLoBES Simulation\n=============================")
     print("Using detector schema: " + detector)
@@ -153,35 +153,40 @@ def create_detector_event_scatter(
         # need to process the filename. though 'weighted' and 'unweighted' will
         # both have the word 'weighted' in them, so we have to split on '_'
         # and then split again so we can extract the last word of the file name
+        print(file)
         title_split = file.split('_')
-        #print(title_split[len(title_split)-1].split('.')[0])
-        if (title_split[len(title_split)-1].split('.')[0]==weighting):
-            # now fetch the time bin's energy chart
-            e_bins = tables.get(file)
-            
-            if showing_columns:
-                header = list(e_bins.get("header").split(" ")) # header in dictionary
-                print(header)
-                showing_columns = False
-            
-            # first we need to get the points by iterating through the points
-            #tables.get(file).data[]
-            data = e_bins.get("data") # 2D array for data
-            
-            dict_data = {}
-            # build dictionary of available channels
-            for i in range(len(header)):
-                dict_data[header[i]]=data[i]
-            results = data_calc(dict_data)
-            labeled_data_by_energy.append(dict_data)
-            a= results[0]
-            b=results[1]
-            c=results[2]
-            processed_raw.append((results[0],results[1],results[2]))
-            
-            total = a+b+c
-            plotting_data.append((100*a/total,100*b/total,100*c/total))
-            
+        if title_split[0] == 'Collated':
+            file_weighting = title_split[len(title_split)-1].split('.')[0] # weighting info from the file name itselft
+            file_smearing = title_split[-2]
+            # so apparently, snowglobes also spits out smeared, unsmeared, unweighted, and weighted
+            if (file_weighting==weighting and file_smearing==smearing):
+                #print(f'Now file_weighting)
+                # now fetch the time bin's energy chart
+                e_bins = tables.get(file)
+                
+                if showing_columns:
+                    header = list(e_bins.get("header").split(" ")) # header in dictionary
+                    print(header)
+                    showing_columns = False
+                
+                # first we need to get the points by iterating through the points
+                #tables.get(file).data[]
+                data = e_bins.get("data") # 2D array for data
+                
+                dict_data = {}
+                # build dictionary of available channels
+                for i in range(len(header)):
+                    dict_data[header[i]]=data[i]
+                results = data_calc(dict_data)
+                labeled_data_by_energy.append(dict_data)
+                a= results[0]
+                b=results[1]
+                c=results[2]
+                processed_raw.append((results[0],results[1],results[2]))
+                
+                total = a+b+c
+                plotting_data.append((100*a/total,100*b/total,100*c/total))
+                
     # now retrieve header files
     #header_info = tables.get(data_files[1]).get("header").split(" ")
             
@@ -274,7 +279,7 @@ def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=True):
 def create_flux_scatter(modelFilePath,
                         modeltype,
                         model,
-                        ntbins,
+                        deltat,
                         d=10,
                         transform="NoTransformation"):
     '''
@@ -292,10 +297,10 @@ def create_flux_scatter(modelFilePath,
         SNEWPY name of the model.
     model : snewpy.models
         The SNEWPY class abstraction of the model you’re working with.
-    ntbins : int
-        Number of time bins for simulation
     d : int, optional
         Simulated distance to progenitor. The default is 10. The default is 10.
+    deltat : astropy.units
+        Time in each time bin
     transform : snewpy.transformation, optional
         Flavor transformation prescription. The default is “NoTransformation”. The default is "NoTransformation".
 
@@ -316,7 +321,7 @@ def create_flux_scatter(modelFilePath,
         model_type=modeltype,
         transformation_type=transform,
         d=d,
-        ntbins=ntbins
+        deltat=deltat
         )
     fluence_data = []
     with TemporaryDirectory(prefix='snowglobes') as tempdir:
