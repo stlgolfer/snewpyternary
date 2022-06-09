@@ -234,7 +234,15 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
         tax.savefig(f'./plots/{plot_title}')
     return figure, tax
 
-def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=True):
+def create_regular_plot(plot_data,
+                        axes_titles,
+                        plot_title,
+                        ylab,
+                        xlab="Time Bin",
+                        x_axis=None,
+                        use_x_log=False,
+                        use_y_log=False,
+                        save=True):
     '''
     Creates a matplotlib scatter plot of simulated, un-normalized data
     from the ternary scatter plot generators
@@ -249,6 +257,8 @@ def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=True):
         Name of the plot
     ylab : str
         The y-axis label
+    use_x_log : bool
+        On the x-axis, should it plot in log mode?
     save : bool
         save the plot or not to './plots'
 
@@ -264,12 +274,21 @@ def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=True):
         b.append(list(time_bin)[1])
         c.append(list(time_bin)[2])
     time_axis = np.arange(1,len(a)+1,step=1)
-    plt.plot(time_axis,a,label=axes_titles[0])
-    plt.plot(time_axis,b,label=axes_titles[1])
-    plt.plot(time_axis,c,label=axes_titles[2])
+    if x_axis == None:
+        plt.plot(time_axis,a,label=axes_titles[0])
+        plt.plot(time_axis,b,label=axes_titles[1])
+        plt.plot(time_axis,c,label=axes_titles[2])
+    else:
+        plt.plot(x_axis,a,label=axes_titles[0])
+        plt.plot(x_axis,b,label=axes_titles[1])
+        plt.plot(x_axis,c,label=axes_titles[2])
     plt.title(label=plot_title)
-    plt.xlabel("Time Bin")
+    plt.xlabel(xlab)
     plt.ylabel(ylab)
+    if use_x_log:
+        plt.xscale('log')
+    if use_y_log:
+        plt.yscale('log')
     plt.legend()
     if save:
         plt.savefig(f'./plots/{plot_title}')
