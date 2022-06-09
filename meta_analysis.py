@@ -20,6 +20,7 @@ import ternary
 import math
 from snewpy.flavor_transformation import *
 import data_handlers as handlers
+from multiprocessing import Process
 
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
@@ -29,14 +30,14 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-step = 0.1
+step = 0.01
 deltat=step*u.s
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
 print(os.environ['SNOWGLOBES'])
 smearing = 'smeared'
-model
+multithreading = True # only use this when you don't need output
 print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time)-1]}')
 
 # pulled the following from snowglobes-snewpy integration code
@@ -50,7 +51,8 @@ detectors = {
 
 transform = 'NoTransformation'
 
-for detector in detectors.keys():
+# let's do some parallel processsing to speed things up
+def process_detector(detector):
     plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
                                                 detector,
                                                 model,
@@ -76,6 +78,15 @@ for detector in detectors.keys():
         use_y_log=False
         )
 
+if multithreading==True:
+    for detector in detectors.keys():
+        proc = Process(target=process_detector, args=[detector])
+        proc.start()
+        proc.join()
+else:
+    for detector in detectors.keys():
+        process_detector(detector)
+
 # create flux plot as well
 # for transform in transform_list:
 #     flux_scatter_data = t.create_flux_scatter(modelFilePath, model_type, model,transform=transform)
@@ -88,7 +99,7 @@ t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(
 t.create_regular_plot(
     plot_data=raw_data,
     x_axis=time_bins,
-    axes_titles=['NuX', 'aNuE', 'NuE'],
+    axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
     plot_title=f'{model_type} Truth Flux {transform}',
     ylab="Total Integrated Flux flavor/cm^2",
     xlab="Right Time in Coordinate (s)",
