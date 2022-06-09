@@ -29,7 +29,7 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-step = 0.5
+step = 0.1
 deltat=step*u.s
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
@@ -63,17 +63,17 @@ for detector in detectors.keys():
     # create left-point time bins
     time_bins = []
     for point in range(len(raw_data)):
-        time_bins.append((point*step)-0.5)
+        time_bins.append((point*step)+0.5)
     t.create_regular_plot(
         plot_data=raw_data,
         axes_titles=['ibd','nue+es','nc'],
-        plot_title=f'{model_type} {detector} {transform} Double Logged',
+        plot_title=f'{model_type} {detector} {transform}',
         ylab="Event Counts",
-        xlab="Left Time in Coordinate (s)",
+        xlab="Right Time in Coordinate (s)",
         x_axis=time_bins,
         save=True,
         use_x_log=True,
-        use_y_log=True
+        use_y_log=False
         )
 
 # create flux plot as well
@@ -81,5 +81,15 @@ for detector in detectors.keys():
 #     flux_scatter_data = t.create_flux_scatter(modelFilePath, model_type, model,transform=transform)
 #     t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
 flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, deltat=deltat, transform=transform)
+time_bins = []
+for point in range(len(raw_data)):
+    time_bins.append((point*step)+0.5)
 t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
-t.create_regular_plot(raw_data, ['NuX', 'aNuE', 'NuE'], f'{model_type} Truth Flux {transform}', ylab="Total Integrated Flux flavor/cm^2",use_x_log=True)
+t.create_regular_plot(
+    plot_data=raw_data,
+    x_axis=time_bins,
+    axes_titles=['NuX', 'aNuE', 'NuE'],
+    plot_title=f'{model_type} Truth Flux {transform}',
+    ylab="Total Integrated Flux flavor/cm^2",
+    xlab="Right Time in Coordinate (s)",
+    use_x_log=True)
