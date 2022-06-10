@@ -8,12 +8,10 @@ Used for testing/creating caching features
 
 import os
 import json
+import numpy as np
 
 lock_file_template = {
-    'available': {
-        'detector_cache':False,
-        'flux_cache':False
-        }
+    'fnames': set()
     }
 
 def load_lock_file():
@@ -34,26 +32,25 @@ def lock(data):
     with open('./.st_cache/cache.lock','w') as lock_file:
         lock_file.write(json.dumps(data))
         
-def cache(fname, plot_data,raw_data,l_data):
+def cache(fname, data_arr):
     # check if there is a lock file
     lock_file = load_lock_file()
-    # overwrite current data and update lock file
-    organized = {
-        'plot_data': plot_data,
-        'raw_data': raw_data,
-        'l_data': l_data
-        }
-    with open(f'./.st_cache/{fname}.json','w') as detector_file:
-        detector_file.write(json.dumps(organized))
+    for data in data_arr:
+        with open(f'./.st_cache/{data}.dat','w') as file:
+            np.save(file,data)
+            lock_file['fnames'].add(data)
     # update lock file
-    lock_file['available'][f'{fname}_cache'] = True
     lock(lock_file)
+
+def in_cache(name):
+    lock_file = load_lock_file()
+    return name in lock_file['available']
 
 def load_cache(fname):
     lock_file = load_lock_file()
-    if lock_file['available'][f'{fname}_cache']==True:
-        with open(f'./.st_cache/{fname}.json','r') as detector_file:
-            return json.load(detector_file)
+    if in_cache(fname):
+        with open(f'./.st_cache/{fname}.dat','r') as file:
+            return np.load(file)
     else:
         # data was not available
         return None
