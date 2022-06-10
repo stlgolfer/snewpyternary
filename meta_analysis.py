@@ -31,7 +31,7 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-step = 1
+step = 5
 deltat=step*u.s
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
@@ -52,18 +52,20 @@ transform = 'NoTransformation'
 # let's do some parallel processsing to speed things up
 def process_detector(detector):
     plot_data, raw_data, l_data = None,None,None
-    if cache.in_cache('plot_data'):
+    if not cache.in_cache('plot_data'):
         plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
                                                     detector,
                                                     model,
                                                     deltat=deltat,
                                                     data_calc=profiles[detector]['handler'])
-        cache.cache('detector', plot_data, raw_data, l_data)
+        cache.cache('plot_data', plot_data)
+        cache.cache('raw_data', raw_data)
+        cache.cache('l_data', l_data)
     else:
         # use cached data
-        plot_data = data_json['plot_data']
-        raw_data = data_json['raw_data']
-        l_data = data_json['l_data']
+        plot_data = cache.load_cache('plot_data')
+        raw_data = cache.load_cache('raw_data')
+        l_data = cache.load_cache('l_data')
     
     figure, tax = t.create_default_detector_plot(plot_data,
                                                   profiles[detector]['axes'](),

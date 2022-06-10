@@ -11,7 +11,7 @@ import json
 import numpy as np
 
 lock_file_template = {
-    'fnames': set()
+    'fnames': []
     }
 
 def load_lock_file():
@@ -32,25 +32,25 @@ def lock(data):
     with open('./.st_cache/cache.lock','w') as lock_file:
         lock_file.write(json.dumps(data))
         
-def cache(fname, data_arr):
+def cache(fname, data):
     # check if there is a lock file
     lock_file = load_lock_file()
-    for data in data_arr:
-        with open(f'./.st_cache/{data}.dat','w') as file:
-            np.save(file,data)
-            lock_file['fnames'].add(data)
+    path = f'./.st_cache/{fname}'
+    np.save(path,data)
+    lock_file['fnames'].append(fname)
+    # with open(path,'w') as file:
+        
     # update lock file
     lock(lock_file)
 
 def in_cache(name):
     lock_file = load_lock_file()
-    return name in lock_file['available']
+    return name in lock_file['fnames']
 
 def load_cache(fname):
     lock_file = load_lock_file()
     if in_cache(fname):
-        with open(f'./.st_cache/{fname}.dat','r') as file:
-            return np.load(file)
+        return np.load(f'./.st_cache/{fname}.npy',allow_pickle=True)
     else:
         # data was not available
         return None
