@@ -31,7 +31,7 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-step = 5
+step = 0.01
 deltat=step*u.s
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
@@ -74,17 +74,20 @@ def process_detector(detector):
     # create left-point time bins
     time_bins = []
     for point in range(len(raw_data)):
-        time_bins.append((point*step)+0.5)
+        coordinate = (point*step)+0.5
+        time_bins.append(coordinate)
+        #if coordinate < 1: # this is for limiting the time domain
+            
     t.create_regular_plot(
-        plot_data=raw_data,
+        plot_data=raw_data[:len(time_bins)],
         axes_titles=profiles[detector]['axes'](),
         plot_title=f'{model_type} {detector} {transform}',
         ylab="Event Counts",
-        xlab="Right Time in Coordinate (s)",
+        xlab="Right Time Bin Coordinate (s)",
         x_axis=time_bins,
         save=True,
         use_x_log=True,
-        use_y_log=False
+        use_y_log=True
         )
 process_detector('ar40kt')
 

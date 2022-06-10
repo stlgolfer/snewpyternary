@@ -287,12 +287,12 @@ def create_regular_plot(plot_data,
     plt.ylabel(ylab)
     
     # set actual max y limit manually
-    a_max = np.max(a)
-    b_max = np.max(b)
-    c_max = np.max(c)
-    ymax = np.max([a_max, b_max, c_max])
-    plt.ylim(top=ymax)
-    print(f'{a_max} {b_max} {c_max} {ymax}')
+    # a_max = np.max(a)
+    # b_max = np.max(b)
+    # c_max = np.max(c)
+    # ymax = np.max([a_max, b_max, c_max])
+    # plt.ylim(top=ymax)
+    # print(f'{a_max} {b_max} {c_max} {ymax}')
     
     if use_x_log:
         plt.xscale('log')

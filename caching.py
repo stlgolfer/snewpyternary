@@ -9,6 +9,7 @@ Used for testing/creating caching features
 import os
 import json
 import numpy as np
+import shutil
 
 lock_file_template = {
     'fnames': []
@@ -54,3 +55,5 @@ def load_cache(fname):
     else:
         # data was not available
         return None
+def delete_cache():
+    shutil.rmtree('./.st_cache')
