@@ -56,7 +56,4 @@ def load_cache(fname):
             return json.load(detector_file)
     else:
         # data was not available
-        return None       
-    
-cache('detector',[0,4],[1,2],[3,4])
-detector_cache = load_cache('detector')
+        return None
