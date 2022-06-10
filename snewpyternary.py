@@ -54,8 +54,7 @@ def create_detector_event_scatter(
         d=10,
         transformation="NoTransformation",
         smearing="smeared",
-        weighting="weighted",
-        regenerate=True
+        weighting="weighted"
         ):
     '''
     Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
