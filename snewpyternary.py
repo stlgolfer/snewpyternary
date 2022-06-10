@@ -12,6 +12,7 @@ from snewpy.flavor_transformation import NoTransformation # just use NoTransform
 import os
 import ternary
 import math
+from functools import cmp_to_key
 
 import io
 import tarfile
@@ -21,16 +22,38 @@ from tempfile import TemporaryDirectory
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
 
+def sort_data_file_names(f):
+    '''
+    Key-sorting function for sorting snowglobes data_files
+
+    Parameters
+    ----------
+    f : the key
+        The key from the file_name collection
+
+    Returns
+    -------
+    int
+        returns the xx of the tbinxx sequence in the file name
+
+    '''
+    splits = str(f).split('.')
+    for s in splits:
+        if 'tbin' in s:
+            #print(s[4:])
+            return int(s[4:])
+    return 0
+
 def create_detector_event_scatter(
         modelFilePath,
         model_type,
         detector,
         model,
         data_calc,
-        deltat=1*u.s,
+        deltat,
         d=10,
         transformation="NoTransformation",
-        smearing=False,
+        smearing="smeared",
         weighting="weighted"
         ):
     '''
@@ -56,25 +79,25 @@ def create_detector_event_scatter(
         SNOwGLoBES detector type. This detector must be available in $SNOWGLOBES
     model : snewpy.models
         The SNEWPY class abstraction of the model you're working with
-    deltat : astropy.unit, optional
-        Time bin width. The default is 1*u.s.
+    deltat : astropy.units
+        Time in each time bin
     d : int, optional
         simulated distance to progenitor. The default is 10.
     transformation : snewpy.transformation, optional
         Flavor transformation prescription. The default is "NoTransformation".
-    smearing : bool, optional
-        Use detector smearing matrix. The default is True.
+    smearing : str, optional
+        Use detector smearing matrix. Either 'smeared' or 'unsmeared'. The default is 'smeared'.
     weighting : str "weighted" or "unweighted", optional
         Use detector data weights. The default is "weighted".
     data_calc : def
         Data calculation algorithm, since not all detector channel data is
         uniform. Passes a dictionary of available detector channels with their
-        summed event rates in a given time bin
+        event rates in a given time bin organized by energy bin
 
     Returns
     -------
-    list, list
-        The ternary scatter plot data and the unnormalized data
+    list, list, list
+        The ternary scatter plot data, unnormalized data, and 
 
     '''
     
@@ -110,8 +133,13 @@ def create_detector_event_scatter(
                        smearing=smearing,skip_plots=True,SNOwGLoBESdir=snowglobes_dir)
     
     data_files = list(tables.keys())
+    # similar to the flux issues, these are read in reverse order, but let's
+    # make sure that they're in the correct order
+    data_files.sort(key=sort_data_file_names,reverse=False)
+    
     plotting_data = []
     processed_raw = []
+    labeled_data_by_energy = []
     
     '''
     so what we have to do is go through each time bin, sum each particle's event
@@ -122,36 +150,47 @@ def create_detector_event_scatter(
     showing_columns = True
     for file in data_files: # which effectively goes through each time bin
         # we want to only have the ones that end in 'unweighted' for now
-        if (weighting in file):
-            # now fetch the time bin's energy chart
-            e_bins = tables.get(file)
-            
-            if showing_columns:
-                header = list(e_bins.get("header").split(" ")) # header in dictionary
-                print(header)
-                showing_columns = False
-            
-            # first we need to get the points by iterating through the points
-            #tables.get(file).data[]
-            data = e_bins.get("data") # 2D array for data
-            
-            dict_data = {}
-            # build dictionary of available channels
-            for i in range(len(header)):
-                dict_data[header[i]]=np.sum(data[i])
-            results = data_calc(dict_data)
-            a= results[0]
-            b=results[1]
-            c=results[2]
-            processed_raw.append((results[0],results[1],results[2]))
-            
-            total = a+b+c
-            plotting_data.append((100*a/total,100*b/total,100*c/total))
-            
+        # need to process the filename. though 'weighted' and 'unweighted' will
+        # both have the word 'weighted' in them, so we have to split on '_'
+        # and then split again so we can extract the last word of the file name
+        print(file)
+        title_split = file.split('_')
+        if title_split[0] == 'Collated':
+            file_weighting = title_split[len(title_split)-1].split('.')[0] # weighting info from the file name itselft
+            file_smearing = title_split[-2]
+            # so apparently, snowglobes also spits out smeared, unsmeared, unweighted, and weighted
+            if (file_weighting==weighting and file_smearing==smearing):
+                #print(f'Now file_weighting)
+                # now fetch the time bin's energy chart
+                e_bins = tables.get(file)
+                
+                if showing_columns:
+                    header = list(e_bins.get("header").split(" ")) # header in dictionary
+                    print(header)
+                    showing_columns = False
+                
+                # first we need to get the points by iterating through the points
+                #tables.get(file).data[]
+                data = e_bins.get("data") # 2D array for data
+                
+                dict_data = {}
+                # build dictionary of available channels
+                for i in range(len(header)):
+                    dict_data[header[i]]=data[i]
+                results = data_calc(dict_data)
+                labeled_data_by_energy.append(dict_data)
+                a= results[0]
+                b=results[1]
+                c=results[2]
+                processed_raw.append((results[0],results[1],results[2]))
+                
+                total = a+b+c
+                plotting_data.append((100*a/total,100*b/total,100*c/total))
+                
     # now retrieve header files
     #header_info = tables.get(data_files[1]).get("header").split(" ")
             
-    return plotting_data, processed_raw
+    return plotting_data, processed_raw,labeled_data_by_energy
 
 def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     '''
@@ -192,10 +231,18 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
 
     tax.show()
     if save:
-        tax.savefig('./plots/' + plot_title)
+        tax.savefig(f'./plots/{plot_title}')
     return figure, tax
 
-def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=False):
+def create_regular_plot(plot_data,
+                        axes_titles,
+                        plot_title,
+                        ylab,
+                        xlab="Time Bin",
+                        x_axis=None,
+                        use_x_log=False,
+                        use_y_log=False,
+                        save=True):
     '''
     Creates a matplotlib scatter plot of simulated, un-normalized data
     from the ternary scatter plot generators
@@ -210,6 +257,8 @@ def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=False):
         Name of the plot
     ylab : str
         The y-axis label
+    use_x_log : bool
+        On the x-axis, should it plot in log mode?
     save : bool
         save the plot or not to './plots'
 
@@ -225,12 +274,30 @@ def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=False):
         b.append(list(time_bin)[1])
         c.append(list(time_bin)[2])
     time_axis = np.arange(1,len(a)+1,step=1)
-    plt.plot(time_axis,a,label=axes_titles[0])
-    plt.plot(time_axis,b,label=axes_titles[1])
-    plt.plot(time_axis,c,label=axes_titles[2])
+    if x_axis == None:
+        plt.plot(time_axis,a,label=axes_titles[0])
+        plt.plot(time_axis,b,label=axes_titles[1])
+        plt.plot(time_axis,c,label=axes_titles[2])
+    else:
+        plt.plot(x_axis,a,label=axes_titles[0])
+        plt.plot(x_axis,b,label=axes_titles[1])
+        plt.plot(x_axis,c,label=axes_titles[2])
     plt.title(label=plot_title)
-    plt.xlabel("Time Bin")
+    plt.xlabel(xlab)
     plt.ylabel(ylab)
+    
+    # set actual max y limit manually
+    a_max = np.max(a)
+    b_max = np.max(b)
+    c_max = np.max(c)
+    ymax = np.max([a_max, b_max, c_max])
+    plt.ylim(top=ymax)
+    print(f'{a_max} {b_max} {c_max} {ymax}')
+    
+    if use_x_log:
+        plt.xscale('log')
+    if use_y_log:
+        plt.yscale('log')
     plt.legend()
     if save:
         plt.savefig(f'./plots/{plot_title}')
@@ -240,10 +307,9 @@ def create_regular_plot(plot_data,axes_titles,plot_title,ylab,save=False):
 def create_flux_scatter(modelFilePath,
                         modeltype,
                         model,
-                        deltat=1*u.s,
+                        deltat,
                         d=10,
-                        transform="NoTransformation",
-                        smearing=False):
+                        transform="NoTransformation"):
     '''
     Similar to create_detector_event_scatter, although here we are just plotting
     the truth fluxes--the fluxes at the progenitor. A time series is created
@@ -259,14 +325,12 @@ def create_flux_scatter(modelFilePath,
         SNEWPY name of the model.
     model : snewpy.models
         The SNEWPY class abstraction of the model you’re working with.
-    deltat : astropy.Quantity(), optional
-        Time bin width. The default is 1*u.s.. The default is 1*u.s.
     d : int, optional
         Simulated distance to progenitor. The default is 10. The default is 10.
+    deltat : astropy.units
+        Time in each time bin
     transform : snewpy.transformation, optional
         Flavor transformation prescription. The default is “NoTransformation”. The default is "NoTransformation".
-    smearing : bool, optional
-        Use detector smearing matrix. The default is True. The default is False.
 
     Returns
     -------
@@ -293,6 +357,7 @@ def create_flux_scatter(modelFilePath,
             tar.extractall(tempdir)
 
         flux_files = list(Path(tempdir).glob('*.dat'))
+        flux_files.sort(key=sort_data_file_names)
         for flux in flux_files:
             fluence_data.append(np.loadtxt(str(flux),unpack=True))
             print('NEW FLUENCE\n================\n'+str(flux)+'\n')
@@ -304,7 +369,7 @@ def create_flux_scatter(modelFilePath,
     # now that we have all the fluences loaded per time bin, we now need to
     # integrate the fluence to get the total flux
     # data comes out backwards, so first need to flip it
-    fluence_data.reverse() # now they're in the correct time sequence
+    #fluence_data.reverse() # now they're in the correct time sequence
     scale = 100
     use_log = False
     plotting_data = []
@@ -359,5 +424,6 @@ def create_default_flux_plot(plotting_data,plot_title,save=True):
     tax.get_axes().axis('off') # disables regular matlab plot axes
 
     tax.show()
-    tax.savefig('./plots/' + plot_title)
+    if save:
+        tax.savefig(f'./plots/{plot_title}')
     return figure, tax
