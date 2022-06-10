@@ -44,11 +44,7 @@ print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time
 flavor_transformation_dict = {'NoTransformation': NoTransformation(), 'AdiabaticMSW_NMO': AdiabaticMSW(mh=MassHierarchy.NORMAL), 'AdiabaticMSW_IMO': AdiabaticMSW(mh=MassHierarchy.INVERTED), 'NonAdiabaticMSWH_NMO': NonAdiabaticMSWH(mh=MassHierarchy.NORMAL), 'NonAdiabaticMSWH_IMO': NonAdiabaticMSWH(mh=MassHierarchy.INVERTED), 'TwoFlavorDecoherence': TwoFlavorDecoherence(), 'ThreeFlavorDecoherence': ThreeFlavorDecoherence(), 'NeutrinoDecay_NMO': NeutrinoDecay(mh=MassHierarchy.NORMAL), 'NeutrinoDecay_IMO': NeutrinoDecay(mh=MassHierarchy.INVERTED)}
 transform_list = list(flavor_transformation_dict.keys())
 
-detectors = {
-    'scint20kt':handlers.h_scint20kt,
-    'ar40kt':handlers.h_ar40kt,
-    'wc100kt30prct':handlers.h_wc100kt30prct
-    }
+profiles = handlers.build_detector_profiles()
 
 transform = 'NoTransformation'
 
@@ -58,9 +54,9 @@ def process_detector(detector):
                                                 detector,
                                                 model,
                                                 deltat=deltat,
-                                                data_calc=detectors[detector])
+                                                data_calc=profiles[detector]['handler'])
     figure, tax = t.create_default_detector_plot(plot_data,
-                                                  ['ibd','nue+es','nc'],
+                                                  profiles[detector]['axes'](),
                                                   f'{model_type} {detector} {transform} Ternary',
                                                   save=True)
     # create left-point time bins
@@ -69,7 +65,7 @@ def process_detector(detector):
         time_bins.append((point*step)+0.5)
     t.create_regular_plot(
         plot_data=raw_data,
-        axes_titles=['ibd','nue+es','nc'],
+        axes_titles=profiles[detector]['axes'](),
         plot_title=f'{model_type} {detector} {transform}',
         ylab="Event Counts",
         xlab="Right Time in Coordinate (s)",
@@ -80,7 +76,7 @@ def process_detector(detector):
         )
 
 if multithreading==True:
-    for detector in detectors.keys():
+    for detector in profiles.keys():
         proc = Process(target=process_detector, args=[detector])
         proc.start()
         proc.join()

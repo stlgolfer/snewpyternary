@@ -96,8 +96,8 @@ def create_detector_event_scatter(
 
     Returns
     -------
-    list, list
-        The ternary scatter plot data and the unnormalized data
+    list, list, list
+        The ternary scatter plot data, unnormalized data, and 
 
     '''
     
