@@ -47,14 +47,13 @@ transform_list = list(flavor_transformation_dict.keys())
 
 profiles = handlers.build_detector_profiles()
 
-transform = 'NeutrinoDecay_NMO'
-
 # let's do some parallel processsing to speed things up
-def process_detector(detector):
+def process_detector(detector, transform):
     plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
                                                 detector,
                                                 model,
                                                 deltat=deltat,
+                                                transformation=transform,
                                                 data_calc=profiles[detector]['handler'],
                                                 use_cache=True
                                                 )
@@ -80,7 +79,28 @@ def process_detector(detector):
         use_x_log=True,
         use_y_log=True
         )
-process_detector('scint20kt')
+
+def process_flux(transform):
+    flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, deltat=deltat, transform=transform,use_cache=True)
+    time_bins = []
+    for point in range(len(raw_data)):
+        time_bins.append((point*step)+0.5)
+    t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
+    t.create_regular_plot(
+        plot_data=raw_data,
+        x_axis=time_bins,
+        axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
+        plot_title=f'{model_type} Truth Flux {transform}',
+        ylab="Total Integrated Flux flavor/cm^2",
+        xlab="Right Time in Coordinate (s)",
+        use_x_log=True)
+
+transforms_to_analyze = ['AdiabaticMSW_NMO','AdiabaticMSW_IMO']
+
+for d in handlers.supported_detectors:
+    for trans in transforms_to_analyze: process_detector(d,trans)
+
+for trans in transforms_to_analyze: process_flux(trans)
 
 # if multithreading==True:
 #     for detector in profiles.keys():
@@ -90,17 +110,3 @@ process_detector('scint20kt')
 # else:
 #     for detector in detectors.keys():
 #         process_detector(detector)
-
-flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, deltat=deltat, transform=transform,use_cache=True)
-time_bins = []
-for point in range(len(raw_data)):
-    time_bins.append((point*step)+0.5)
-t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
-t.create_regular_plot(
-    plot_data=raw_data,
-    x_axis=time_bins,
-    axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-    plot_title=f'{model_type} Truth Flux {transform}',
-    ylab="Total Integrated Flux flavor/cm^2",
-    xlab="Right Time in Coordinate (s)",
-    use_x_log=True)
