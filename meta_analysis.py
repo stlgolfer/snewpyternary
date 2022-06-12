@@ -31,7 +31,7 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-step = 0.01
+step = 1 #0.01 for best results
 deltat=step*u.s
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
@@ -47,26 +47,17 @@ transform_list = list(flavor_transformation_dict.keys())
 
 profiles = handlers.build_detector_profiles()
 
-transform = 'NoTransformation'
+transform = 'NeutrinoDecay_NMO'
 
 # let's do some parallel processsing to speed things up
 def process_detector(detector):
-    plot_data, raw_data, l_data = None,None,None
-    if not cache.in_cache('plot_data'):
-        plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
-                                                    detector,
-                                                    model,
-                                                    deltat=deltat,
-                                                    data_calc=profiles[detector]['handler'])
-        cache.cache('plot_data', plot_data)
-        cache.cache('raw_data', raw_data)
-        cache.cache('l_data', l_data)
-    else:
-        # use cached data
-        plot_data = cache.load_cache('plot_data')
-        raw_data = cache.load_cache('raw_data')
-        l_data = cache.load_cache('l_data')
-    
+    plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
+                                                detector,
+                                                model,
+                                                deltat=deltat,
+                                                data_calc=profiles[detector]['handler'],
+                                                use_cache=True
+                                                )
     figure, tax = t.create_default_detector_plot(plot_data,
                                                   profiles[detector]['axes'](),
                                                   f'{model_type} {detector} {transform} Ternary',
@@ -89,7 +80,7 @@ def process_detector(detector):
         use_x_log=True,
         use_y_log=True
         )
-process_detector('ar40kt')
+process_detector('scint20kt')
 
 # if multithreading==True:
 #     for detector in profiles.keys():
@@ -100,16 +91,16 @@ process_detector('ar40kt')
 #     for detector in detectors.keys():
 #         process_detector(detector)
 
-# flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, deltat=deltat, transform=transform)
-# time_bins = []
-# for point in range(len(raw_data)):
-#     time_bins.append((point*step)+0.5)
-# t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
-# t.create_regular_plot(
-#     plot_data=raw_data,
-#     x_axis=time_bins,
-#     axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-#     plot_title=f'{model_type} Truth Flux {transform}',
-#     ylab="Total Integrated Flux flavor/cm^2",
-#     xlab="Right Time in Coordinate (s)",
-#     use_x_log=True)
+flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, deltat=deltat, transform=transform,use_cache=True)
+time_bins = []
+for point in range(len(raw_data)):
+    time_bins.append((point*step)+0.5)
+t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
+t.create_regular_plot(
+    plot_data=raw_data,
+    x_axis=time_bins,
+    axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
+    plot_title=f'{model_type} Truth Flux {transform}',
+    ylab="Total Integrated Flux flavor/cm^2",
+    xlab="Right Time in Coordinate (s)",
+    use_x_log=True)
