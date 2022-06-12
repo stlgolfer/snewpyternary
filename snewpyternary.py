@@ -13,6 +13,7 @@ import os
 import ternary
 import math
 from functools import cmp_to_key
+import caching as ca
 
 import io
 import tarfile
@@ -54,7 +55,8 @@ def create_detector_event_scatter(
         d=10,
         transformation="NoTransformation",
         smearing="smeared",
-        weighting="weighted"
+        weighting="weighted",
+        use_cache=False
         ):
     '''
     Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
@@ -93,6 +95,9 @@ def create_detector_event_scatter(
         Data calculation algorithm, since not all detector channel data is
         uniform. Passes a dictionary of available detector channels with their
         event rates in a given time bin organized by energy bin
+    use_cache : bool
+        Use the internal cache system. If false, data will always be regenerated.
+        And stored in the cache just in case
 
     Returns
     -------
@@ -103,6 +108,13 @@ def create_detector_event_scatter(
     
     if detector == 'all':
         raise("Cannot accept 'all' as detector type")
+        
+    # check the cache
+    cache_base = f'{model_type}_{transformation}_d{d}_{detector}'
+    if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
+        # soft check complete and there is cache available. Load it
+        return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data'),ca.load_cache(f'{cache_base}_l_data')
+        
     snowglobes_out_name="snowglobes-output"
     snowglobes_dir = os.environ['SNOWGLOBES']
     
@@ -189,6 +201,11 @@ def create_detector_event_scatter(
                 
     # now retrieve header files
     #header_info = tables.get(data_files[1]).get("header").split(" ")
+    
+    # cache data for later use no matter what
+    ca.cache(f'{cache_base}_plot_data', plotting_data)
+    ca.cache(f'{cache_base}_raw_data', processed_raw),
+    ca.cache(f'{cache_base}_l_data',labeled_data_by_energy)
             
     return plotting_data, processed_raw,labeled_data_by_energy
 
@@ -261,7 +278,7 @@ def create_regular_plot(plot_data,
         On the x-axis, should it plot in log mode?
     save : bool
         save the plot or not to './plots'
-
+        
     Returns
     -------
 
@@ -286,14 +303,6 @@ def create_regular_plot(plot_data,
     plt.xlabel(xlab)
     plt.ylabel(ylab)
     
-    # set actual max y limit manually
-    a_max = np.max(a)
-    b_max = np.max(b)
-    c_max = np.max(c)
-    ymax = np.max([a_max, b_max, c_max])
-    plt.ylim(top=ymax)
-    print(f'{a_max} {b_max} {c_max} {ymax}')
-    
     if use_x_log:
         plt.xscale('log')
     if use_y_log:
@@ -309,7 +318,9 @@ def create_flux_scatter(modelFilePath,
                         model,
                         deltat,
                         d=10,
-                        transform="NoTransformation"):
+                        transform="NoTransformation",
+                        use_cache=False
+                        ):
     '''
     Similar to create_detector_event_scatter, although here we are just plotting
     the truth fluxes--the fluxes at the progenitor. A time series is created
@@ -331,6 +342,9 @@ def create_flux_scatter(modelFilePath,
         Time in each time bin
     transform : snewpy.transformation, optional
         Flavor transformation prescription. The default is “NoTransformation”. The default is "NoTransformation".
+    use_cache : bool
+        Use the internal cache system. If false, data will always be regenerated.
+        And stored in the cache just in case
 
     Returns
     -------
@@ -340,6 +354,11 @@ def create_flux_scatter(modelFilePath,
         The unnormalized data in NuX, aNuE, NuE order
 
     '''
+    cache_base = f'{modeltype}_flux_d{d}_{transform}'
+    if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
+        # soft check complete and there is cache available. Load it
+        return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data')
+    
     print("NEW SNOwGLoBES FLUENCE TIME SERIES GENERATION\n=============================")
     #print("Using detector schema: " + detector)
     print("Using transform: " + transform)
@@ -385,6 +404,9 @@ def create_flux_scatter(modelFilePath,
         total = a+b+c
         plotting_data.append((scale*a/total,scale*b/total,scale*c/total))
         raw.append((NuX+aNuX,aNuE,NuE))
+        
+    ca.cache(f'{cache_base}_plot_data', plotting_data)
+    ca.cache(f'{cache_base}_raw_data', raw)
     return plotting_data, raw
 
 def create_default_flux_plot(plotting_data,plot_title,save=True):
