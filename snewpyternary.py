@@ -20,6 +20,10 @@ import tarfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import sys
+sys.path.insert(0,'./SURF2020')
+from SURF2020.ternary_helpers import shared_plotting_script,generate_heatmap_dict
+
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
 
@@ -113,7 +117,10 @@ def create_detector_event_scatter(
     cache_base = f'{model_type}_{transformation}_d{d}_{detector}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
-        return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data'),ca.load_cache(f'{cache_base}_l_data')
+        plot_data = ca.load_cache(f'{cache_base}_plot_data')
+        raw_data = ca.load_cache(f'{cache_base}_raw_data')
+        l_data = ca.load_cache(f'{cache_base}_l_data')
+        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data], l_data
         
     snowglobes_out_name="snowglobes-output"
     snowglobes_dir = os.environ['SNOWGLOBES']
@@ -209,7 +216,7 @@ def create_detector_event_scatter(
             
     return plotting_data, processed_raw,labeled_data_by_energy
 
-def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
+def create_default_detector_plot(plot_data,axes_titles,plot_title,heatmap=None,save=True):
     '''
     From ternary detetector event scatter plot data, a ternary plot is created
 
@@ -240,6 +247,10 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     tax.bottom_axis_label(axes_titles[0])
     tax.right_axis_label(axes_titles[1])
     tax.left_axis_label(axes_titles[2])
+    
+    # heatmap stuff
+    if not heatmap == None:
+        tax.heatmap(heatmap)
 
     tax.scatter(points=plot_data, color="red")
     tax.ticks(axis='lbr', linewidth=1, multiple=10)
@@ -357,7 +368,10 @@ def create_flux_scatter(modelFilePath,
     cache_base = f'{modeltype}_flux_d{d}_{transform}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
-        return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data')
+        plot_data = ca.load_cache(f'{cache_base}_plot_data')
+        raw_data = ca.load_cache(f'{cache_base}_raw_data')
+        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data]
+        #return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data')
     
     print("NEW SNOwGLoBES FLUENCE TIME SERIES GENERATION\n=============================")
     #print("Using detector schema: " + detector)
