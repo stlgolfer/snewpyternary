@@ -51,24 +51,24 @@ transform_list = list(flavor_transformation_dict.keys())
 profiles = handlers.build_detector_profiles()
 
 # let's do some parallel processsing to speed things up
-# def process_detector(detector, transform):
-detector='scint20kt'
-transform='AdiabaticMSW_NMO'
-plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
-                                            detector,
-                                            model,
-                                            deltat=deltat,
-                                            transformation=transform,
-                                            data_calc=profiles[detector]['handler'],
-                                            use_cache=True
-                                            )
-# also create heatmap using Rishi's code
-heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
-figure, tax = t.create_default_detector_plot(plot_data,
-                                              profiles[detector]['axes'](),
-                                              f'{model_type} {detector} {transform} Ternary',
-                                              heatmap=heatmap_dict,
-                                              save=True)
+def process_detector(detector, transform):
+# detector='scint20kt'
+# transform='AdiabaticMSW_NMO'
+    plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
+                                                detector,
+                                                model,
+                                                deltat=deltat,
+                                                transformation=transform,
+                                                data_calc=profiles[detector]['handler'],
+                                                use_cache=True
+                                                )
+    # also create heatmap using Rishi's code
+    heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
+    figure, tax = t.create_default_detector_plot(plot_data,
+                                                  profiles[detector]['axes'](),
+                                                  f'{model_type} {detector} {transform} Ternary',
+                                                  heatmap=heatmap_dict,
+                                                  save=True)
 # now create the heatmap plot
 # figure, tax = ternary.figure(scale=100)
 # tax.heatmap(heatmap_dict)
@@ -83,23 +83,23 @@ figure, tax = t.create_default_detector_plot(plot_data,
 #                        heatmap_data=heatmap_dict
 #                        )
 # create left-point time bins
-time_bins = []
-for point in range(len(raw_data)):
-    coordinate = (point*step)+0.5
-    time_bins.append(coordinate)
-    #if coordinate < 1: # this is for limiting the time domain
-        
-t.create_regular_plot(
-    plot_data=raw_data[:len(time_bins)],
-    axes_titles=profiles[detector]['axes'](),
-    plot_title=f'{model_type} {detector} {transform}',
-    ylab="Event Counts",
-    xlab="Right Time Bin Coordinate (s)",
-    x_axis=time_bins,
-    save=True,
-    use_x_log=True,
-    use_y_log=True
-    )
+    time_bins = []
+    for point in range(len(raw_data)):
+        coordinate = (point*step)+0.5
+        time_bins.append(coordinate)
+        #if coordinate < 1: # this is for limiting the time domain
+            
+    t.create_regular_plot(
+        plot_data=raw_data[:len(time_bins)],
+        axes_titles=profiles[detector]['axes'](),
+        plot_title=f'{model_type} {detector} {transform}',
+        ylab="Event Counts",
+        xlab="Right Time Bin Coordinate (s)",
+        x_axis=time_bins,
+        save=True,
+        use_x_log=True,
+        use_y_log=True
+        )
 
 def process_flux(transform):
     flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, deltat=deltat, transform=transform,use_cache=True)
@@ -118,8 +118,8 @@ def process_flux(transform):
 
 transforms_to_analyze = ['AdiabaticMSW_NMO','AdiabaticMSW_IMO']
 
-# for d in handlers.supported_detectors:
-#     for trans in transforms_to_analyze: process_detector(d,trans)
+for d in handlers.supported_detectors:
+    for trans in transforms_to_analyze: process_detector(d,trans)
 
 # for trans in transforms_to_analyze: process_flux(trans)
 

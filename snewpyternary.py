@@ -230,6 +230,9 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,heatmap=None,s
         List of axes titles in b,r,l order
     save : bool, optional
         Save the output file to ./plots/. The default is True.
+    heatmap : dict, optional
+        Is a dictionary of (i,j,k) ternary plot points that correspond to a heatmap
+        data point
 
     Returns
     -------
