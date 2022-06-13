@@ -50,7 +50,6 @@ transform_list = list(flavor_transformation_dict.keys())
 
 profiles = handlers.build_detector_profiles()
 
-# let's do some parallel processsing to speed things up
 def process_detector(detector, transform):
 # detector='scint20kt'
 # transform='AdiabaticMSW_NMO'
@@ -68,38 +67,27 @@ def process_detector(detector, transform):
                                                   profiles[detector]['axes'](),
                                                   f'{model_type} {detector} {transform} Ternary',
                                                   heatmap=heatmap_dict,
+                                                  show=False,
                                                   save=True)
-# now create the heatmap plot
-# figure, tax = ternary.figure(scale=100)
-# tax.heatmap(heatmap_dict)
-# tax.show()
-
-# shared_plotting_script(f'{model_type} {detector} {transform} Heatmap',
-#                        profiles[detector]['axes'](),
-#                        plot_data,
-#                        raw_data,
-#                        None,
-#                        None,None,
-#                        heatmap_data=heatmap_dict
-#                        )
-# create left-point time bins
-    time_bins = []
-    for point in range(len(raw_data)):
-        coordinate = (point*step)+0.5
-        time_bins.append(coordinate)
-        #if coordinate < 1: # this is for limiting the time domain
+    return figure, tax, plot_data, raw_data, heatmap_dict
+    # create left-point time bins
+    # time_bins = []
+    # for point in range(len(raw_data)):
+    #     coordinate = (point*step)+0.5
+    #     time_bins.append(coordinate)
+    #     #if coordinate < 1: # this is for limiting the time domain
             
-    t.create_regular_plot(
-        plot_data=raw_data[:len(time_bins)],
-        axes_titles=profiles[detector]['axes'](),
-        plot_title=f'{model_type} {detector} {transform}',
-        ylab="Event Counts",
-        xlab="Right Time Bin Coordinate (s)",
-        x_axis=time_bins,
-        save=True,
-        use_x_log=True,
-        use_y_log=True
-        )
+    # t.create_regular_plot(
+    #     plot_data=raw_data[:len(time_bins)],
+    #     axes_titles=profiles[detector]['axes'](),
+    #     plot_title=f'{model_type} {detector} {transform}',
+    #     ylab="Event Counts",
+    #     xlab="Right Time Bin Coordinate (s)",
+    #     x_axis=time_bins,
+    #     save=True,
+    #     use_x_log=True,
+    #     use_y_log=True
+    #     )
 
 def process_flux(transform):
     flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, deltat=deltat, transform=transform,use_cache=True)
@@ -118,8 +106,42 @@ def process_flux(transform):
 
 transforms_to_analyze = ['AdiabaticMSW_NMO','AdiabaticMSW_IMO']
 
-for d in handlers.supported_detectors:
-    for trans in transforms_to_analyze: process_detector(d,trans)
+def remap_dict(dictionary,newval):
+    # remaps a dictionary's 1 value to a different value
+    for k in dictionary.keys():
+        if dictionary[k] == 1:
+            dictionary[k] = newval
+    return dictionary
+
+# for d in handlers.supported_detectors:
+# for trans in transforms_to_analyze: process_detector(d,trans)
+d = 'scint20kt'
+nmo_figure, nmo_tax, nmo_plot_data, nmo_raw_data, nmo_hp = process_detector(d,transforms_to_analyze[0])
+imo_figure, imo_tax, imo_plot_data, imo_raw_data, imo_hp = process_detector(d,transforms_to_analyze[1])
+
+# just gonna have to create a new graph for combining things
+figure, tax = ternary.figure(scale=100)
+tax.boundary(linewidth=2.0)
+tax.gridlines(color="black", multiple=10)
+tax.set_title(f'{model_type} {d} NMO vs IMO Ternary')
+# data is organized in top, right, left
+
+axes_titles = profiles[d]['axes']()
+### TODO: make sure that data_files[1] actually points to something that can get the header
+tax.bottom_axis_label(axes_titles[0])
+tax.right_axis_label(axes_titles[1])
+tax.left_axis_label(axes_titles[2])
+
+combined_dict = {nmo_hp,remap_dict(imo_hp,0.6)}
+tax.heatmap(combined_dict,cbarlabel='In 68% CL')
+
+tax.scatter(points=nmo_plot_data, color='red')
+tax.scatter(points=imo_plot_data, color='blue')
+
+tax.ticks(axis='lbr', linewidth=1, multiple=10)
+tax.clear_matplotlib_ticks()
+tax.get_axes().axis('off') # disables regular matlab plot axes
+tax.show()
 
 # for trans in transforms_to_analyze: process_flux(trans)
 

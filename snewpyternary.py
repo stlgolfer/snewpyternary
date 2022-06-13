@@ -216,7 +216,7 @@ def create_detector_event_scatter(
             
     return plotting_data, processed_raw,labeled_data_by_energy
 
-def create_default_detector_plot(plot_data,axes_titles,plot_title,heatmap=None,save=True):
+def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heatmap=None,color='red',save=True):
     '''
     From ternary detetector event scatter plot data, a ternary plot is created
 
@@ -228,8 +228,12 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,heatmap=None,s
         Plot title
     axes_titles : list
         List of axes titles in b,r,l order
+    color : str
+        Color of plotted points
     save : bool, optional
         Save the output file to ./plots/. The default is True.
+    show : bool
+        Show the graph when completed
     heatmap : dict, optional
         Is a dictionary of (i,j,k) ternary plot points that correspond to a heatmap
         data point
@@ -242,7 +246,7 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,heatmap=None,s
     '''
     figure, tax = ternary.figure(scale=100)
     tax.boundary(linewidth=2.0)
-    tax.gridlines(color="blue", multiple=10)
+    tax.gridlines(color="black", multiple=10)
     tax.set_title(plot_title)
     # data is organized in top, right, left
 
@@ -255,12 +259,13 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,heatmap=None,s
     if not heatmap == None:
         tax.heatmap(heatmap)
 
-    tax.scatter(points=plot_data, color="red")
+    tax.scatter(points=plot_data, color=color)
     tax.ticks(axis='lbr', linewidth=1, multiple=10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
 
-    tax.show()
+    if show:
+        tax.show()
     if save:
         tax.savefig(f'./plots/{plot_title}')
     return figure, tax
