@@ -24,12 +24,17 @@ from tempfile import TemporaryDirectory
 import snewpyternary as t
 import data_handlers as handlers
 
+import sys
+sys.path.insert(0,'./SURF2020')
+from SURF2020.ternary_helpers import generate_heatmap_dict
+
 #simulation details
 modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-deltat=1*u.s
+step_size = 0.01
+deltat=step_size*u.s
 detector = 'wc100kt30prct'
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
@@ -37,18 +42,40 @@ snowglobes_dir = os.environ['SNOWGLOBES']
 print(os.environ['SNOWGLOBES'])
 smearing = 'smeared'
 model
+transform = "AdiabaticMSW_NMO"
 print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time)-1]}')
 
-transform = 'NoTransformation'
+profiles = handlers.build_detector_profiles()
 # create scintillator detector analysis
-plot_data, raw_data, l_data = t.create_detector_event_scatter(modelFilePath,model_type,
-                                            detector,
-                                            model,
-                                            deltat=deltat,
-                                            data_calc=handlers.h_wc100kt30prct,smearing=smearing)
+plot_data, raw_data, l_data = t.create_detector_event_scatter(
+    modelFilePath,model_type,
+    detector,
+    model,
+    deltat=deltat,
+    transformation=transform,
+    data_calc=profiles[detector]['handler'],
+    use_cache=True
+    )
+heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
+figure, tax = t.create_default_detector_plot(plot_data,
+                                              profiles[detector]['axes'](),
+                                              f'{model_type} {detector} {transform} Ternary',
+                                              show=True,
+                                              save=True)
 
 # now iterate over select time slices
-selected_bins = [0,5,10,15,19] #np.arange(0,19,step=1)#np.arange(0,model.time[-1],step=1)
+selected_bins = [0,500,1000,1500,2000] #np.arange(0,19,step=1)#np.arange(0,model.time[-1],step=1)
+
+# plot an bin with region as a ternary diagram
+for bin_no in selected_bins:
+    singular_normalized = plot_data[bin_no]
+    t.create_default_detector_plot(
+        [singular_normalized],
+        ['ibd','nue+es','nc'],
+        f'Singular Bin {bin_no} Ternary',
+        heatmap=generate_heatmap_dict([raw_data[bin_no]], [singular_normalized])
+        )
+
 for bin_no in selected_bins:
     nue_plus_es_energy = np.add(l_data[bin_no]['nue_O16'],l_data[bin_no]['e'])
     plt.plot(l_data[bin_no]['Energy'],nue_plus_es_energy,label="NuE+ES")
@@ -62,7 +89,7 @@ for bin_no in selected_bins:
     
     plt.xlabel('Energy (GeV)')
     plt.ylabel('Event Rate')
-    time_actual = (bin_no+1)-0.5 # in seconds, taken from the left side of the time bin
+    time_actual = step_size*(bin_no+1)-0.5 # in seconds, taken from the left side of the time bin
     title = f'{model_type} {detector} t={time_actual} (left in s)'
     plt.title(title)
     caption = f"Total Event Rate: {ibd_integral+nue_plus_es_integral+nc_integral}\nBin No: {bin_no}"
@@ -72,12 +99,11 @@ for bin_no in selected_bins:
     plt.savefig(f'./plots/time_slices/{title}.png',bbox_inches='tight')
     plt.show()
 
-
-# now we take a time slice and plot its energy
+# now we plot as normal
 figure, tax = t.create_default_detector_plot(plot_data,
                                               ['ibd','nue+es','nc'],
                                               '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
                                               save=True)
 t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
                       '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
-                      ylab="Event Counts",save=True)
+                      ylab="Event Counts",use_x_log=False,save=True)

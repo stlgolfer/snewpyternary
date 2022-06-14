@@ -20,10 +20,6 @@ import tarfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import sys
-sys.path.insert(0,'./SURF2020')
-from SURF2020.ternary_helpers import shared_plotting_script,generate_heatmap_dict
-
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
 
@@ -117,10 +113,11 @@ def create_detector_event_scatter(
     cache_base = f'{model_type}_{transformation}_d{d}_{detector}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
+        print('Cache hit. Loading from cache')
         plot_data = ca.load_cache(f'{cache_base}_plot_data')
         raw_data = ca.load_cache(f'{cache_base}_raw_data')
         l_data = ca.load_cache(f'{cache_base}_l_data')
-        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data], l_data
+        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data], [dict(point) for point in l_data]
         
     snowglobes_out_name="snowglobes-output"
     snowglobes_dir = os.environ['SNOWGLOBES']
