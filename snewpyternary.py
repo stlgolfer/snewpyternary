@@ -110,7 +110,7 @@ def create_detector_event_scatter(
         raise("Cannot accept 'all' as detector type")
         
     # check the cache
-    cache_base = f'{model_type}_{transformation}_d{d}_{detector}'
+    cache_base = f'{model_type}_{transformation}_d{d}_{detector}_dt{str(deltat)}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
         print('Cache hit. Loading from cache')
@@ -264,7 +264,7 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heat
     if show:
         tax.show()
     if save:
-        tax.savefig(f'./plots/{plot_title}')
+        tax.savefig(f'./plots/{plot_title}.png')
     return figure, tax
 
 def create_regular_plot(plot_data,
@@ -370,7 +370,7 @@ def create_flux_scatter(modelFilePath,
         The unnormalized data in NuX, aNuE, NuE order
 
     '''
-    cache_base = f'{modeltype}_flux_d{d}_{transform}'
+    cache_base = f'{modeltype}_flux_d{d}_{transform}_dt{str(deltat)}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
         plot_data = ca.load_cache(f'{cache_base}_plot_data')

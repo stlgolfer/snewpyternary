@@ -15,12 +15,6 @@ from snewpy.models import Nakazato_2013
 from snewpy.flavor_transformation import NoTransformation # just use NoTransformation for now to keep things simple
 import os
 import ternary
-import math
-
-import io
-import tarfile
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import snewpyternary as t
 import data_handlers as handlers
 
@@ -33,7 +27,7 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-step_size = 0.01
+step_size = 0.04
 deltat=step_size*u.s
 detector = 'wc100kt30prct'
 d = 10 # in pc, distance to SN
@@ -59,20 +53,25 @@ plot_data, raw_data, l_data = t.create_detector_event_scatter(
 heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
 figure, tax = t.create_default_detector_plot(plot_data,
                                               profiles[detector]['axes'](),
-                                              f'{model_type} {detector} {transform} Ternary',
+                                              f'{model_type} {detector} {transform} Ternary dt={str(deltat)}',
                                               show=True,
+                                              heatmap=heatmap_dict,
                                               save=True)
 
 # now iterate over select time slices
-selected_bins = [0,500,1000,1500,2000] #np.arange(0,19,step=1)#np.arange(0,model.time[-1],step=1)
+no_total_bins = int((model.time[-1].value-model.time[0].value)/step_size)
+no_slices = 5
+selected_bins = [] #np.arange(0,19,step=1)#np.arange(0,model.time[-1],step=1)
+for x in range(no_slices):
+    selected_bins.append(int(x*no_total_bins/no_slices))
 
 # plot an bin with region as a ternary diagram
 for bin_no in selected_bins:
     singular_normalized = plot_data[bin_no]
     t.create_default_detector_plot(
         [singular_normalized],
-        ['ibd','nue+es','nc'],
-        f'Singular Bin {bin_no} Ternary',
+        profiles[detector]['axes'](),
+        f'Singular Bin {bin_no} Ternary dt={str(deltat)}',
         heatmap=generate_heatmap_dict([raw_data[bin_no]], [singular_normalized])
         )
 
@@ -90,7 +89,7 @@ for bin_no in selected_bins:
     plt.xlabel('Energy (GeV)')
     plt.ylabel('Event Rate')
     time_actual = step_size*(bin_no+1)-0.5 # in seconds, taken from the left side of the time bin
-    title = f'{model_type} {detector} t={time_actual} (left in s)'
+    title = f'{model_type} {detector} t={time_actual} dt={deltat} (left in s)'
     plt.title(title)
     caption = f"Total Event Rate: {ibd_integral+nue_plus_es_integral+nc_integral}\nBin No: {bin_no}"
     y_max = float(list(plt.gca().get_ylim())[1])
