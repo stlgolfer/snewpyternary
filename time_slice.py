@@ -105,4 +105,4 @@ figure, tax = t.create_default_detector_plot(plot_data,
                                               save=True)
 t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
                       '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
-                      ylab="Event Counts",use_x_log=False,save=True)
+                      ylab="Event Counts",use_x_log=True,save=True)

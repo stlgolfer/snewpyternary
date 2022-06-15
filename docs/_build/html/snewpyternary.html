@@ -16,7 +16,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ternary-example module" href="ternary-example.html" />
-    <link rel="prev" title="meta-analysis module" href="meta-analysis.html" /> 
+    <link rel="prev" title="meta_analysis module" href="meta_analysis.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,9 +37,12 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">more-snewpy-ternary-plots</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="meta-analysis.html">meta-analysis module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="caching.html">caching module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_handlers.html">data_handlers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="meta_analysis.html">meta_analysis module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">snewpyternary module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ternary-example.html">ternary-example module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="time_slice.html">time_slice module</a></li>
 </ul>
 </li>
 </ul>
@@ -73,7 +76,7 @@
 <span id="snewpyternary-module"></span><h1>snewpyternary module<a class="headerlink" href="#module-snewpyternary" title="Permalink to this headline"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="snewpyternary.create_default_detector_plot">
-<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_default_detector_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_titles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_default_detector_plot" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_default_detector_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_titles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heatmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'red'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_default_detector_plot" title="Permalink to this definition"></a></dt>
 <dd><p>From ternary detetector event scatter plot data, a ternary plot is created</p>
 <dl class="simple">
 <dt>plot_data<span class="classifier">list of 3-tuples</span></dt><dd><p>Scatter data produced by create_detector_event_scatter</p>
@@ -82,7 +85,14 @@
 </dd>
 <dt>axes_titles<span class="classifier">list</span></dt><dd><p>List of axes titles in b,r,l order</p>
 </dd>
+<dt>color<span class="classifier">str</span></dt><dd><p>Color of plotted points</p>
+</dd>
 <dt>save<span class="classifier">bool, optional</span></dt><dd><p>Save the output file to ./plots/. The default is True.</p>
+</dd>
+<dt>show<span class="classifier">bool</span></dt><dd><p>Show the graph when completed</p>
+</dd>
+<dt>heatmap<span class="classifier">dict, optional</span></dt><dd><p>Is a dictionary of (i,j,k) ternary plot points that correspond to a heatmap
+data point</p>
 </dd>
 </dl>
 <dl class="simple">
@@ -111,14 +121,17 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="snewpyternary.create_detector_event_scatter">
-<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_detector_event_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modelFilePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltat=&lt;Quantity</span> <span class="pre">1.</span> <span class="pre">s&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformation='NoTransformation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smearing=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weighting='weighted'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_detector_event_scatter" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_detector_event_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modelFilePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_calc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NoTransformation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smearing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'smeared'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weighting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'weighted'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_detector_event_scatter" title="Permalink to this definition"></a></dt>
 <dd><p>Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
 a “truth flux” is created for a specified number of time bins. That is,
 in each time bin generated, a progenitor flux vs energy diagram is created.
 Then, this data is simmulated as though a detector would see the fluxes
 on Earth. Each time bin in the simulated output (now event rates vs energy)
-is integrated for the specified detector channel and then normalized
-against the other channels to create a ternary scatter point.</p>
+is integrated for the specified detector channel. From these detector channels,
+you must supply the data calculations since the data across detectors is not 
+uniform. To help with this, this method returns a dictionary of summed channel
+data to pick from.
+and then normalized against the other channels to create a ternary scatter point.</p>
 <dl class="simple">
 <dt>modelFilePath<span class="classifier">str</span></dt><dd><p>Path to the SNEWPY model. Must be an absolute path</p>
 </dd>
@@ -128,26 +141,33 @@ against the other channels to create a ternary scatter point.</p>
 </dd>
 <dt>model<span class="classifier">snewpy.models</span></dt><dd><p>The SNEWPY class abstraction of the model you’re working with</p>
 </dd>
-<dt>deltat<span class="classifier">astropy.unit, optional</span></dt><dd><p>Time bin width. The default is 1*u.s.</p>
+<dt>deltat<span class="classifier">astropy.units</span></dt><dd><p>Time in each time bin</p>
 </dd>
 <dt>d<span class="classifier">int, optional</span></dt><dd><p>simulated distance to progenitor. The default is 10.</p>
 </dd>
 <dt>transformation<span class="classifier">snewpy.transformation, optional</span></dt><dd><p>Flavor transformation prescription. The default is “NoTransformation”.</p>
 </dd>
-<dt>smearing<span class="classifier">bool, optional</span></dt><dd><p>Use detector smearing matrix. The default is True.</p>
+<dt>smearing<span class="classifier">str, optional</span></dt><dd><p>Use detector smearing matrix. Either ‘smeared’ or ‘unsmeared’. The default is ‘smeared’.</p>
 </dd>
 <dt>weighting<span class="classifier">str “weighted” or “unweighted”, optional</span></dt><dd><p>Use detector data weights. The default is “weighted”.</p>
 </dd>
+<dt>data_calc<span class="classifier">def</span></dt><dd><p>Data calculation algorithm, since not all detector channel data is
+uniform. Passes a dictionary of available detector channels with their
+event rates in a given time bin organized by energy bin</p>
+</dd>
+<dt>use_cache<span class="classifier">bool</span></dt><dd><p>Use the internal cache system. If false, data will always be regenerated.
+And stored in the cache just in case</p>
+</dd>
 </dl>
 <dl class="simple">
-<dt>list, list</dt><dd><p>The ternary scatter plot data, and the array of axis titles</p>
+<dt>list, list, list</dt><dd><p>The ternary scatter plot data, unnormalized data, and</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="snewpyternary.create_flux_scatter">
-<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_flux_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modelFilePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modeltype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltat=&lt;Quantity</span> <span class="pre">1.</span> <span class="pre">s&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform='NoTransformation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smearing=False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_flux_scatter" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_flux_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modelFilePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modeltype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NoTransformation'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_flux_scatter" title="Permalink to this definition"></a></dt>
 <dd><p>Similar to create_detector_event_scatter, although here we are just plotting
 the truth fluxes–the fluxes at the progenitor. A time series is created
 by SNOwGLoBES to make the flux vs energy graphs in time bins, then these
@@ -160,17 +180,55 @@ scatter plot data</p>
 </dd>
 <dt>model<span class="classifier">snewpy.models</span></dt><dd><p>The SNEWPY class abstraction of the model you’re working with.</p>
 </dd>
-<dt>deltat<span class="classifier">astropy.Quantity(), optional</span></dt><dd><p>Time bin width. The default is 1*u.s.. The default is 1*u.s.</p>
-</dd>
 <dt>d<span class="classifier">int, optional</span></dt><dd><p>Simulated distance to progenitor. The default is 10. The default is 10.</p>
+</dd>
+<dt>deltat<span class="classifier">astropy.units</span></dt><dd><p>Time in each time bin</p>
 </dd>
 <dt>transform<span class="classifier">snewpy.transformation, optional</span></dt><dd><p>Flavor transformation prescription. The default is “NoTransformation”. The default is “NoTransformation”.</p>
 </dd>
-<dt>smearing<span class="classifier">bool, optional</span></dt><dd><p>Use detector smearing matrix. The default is True. The default is False.</p>
+<dt>use_cache<span class="classifier">bool</span></dt><dd><p>Use the internal cache system. If false, data will always be regenerated.
+And stored in the cache just in case</p>
 </dd>
 </dl>
 <dl class="simple">
 <dt>plotting_data<span class="classifier">list</span></dt><dd><p>The ternary scatter plot data.</p>
+</dd>
+<dt>results<span class="classifier">list</span></dt><dd><p>The unnormalized data in NuX, aNuE, NuE order</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="snewpyternary.create_regular_plot">
+<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">create_regular_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_titles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlab</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Time</span> <span class="pre">Bin'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_x_log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_y_log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.create_regular_plot" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a matplotlib scatter plot of simulated, un-normalized data
+from the ternary scatter plot generators</p>
+<dl class="simple">
+<dt>plot_data<span class="classifier">list of 3-tuples</span></dt><dd><p>Unnormalized data from simulation</p>
+</dd>
+<dt>axes_titles<span class="classifier">list</span></dt><dd><p>In same order of plot_data, the data labels</p>
+</dd>
+<dt>plot_title<span class="classifier">str</span></dt><dd><p>Name of the plot</p>
+</dd>
+<dt>ylab<span class="classifier">str</span></dt><dd><p>The y-axis label</p>
+</dd>
+<dt>use_x_log<span class="classifier">bool</span></dt><dd><p>On the x-axis, should it plot in log mode?</p>
+</dd>
+<dt>save<span class="classifier">bool</span></dt><dd><p>save the plot or not to ‘./plots’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="snewpyternary.sort_data_file_names">
+<span class="sig-prename descclassname"><span class="pre">snewpyternary.</span></span><span class="sig-name descname"><span class="pre">sort_data_file_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#snewpyternary.sort_data_file_names" title="Permalink to this definition"></a></dt>
+<dd><p>Key-sorting function for sorting snowglobes data_files</p>
+<dl class="simple">
+<dt>f<span class="classifier">the key</span></dt><dd><p>The key from the file_name collection</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>int</dt><dd><p>returns the xx of the tbinxx sequence in the file name</p>
 </dd>
 </dl>
 </dd></dl>
@@ -181,7 +239,7 @@ scatter plot data</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="meta-analysis.html" class="btn btn-neutral float-left" title="meta-analysis module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="meta_analysis.html" class="btn btn-neutral float-left" title="meta_analysis module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ternary-example.html" class="btn btn-neutral float-right" title="ternary-example module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
