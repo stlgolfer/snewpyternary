@@ -63,7 +63,7 @@ figure, tax = t.create_default_detector_plot(plot_data,
 
 # now iterate over select time slices
 no_total_bins = int((model.time[-1].value-model.time[0].value)/step_size)
-no_slices = 5
+no_slices = 20
 selected_bins = [] #np.arange(0,19,step=1)#np.arange(0,model.time[-1],step=1)
 for x in range(no_slices):
     selected_bins.append(int(x*no_total_bins/no_slices))
@@ -77,10 +77,11 @@ for bin_no in selected_bins:
         f'ANIMATION F.{bin_no} Singular Bin {bin_no} Ternary dt={str(deltat)}',
         heatmap=generate_heatmap_dict([raw_data[bin_no]], [singular_normalized]),show=False,save=True
         )
-with imageio.get_writer('./plots/animation.gif',mode='I') as writer:
-    for bin_no in selected_bins:
-        image = imageio.imread(f'./plots/ANIMATION F.{bin_no} Singular Bin {bin_no} Ternary dt={str(deltat)}.png')
-        writer.append_data(image)
+images = []
+for bin_no in selected_bins:
+    image = imageio.imread(f'./plots/ANIMATION F.{bin_no} Singular Bin {bin_no} Ternary dt={str(deltat)}.png')
+    images.append(image)
+imageio.mimsave('./plots/animation.gif',images,duration=2) # duration in seconds
 
 for bin_no in selected_bins:
     nue_plus_es_energy = np.add(l_data[bin_no]['nue_O16'],l_data[bin_no]['e'])
