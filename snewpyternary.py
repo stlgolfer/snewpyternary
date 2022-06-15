@@ -110,10 +110,14 @@ def create_detector_event_scatter(
         raise("Cannot accept 'all' as detector type")
         
     # check the cache
-    cache_base = f'{model_type}_{transformation}_d{d}_{detector}'
+    cache_base = f'{model_type}_{transformation}_d{d}_{detector}_dt{str(deltat)}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
-        return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data'),ca.load_cache(f'{cache_base}_l_data')
+        print('Cache hit. Loading from cache')
+        plot_data = ca.load_cache(f'{cache_base}_plot_data')
+        raw_data = ca.load_cache(f'{cache_base}_raw_data')
+        l_data = ca.load_cache(f'{cache_base}_l_data')
+        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data], [dict(point) for point in l_data]
         
     snowglobes_out_name="snowglobes-output"
     snowglobes_dir = os.environ['SNOWGLOBES']
@@ -209,7 +213,7 @@ def create_detector_event_scatter(
             
     return plotting_data, processed_raw,labeled_data_by_energy
 
-def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
+def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heatmap=None,color='red',save=True):
     '''
     From ternary detetector event scatter plot data, a ternary plot is created
 
@@ -221,8 +225,15 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
         Plot title
     axes_titles : list
         List of axes titles in b,r,l order
+    color : str
+        Color of plotted points
     save : bool, optional
         Save the output file to ./plots/. The default is True.
+    show : bool
+        Show the graph when completed
+    heatmap : dict, optional
+        Is a dictionary of (i,j,k) ternary plot points that correspond to a heatmap
+        data point
 
     Returns
     -------
@@ -232,7 +243,7 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     '''
     figure, tax = ternary.figure(scale=100)
     tax.boundary(linewidth=2.0)
-    tax.gridlines(color="blue", multiple=10)
+    tax.gridlines(color="black", multiple=10)
     tax.set_title(plot_title)
     # data is organized in top, right, left
 
@@ -240,15 +251,20 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,save=True):
     tax.bottom_axis_label(axes_titles[0])
     tax.right_axis_label(axes_titles[1])
     tax.left_axis_label(axes_titles[2])
+    
+    # heatmap stuff
+    if not heatmap == None:
+        tax.heatmap(heatmap)
 
-    tax.scatter(points=plot_data, color="red")
+    tax.scatter(points=plot_data, color=color)
     tax.ticks(axis='lbr', linewidth=1, multiple=10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
 
-    tax.show()
+    if show:
+        tax.show()
     if save:
-        tax.savefig(f'./plots/{plot_title}')
+        tax.savefig(f'./plots/{plot_title}.png')
     return figure, tax
 
 def create_regular_plot(plot_data,
@@ -354,10 +370,13 @@ def create_flux_scatter(modelFilePath,
         The unnormalized data in NuX, aNuE, NuE order
 
     '''
-    cache_base = f'{modeltype}_flux_d{d}_{transform}'
+    cache_base = f'{modeltype}_flux_d{d}_{transform}_dt{str(deltat)}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
-        return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data')
+        plot_data = ca.load_cache(f'{cache_base}_plot_data')
+        raw_data = ca.load_cache(f'{cache_base}_raw_data')
+        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data]
+        #return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data')
     
     print("NEW SNOwGLoBES FLUENCE TIME SERIES GENERATION\n=============================")
     #print("Using detector schema: " + detector)

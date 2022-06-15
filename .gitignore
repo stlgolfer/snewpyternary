@@ -4,3 +4,5 @@ last_chart.png
 /plots
 /__pycache__
 /.st_cache
+/.st_cache_backup
+/docs/_build
