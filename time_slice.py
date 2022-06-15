@@ -19,6 +19,7 @@ import snewpyternary as t
 import data_handlers as handlers
 from matplotlib.animation import PillowWriter
 import PIL
+import imageio
 
 import sys
 sys.path.insert(0,'./SURF2020')
@@ -68,23 +69,18 @@ for x in range(no_slices):
     selected_bins.append(int(x*no_total_bins/no_slices))
 
 # plot an bin with region as a ternary diagram
-single_point_plots = []
-# for bin_no in [0,5]:
-bin_no=0
-singular_normalized = plot_data[bin_no]
-fig, ta = t.create_default_detector_plot(
-    [singular_normalized],
-    profiles[detector]['axes'](),
-    f'Singular Bin {bin_no} Ternary dt={str(deltat)}',
-    heatmap=generate_heatmap_dict([raw_data[bin_no]], [singular_normalized]),show=False,save=False
-    )
-fig.canvas.draw()
-single_point_plots.append(plt.imshow(PIL.Image.frombytes('RGB',fig.canvas.get_width_height(),fig.canvas.tostring_rgb())))
-# ta.savefig('test.png')
-
-# here we will also create an animation of what just happened
-ani = mpl.animation.ArtistAnimation(plt.figure(),single_point_plots)
-ani.save('./plots/animation.gif', writer='pillow')
+for bin_no in selected_bins:
+    singular_normalized = plot_data[bin_no]
+    fig, ta = t.create_default_detector_plot(
+        [singular_normalized],
+        profiles[detector]['axes'](),
+        f'ANIMATION F.{bin_no} Singular Bin {bin_no} Ternary dt={str(deltat)}',
+        heatmap=generate_heatmap_dict([raw_data[bin_no]], [singular_normalized]),show=False,save=True
+        )
+with imageio.get_writer('./plots/animation.gif',mode='I') as writer:
+    for bin_no in selected_bins:
+        image = imageio.imread(f'./plots/ANIMATION F.{bin_no} Singular Bin {bin_no} Ternary dt={str(deltat)}.png')
+        writer.append_data(image)
 
 for bin_no in selected_bins:
     nue_plus_es_energy = np.add(l_data[bin_no]['nue_O16'],l_data[bin_no]['e'])
