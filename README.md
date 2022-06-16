@@ -6,6 +6,9 @@
 - [SNOwGLoBES](https://github.com/SNOwGLoBES/snowglobes)
 - [Original Implementation](https://github.com/rishigundakaram/SURF2020)
 
+# Documentation
+The documentation to `snewpyternary` can be found [here](https://filestore.amtstl.xyz/snewpyternary/snewpyternary.html).
+
 # Dependencies
 - SNEWPY2
 - SNOwGLoBES and GLoBES
