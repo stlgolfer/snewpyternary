@@ -63,7 +63,7 @@ figure, tax = t.create_default_detector_plot(plot_data,
 
 # now iterate over select time slices
 no_total_bins = int((model.time[-1].value-model.time[0].value)/step_size)
-no_slices = 20
+no_slices = 100
 selected_bins = [] #np.arange(0,19,step=1)#np.arange(0,model.time[-1],step=1)
 for x in range(no_slices):
     selected_bins.append(int(x*no_total_bins/no_slices))
@@ -75,8 +75,11 @@ for bin_no in selected_bins:
         [singular_normalized],
         profiles[detector]['axes'](),
         f'ANIMATION F.{bin_no} Singular Bin {bin_no} Ternary dt={str(deltat)}',
-        heatmap=generate_heatmap_dict([raw_data[bin_no]], [singular_normalized]),show=False,save=True
+        heatmap=generate_heatmap_dict([raw_data[bin_no]], [singular_normalized]),show=True,save=True
         )
+    if no_slices > 15:
+        # otherwise huge memory leak
+        plt.close(fig)
 images = []
 for bin_no in selected_bins:
     image = imageio.imread(f'./plots/ANIMATION F.{bin_no} Singular Bin {bin_no} Ternary dt={str(deltat)}.png')
