@@ -23,8 +23,8 @@ import data_handlers as handlers
 from multiprocessing import Process
 import caching as cache
 import sys
-sys.path.insert(0,'./SURF2020')
-from SURF2020.ternary_helpers import shared_plotting_script,generate_heatmap_dict,consolidate_heatmap_data
+sys.path.insert(0,'./SURF2020fork')
+from SURF2020fork.ternary_helpers import shared_plotting_script,generate_heatmap_dict,consolidate_heatmap_data
 
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes

@@ -22,8 +22,8 @@ import PIL
 import imageio
 
 import sys
-sys.path.insert(0,'./SURF2020')
-from SURF2020.ternary_helpers import generate_heatmap_dict
+sys.path.insert(0,'./SURF2020fork')
+from SURF2020fork.ternary_helpers import generate_heatmap_dict
 
 #simulation details
 modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
