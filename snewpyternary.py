@@ -261,9 +261,10 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heat
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
 
-    if show:
+    if show == True:
+        print('Show is true')
         tax.show()
-    if save:
+    if save == True:
         tax.savefig(f'./plots/{plot_title}.png')
     return figure, tax
 
