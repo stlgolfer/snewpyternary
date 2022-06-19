@@ -1,0 +1,3 @@
+[submodule "SURF2020fork"]
+	path = SURF2020fork
+	url = git@github.com:stlgolfer/SURF2020fork.git
