@@ -66,24 +66,25 @@ il_bin_no = 0 # bin number we're currently on in the log space
 used_bins = 0
 log_base = 2
 
-while (last_bin_no < len(raw_data)-1):
-    # first, figure out how many bins to cycle over
-    # size = math.floor(math.log(il_bin_no+1,log_base)+1)
-    # size = math.pow(il_bin_no,1) # sizing function
-    size = 1
-    # add the next bin in raw space to the start of the next log bin
-    print(last_bin_no+1)
-    log_raw_data.append(raw_data[last_bin_no+1])
-    used_bins+=1
-    # need to check if there's anything past this point to add
-    
-    raw_bin_no = last_bin_no+2
-    while (raw_bin_no <= len(raw_data)-1) and (raw_bin_no <= last_bin_no+2+size-1):
-        log_raw_data[il_bin_no] = tuple(np.add(log_raw_data[il_bin_no],raw_data[raw_bin_no]))
-        used_bins+=1
-        raw_bin_no+=1
-    last_bin_no=raw_bin_no
-    il_bin_no+=1
+def bin_func(val):
+    return 1
+
+# we could create a map how many bins there should be in each logged bin
+# and then add per that prescription
+log_bin_sizes = list(map(bin_func,np.arange(0,len(raw_data))))
+print(list(log_bin_sizes))
+
+# now iterate through the bins
+next_bin_to_use = 0
+log_raw_data = []
+for log_bin in list(log_bin_sizes):
+    start_index = next_bin_to_use
+    collected = [0, 0, 0] # 0 blank array
+    for x in range(start_index,start_index+log_bin):
+        collected = np.add(collected,list(raw_data[x]))
+        next_bin_to_use+=1
+    print('loop')
+    log_raw_data.append(collected)
 
 t.create_regular_plot(log_raw_data, ['ibd','nue+es','nc'],
                       '{model} {detector} {transform} Logged Bins'.format(model=model_type,detector=detector,transform=transform),
