@@ -59,31 +59,26 @@ t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
                       '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
                       ylab="Event Counts",use_x_log=False,save=True)
 
-# now, log-ify the bins
-log_raw_data = []
-last_bin_no = -1 # index of last used bin in raw space
-il_bin_no = 0 # bin number we're currently on in the log space
-used_bins = 0
-log_base = 2
-
-def bin_func(val):
-    return 1
+# now log-ify the bins
+def bin_func(bin_no):
+    return math.ceil(math.log(bin_no+1))
 
 # we could create a map how many bins there should be in each logged bin
 # and then add per that prescription
 log_bin_sizes = list(map(bin_func,np.arange(0,len(raw_data))))
-print(list(log_bin_sizes))
 
 # now iterate through the bins
 next_bin_to_use = 0
+log_bin_no = -1 # so we start on 0th bin
 log_raw_data = []
-for log_bin in list(log_bin_sizes):
+while next_bin_to_use < len(raw_data):
     start_index = next_bin_to_use
     collected = [0, 0, 0] # 0 blank array
+    log_bin_no+=1
+    log_bin = bin_func(log_bin_no)
     for x in range(start_index,start_index+log_bin):
         collected = np.add(collected,list(raw_data[x]))
         next_bin_to_use+=1
-    print('loop')
     log_raw_data.append(collected)
 
 t.create_regular_plot(log_raw_data, ['ibd','nue+es','nc'],
