@@ -100,21 +100,33 @@ def w_generate_time_series(model_path,
         dt = (tmax - tmin) / (ntbins+1)
 
     tedges = np.arange(tmin/u.s, tmax/u.s, dt/u.s)*u.s
-    print(type(tedges[1:]))
     times = 0.5*(tedges[1:] + tedges[:-1])
     # print(list(times))
     
     # now process log data
     if (log_bins==True):
         base = 1.5
-        log_edges = [tmin]
-        total_log_bins = (math.pow(base,tmax.value)-math.pow(base,dt.value))/(dt.value)
-        print(total_log_bins)
-        for l_bin_no in range(0,int(math.floor(total_log_bins))):
-            a=dt.value
-            a*float(l_bin_no)*u.s
+        log_edges = np.asarray([tmin/u.s])
+        total_log_bins = (math.pow(base,tmax/u.s)-math.pow(base,dt/u.s))/(dt/u.s)
+        
+        # now check for bin limit
+        bin_limit = 2000
+        calculated_limit = int(math.floor(total_log_bins))
+        print(os.environ['SNEWPYTERNARY_BIN_LIMIT'])
+        try:
+            
+            bin_limit = int(os.environ['$SNEWPYTERNARY_BIN_LIMIT'])
+        except:
+            print('$SNEWPYTERNARY_BIN_LIMIT variable not set. Using defvault max log bin value of {bin_limit}')
+        bin_limit  = bin_limit if bin_limit < calculated_limit else calculated_limit
+        print(f'Using {bin_limit} log bins')
+        
+        for l_bin_no in range(0,bin_limit):
+            a=float(dt/u.s)
+            new_size = math.log(a*float(l_bin_no)+float(math.pow(base,a)))
+            log_edges = np.append(log_edges,new_size)
+        log_edges = log_edges*u.s
         times = 0.5*(log_edges[1:] + log_edges[:-1])
-    print(list(times))
 
     # Generate output.
     if output_filename is not None:

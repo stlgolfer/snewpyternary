@@ -46,19 +46,19 @@ print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time
 
 profiles = handlers.build_detector_profiles()
 # create scintillator detector analysis
-plot_data, raw_data, l_data = t.create_detector_event_scatter(
-    modelFilePath,model_type,
-    detector,
-    model,
-    deltat=deltat,
-    transformation=transform,
-    data_calc=profiles[detector]['handler'],
-    use_cache=True
-    )
+# plot_data, raw_data, l_data = t.create_detector_event_scatter(
+#     modelFilePath,model_type,
+#     detector,
+#     model,
+#     deltat=deltat,
+#     transformation=transform,
+#     data_calc=profiles[detector]['handler'],
+#     use_cache=True
+#     )
 
-t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
-                      '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
-                      ylab="Event Counts",use_x_log=False,save=True)
+# t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
+#                       '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
+#                       ylab="Event Counts",use_x_log=False,save=True)
 
 # now log-ify the bins
 # def bin_func(bin_no):
@@ -93,7 +93,7 @@ l_plot_data, l_raw_data, l_l_data = t.create_detector_event_scatter(
     deltat=deltat,
     transformation=transform,
     data_calc=profiles[detector]['handler'],
-    use_cache=False,
+    use_cache=True,
     log_bins=True
     )
 
