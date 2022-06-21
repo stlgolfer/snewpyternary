@@ -32,7 +32,7 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-step_size = 0.05 # 0.04 for better results
+step_size = 0.01 # 0.04 for better results
 deltat=step_size*u.s
 detector = 'wc100kt30prct'
 d = 10 # in pc, distance to SN
@@ -93,7 +93,7 @@ l_plot_data, l_raw_data, l_l_data = t.create_detector_event_scatter(
     deltat=deltat,
     transformation=transform,
     data_calc=profiles[detector]['handler'],
-    use_cache=True,
+    use_cache=False,
     log_bins=True
     )
 
