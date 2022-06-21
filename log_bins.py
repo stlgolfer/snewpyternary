@@ -93,7 +93,7 @@ l_plot_data, l_raw_data, l_l_data = t.create_detector_event_scatter(
     deltat=deltat,
     transformation=transform,
     data_calc=profiles[detector]['handler'],
-    use_cache=True,
+    use_cache=False,
     log_bins=True
     )
 

@@ -100,22 +100,21 @@ def w_generate_time_series(model_path,
         dt = (tmax - tmin) / (ntbins+1)
 
     tedges = np.arange(tmin/u.s, tmax/u.s, dt/u.s)*u.s
+    print(type(tedges[1:]))
     times = 0.5*(tedges[1:] + tedges[:-1])
     # print(list(times))
     
     # now process log data
     if (log_bins==True):
-        log_times = []
-        for t in times:
-            # print(t.value)
-            if (t.value > 0):
-                # TODO: rejecting negative log time values for now, but could just plot in future
-                log_time = math.log(t.value)*t.unit
-                
-                if log_time > tmin or log_time < tmax:
-                    log_times.append(log_time)
-        times = log_times
-    # print(list(times))
+        base = 1.5
+        log_edges = [tmin]
+        total_log_bins = (math.pow(base,tmax.value)-math.pow(base,dt.value))/(dt.value)
+        print(total_log_bins)
+        for l_bin_no in range(0,int(math.floor(total_log_bins))):
+            a=dt.value
+            a*float(l_bin_no)*u.s
+        times = 0.5*(log_edges[1:] + log_edges[:-1])
+    print(list(times))
 
     # Generate output.
     if output_filename is not None:
