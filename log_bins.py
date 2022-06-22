@@ -46,15 +46,16 @@ print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time
 
 profiles = handlers.build_detector_profiles()
 # create scintillator detector analysis
-# plot_data, raw_data, l_data = t.create_detector_event_scatter(
-#     modelFilePath,model_type,
-#     detector,
-#     model,
-#     deltat=deltat,
-#     transformation=transform,
-#     data_calc=profiles[detector]['handler'],
-#     use_cache=True
-#     )
+plot_data, raw_data, l_data = t.create_detector_event_scatter(
+    modelFilePath,model_type,
+    detector,
+    model,
+    deltat=deltat,
+    transformation=transform,
+    data_calc=profiles[detector]['handler'],
+    use_cache=True
+    )
+t.create_default_detector_plot(plot_data, profiles[detector]['axes'](), f'Nakazato {transform} dt={str(deltat)}')
 
 # t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
 #                       '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
@@ -93,10 +94,11 @@ l_plot_data, l_raw_data, l_l_data = t.create_detector_event_scatter(
     deltat=deltat,
     transformation=transform,
     data_calc=profiles[detector]['handler'],
-    use_cache=False,
+    use_cache=True,
     log_bins=True
     )
 
 t.create_regular_plot(l_raw_data, ['ibd','nue+es','nc'],
                       '{model} {detector} {transform} Logged Bins'.format(model=model_type,detector=detector,transform=transform),
                       ylab="Event Counts",xlab="Logged Time Bin No",use_x_log=False,save=True)
+t.create_default_detector_plot(l_plot_data, profiles[detector]['axes'](), f'Nakazato {transform} dt={str(deltat)} Logged Bins')

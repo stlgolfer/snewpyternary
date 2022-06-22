@@ -105,8 +105,8 @@ def w_generate_time_series(model_path,
     
     # now process log data
     if (log_bins==True):
-        base = 1.1
-        log_edges = np.asarray([tmin/u.s])
+        base = 2
+        log_edges = np.asarray([tmin/u.s if tmin/u.s>0 else -tmin/u.s])
         total_log_bins = (base**(tmax/u.s + tmin/u.s) - base)/(base*math.log(base,math.e)+dt/u.s)
         # (math.pow(base,tmax/u.s)-math.pow(base,dt/u.s))/(dt/u.s)
         
@@ -120,13 +120,28 @@ def w_generate_time_series(model_path,
         bin_limit  = bin_limit if bin_limit < calculated_limit else calculated_limit
         print(f'Using {bin_limit} log bins')
         
-        for l_bin_no in range(0,bin_limit):
-            a=float(dt/u.s)
-            new_size = math.log(a*float(l_bin_no)+float(math.pow(base,a)))
-            log_edges = np.append(log_edges,log_edges[-1] + new_size)
+        # for l_bin_no in range(0,bin_limit):
+        l_bin_no = 0
+        lin_time = log_edges[0] # tracker for where we are in linear space
+        # going to try and just continually iterate through linear space using
+        # the linear delta and generate
+        while lin_time <= tmax/u.s and log_edges[-1] <= tmax/u.s:
+            print(log_edges[-1])
+            print(lin_time)
+            
+            # new_size = math.log(a*float(l_bin_no)+float(base**a),base)
+            log_coord = math.log(lin_time,base)
+            if log_coord >= tmin/u.s:
+                log_edges = np.append(log_edges,log_coord)
+                l_bin_no+=1
+            lin_time+=dt/u.s
         log_edges = log_edges*u.s
         times = 0.5*(log_edges[1:] + log_edges[:-1])
         print(times)
+        plt.figure()
+        plt.scatter([no for no in range(len(times))], [math.pow(base,t/u.s) for t in times])
+        plt.show()
+        print(len(times))
 
     # Generate output.
     if output_filename is not None:
