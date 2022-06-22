@@ -11,17 +11,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy import units as u
 from snewpy.neutrino import Flavor, MassHierarchy
-from snewpy.models import Nakazato_2013
+from snewpy.models import Nakazato_2013,Walk_2018
 from snewpy.flavor_transformation import NoTransformation # just use NoTransformation for now to keep things simple
 import os
-import ternary
 import snewpyternary as t
 import data_handlers as handlers
-from matplotlib.animation import PillowWriter
-import PIL
-import imageio
-import math
-import snowglobes_wrapper as wrapper
 
 import sys
 sys.path.insert(0,'./SURF2020fork')
@@ -46,59 +40,35 @@ print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time
 
 profiles = handlers.build_detector_profiles()
 # create scintillator detector analysis
-# plot_data, raw_data, l_data = t.create_detector_event_scatter(
-#     modelFilePath,model_type,
-#     detector,
-#     model,
-#     deltat=deltat,
-#     transformation=transform,
-#     data_calc=profiles[detector]['handler'],
-#     use_cache=True
-#     )
-# t.create_default_detector_plot(plot_data, profiles[detector]['axes'](), f'Nakazato {transform} dt={str(deltat)}')
-
-# t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
-#                       '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
-#                       ylab="Event Counts",use_x_log=True,save=True)
-
-# now log-ify the bins
-# def bin_func(bin_no):
-#     return math.ceil(math.log(bin_no+1))
-
-# # we could create a map how many bins there should be in each logged bin
-# # and then add per that prescription
-# log_bin_sizes = list(map(bin_func,np.arange(0,len(raw_data))))
-
-# # now iterate through the bins
-# next_bin_to_use = 0
-# log_bin_no = -1 # so we start on 0th bin
-# log_raw_data = []
-# while next_bin_to_use < len(raw_data):
-#     start_index = next_bin_to_use
-#     collected = [0, 0, 0] # 0 blank array
-#     log_bin_no+=1
-#     log_bin = bin_func(log_bin_no)
-#     for x in range(start_index,start_index+log_bin):
-#         collected = np.add(collected,list(raw_data[x]))
-#         next_bin_to_use+=1
-#     log_raw_data.append(collected)
-
-# t.create_regular_plot(log_raw_data, ['ibd','nue+es','nc'],
-#                       '{model} {detector} {transform} Logged Bins'.format(model=model_type,detector=detector,transform=transform),
-#                       ylab="Event Counts",xlab="Logged Time Bin No",use_x_log=False,save=True)
-
-l_plot_data, l_raw_data, l_l_data = t.create_detector_event_scatter(
+plot_data, raw_data, l_data = t.create_detector_event_scatter(
     modelFilePath,model_type,
     detector,
     model,
     deltat=deltat,
     transformation=transform,
     data_calc=profiles[detector]['handler'],
-    use_cache=False,
-    log_bins=True
+    use_cache=True
     )
+t.create_default_detector_plot(plot_data, profiles[detector]['axes'](), f'Nakazato {transform} dt={str(deltat)}')
 
-t.create_regular_plot(l_raw_data, ['ibd','nue+es','nc'],
-                      '{model} {detector} {transform} Logged Bins'.format(model=model_type,detector=detector,transform=transform),
-                      ylab="Event Counts",xlab="Logged Time Bin No",use_x_log=False,save=True)
-t.create_default_detector_plot(l_plot_data, profiles[detector]['axes'](), f'Nakazato {transform} dt={str(deltat)} Logged Bins')
+t.create_regular_plot(raw_data, profiles[detector]['axes'](),
+                      '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
+                      ylab="Event Counts",use_x_log=False,save=True)
+
+for detector in profiles.keys():
+    l_plot_data, l_raw_data, l_l_data = t.create_detector_event_scatter(
+        modelFilePath,model_type,
+        detector,
+        model,
+        deltat=deltat,
+        transformation=transform,
+        data_calc=profiles[detector]['handler'],
+        use_cache=True,
+        log_bins=True
+        )
+    
+    t.create_regular_plot(l_raw_data, ['ibd','nue+es','nc'],
+                          '{model} {detector} {transform} Logged Bins'.format(model=model_type,detector=detector,transform=transform),
+                          ylab="Event Counts",xlab="Logged Time Bin No",use_x_log=False,save=True,show=False)
+    t.create_default_detector_plot(l_plot_data, profiles[detector]['axes'](),
+                                   f'Nakazato {detector} {transform} dt={str(deltat)} Logged Bins',show=False)

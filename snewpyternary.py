@@ -281,7 +281,8 @@ def create_regular_plot(plot_data,
                         x_axis=None,
                         use_x_log=False,
                         use_y_log=False,
-                        save=True):
+                        save=True,
+                        show=True):
     '''
     Creates a matplotlib scatter plot of simulated, un-normalized data
     from the ternary scatter plot generators
@@ -300,6 +301,8 @@ def create_regular_plot(plot_data,
         On the x-axis, should it plot in log mode?
     save : bool
         save the plot or not to './plots'
+    show : bool
+        Show the plot?
         
     Returns
     -------
@@ -332,7 +335,8 @@ def create_regular_plot(plot_data,
     plt.legend()
     if save:
         plt.savefig(f'./plots/{plot_title}')
-    plt.show()
+    if show:
+        plt.show()
     return
         
 def create_flux_scatter(modelFilePath,
