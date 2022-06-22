@@ -32,7 +32,7 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-step_size = 0.01 # 0.04 for better results
+step_size = 0.1 # 0.04 for better results
 deltat=step_size*u.s
 detector = 'wc100kt30prct'
 d = 10 # in pc, distance to SN
@@ -46,20 +46,20 @@ print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time
 
 profiles = handlers.build_detector_profiles()
 # create scintillator detector analysis
-plot_data, raw_data, l_data = t.create_detector_event_scatter(
-    modelFilePath,model_type,
-    detector,
-    model,
-    deltat=deltat,
-    transformation=transform,
-    data_calc=profiles[detector]['handler'],
-    use_cache=True
-    )
-t.create_default_detector_plot(plot_data, profiles[detector]['axes'](), f'Nakazato {transform} dt={str(deltat)}')
+# plot_data, raw_data, l_data = t.create_detector_event_scatter(
+#     modelFilePath,model_type,
+#     detector,
+#     model,
+#     deltat=deltat,
+#     transformation=transform,
+#     data_calc=profiles[detector]['handler'],
+#     use_cache=True
+#     )
+# t.create_default_detector_plot(plot_data, profiles[detector]['axes'](), f'Nakazato {transform} dt={str(deltat)}')
 
 # t.create_regular_plot(raw_data, ['ibd','nue+es','nc'],
 #                       '{model} {detector} {transform}'.format(model=model_type,detector=detector,transform=transform),
-#                       ylab="Event Counts",use_x_log=False,save=True)
+#                       ylab="Event Counts",use_x_log=True,save=True)
 
 # now log-ify the bins
 # def bin_func(bin_no):
@@ -94,7 +94,7 @@ l_plot_data, l_raw_data, l_l_data = t.create_detector_event_scatter(
     deltat=deltat,
     transformation=transform,
     data_calc=profiles[detector]['handler'],
-    use_cache=True,
+    use_cache=False,
     log_bins=True
     )
 

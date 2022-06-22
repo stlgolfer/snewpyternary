@@ -105,43 +105,50 @@ def w_generate_time_series(model_path,
     
     # now process log data
     if (log_bins==True):
-        base = 2
-        log_edges = np.asarray([tmin/u.s if tmin/u.s>0 else -tmin/u.s])
-        total_log_bins = (base**(tmax/u.s + tmin/u.s) - base)/(base*math.log(base,math.e)+dt/u.s)
+        base = 10
+        log_edges = np.asarray([])
+        # total_log_bins = (base**(tmax/u.s + tmin/u.s) - base)/(base*math.log(base,math.e)+dt/u.s)
         # (math.pow(base,tmax/u.s)-math.pow(base,dt/u.s))/(dt/u.s)
         
         # now check for bin limit
-        bin_limit = 2000
-        calculated_limit = int(math.floor(total_log_bins))
+        bin_limit = 1000
         try:
             bin_limit = int(os.environ['SNEWPYTERNARY_BIN_LIMIT'])
         except:
             print('$SNEWPYTERNARY_BIN_LIMIT variable not set. Using defvault max log bin value of {bin_limit}')
-        bin_limit  = bin_limit if bin_limit < calculated_limit else calculated_limit
         print(f'Using {bin_limit} log bins')
         
         # for l_bin_no in range(0,bin_limit):
         l_bin_no = 0
-        lin_time = log_edges[0] # tracker for where we are in linear space
+        # lin_time = log_edges[0] + dt/u.s # tracker for where we are in linear space
         # going to try and just continually iterate through linear space using
         # the linear delta and generate
-        while lin_time <= tmax/u.s and log_edges[-1] <= tmax/u.s:
-            print(log_edges[-1])
-            print(lin_time)
-            
-            # new_size = math.log(a*float(l_bin_no)+float(base**a),base)
-            log_coord = math.log(lin_time,base)
-            if log_coord >= tmin/u.s:
-                log_edges = np.append(log_edges,log_coord)
-                l_bin_no+=1
-            lin_time+=dt/u.s
+        tstep = math.log10(abs(tmax/tmin))/len(times)
+        offset = 0.02
+        print(offset)
+        # while l_bin_no <= bin_limit and log_edges[-1]*u.s <= tmax:
+        #     # new_size = math.log(a*float(l_bin_no)+float(base**a),base)
+        #     corrected_coord = lin_time if lin_time > 0 else lin_time - tmin/u.s
+        #     # print(corrected_coord)
+        #     log_coord = base**corrected_coord
+        #     if log_coord >= tmin/u.s:
+        #         log_edges = np.append(log_edges,log_coord)
+        #         l_bin_no+=1
+        #         # TODO: add a check for max bin count
+        #     lin_time+=dt/u.s
+        for i in range(0,len(times)):
+            t = 0.01*(10**(i*tstep))
+            # print(t)
+            log_edges = np.append(log_edges,t-offset)
+        # log_edges = np.logspace(math.log((tmin/u.s).value),math.log((tmax/u.s).value),len(times))
+        # print((tmax/u.s).value)
         log_edges = log_edges*u.s
         times = 0.5*(log_edges[1:] + log_edges[:-1])
         print(times)
         plt.figure()
-        plt.scatter([no for no in range(len(times))], [math.pow(base,t/u.s) for t in times])
+        plt.scatter([no for no in range(len(times))], times)
         plt.show()
-        print(len(times))
+        # print(len(times))
 
     # Generate output.
     if output_filename is not None:
