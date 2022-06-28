@@ -14,6 +14,7 @@ import ternary
 import math
 from functools import cmp_to_key
 import caching as ca
+import snowglobes_wrapper as wrapper
 
 import io
 import tarfile
@@ -56,7 +57,8 @@ def create_detector_event_scatter(
         transformation="NoTransformation",
         smearing="smeared",
         weighting="weighted",
-        use_cache=False
+        use_cache=False,
+        log_bins=False
         ):
     '''
     Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
@@ -98,6 +100,8 @@ def create_detector_event_scatter(
     use_cache : bool
         Use the internal cache system. If false, data will always be regenerated.
         And stored in the cache just in case
+    log_bins : bool
+        Use log bins or not
 
     Returns
     -------
@@ -110,7 +114,7 @@ def create_detector_event_scatter(
         raise("Cannot accept 'all' as detector type")
         
     # check the cache
-    cache_base = f'{model_type}_{transformation}_d{d}_{detector}_dt{str(deltat)}'
+    cache_base = f'{model_type}_{transformation}_d{d}_{detector}_dt{str(deltat)}_log{log_bins}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
         print('Cache hit. Loading from cache')
@@ -122,13 +126,14 @@ def create_detector_event_scatter(
     snowglobes_out_name="snowglobes-output"
     snowglobes_dir = os.environ['SNOWGLOBES']
     
-    tball_complete = snowglobes.generate_time_series(
+    tball_complete = wrapper.w_generate_time_series(
         model_path=modelFilePath,
         model_type=model_type,
         transformation_type=transformation,
         d=d,
         output_filename=snowglobes_out_name,
-        deltat=deltat
+        deltat=deltat,
+        log_bins=log_bins
         )
     print("NEW SNOwGLoBES Simulation\n=============================")
     print("Using detector schema: " + detector)
@@ -276,7 +281,8 @@ def create_regular_plot(plot_data,
                         x_axis=None,
                         use_x_log=False,
                         use_y_log=False,
-                        save=True):
+                        save=True,
+                        show=True):
     '''
     Creates a matplotlib scatter plot of simulated, un-normalized data
     from the ternary scatter plot generators
@@ -295,6 +301,8 @@ def create_regular_plot(plot_data,
         On the x-axis, should it plot in log mode?
     save : bool
         save the plot or not to './plots'
+    show : bool
+        Show the plot?
         
     Returns
     -------
@@ -327,7 +335,8 @@ def create_regular_plot(plot_data,
     plt.legend()
     if save:
         plt.savefig(f'./plots/{plot_title}')
-    plt.show()
+    if show:
+        plt.show()
     return
         
 def create_flux_scatter(modelFilePath,
