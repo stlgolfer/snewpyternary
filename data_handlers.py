@@ -35,31 +35,45 @@ def build_detector_profiles():
             }
     return detector_defs
 
+'''
+What follows are the calculations that are made for each time bin when collated
+data comes through. Each time bin has event rates per energy bin. Order should
+be nc, nu_e+es, then inverse beta decay events.
+
+Treat all the NC as nux,  all the nue-nucleus and ES as nue, and IBD+nuebar-nucleus as nuebar
+'''
+
 def h_scint20kt(data):
     # must return a list of a, b, c
+    nue_plus_es=np.sum(data['nue_C12'])+np.sum(data['nue_C13']+data['e']) # nue
     ibd = np.sum(data['ibd'])
-    nue_plus_es=np.sum(data['nue_C12'])+np.sum(data['nue_C13']+data['e'])
     nc = np.sum(data['nc'])
-    return [ibd,nue_plus_es,nc]
+    return [nc,nue_plus_es,ibd]
 
 def h_ar40kt(data):
-    return [np.sum(data['nue_Ar40']),np.sum(data['nuebar_Ar40']),np.sum(data['nc'])]
+    nue_plus_es = np.sum(data['nue_Ar40'])+np.sum(data['e'])
+    nc = np.sum(data['nc'])
+    nue_bar = np.sum(data['nuebar_Ar40'])
+    return [nc,nue_plus_es,nue_bar]
 
 def h_wc100kt30prct(data):
     ibd = np.sum(data['ibd'])
     nue_plus_es=np.sum(data['nue_O16'])+np.sum(data['e'])
     nc = np.sum(data['nc'])
-    return [ibd,nue_plus_es,nc]
+    return [nc,nue_plus_es,ibd]
 
 '''
 Data handler axes labels definitions
 '''
 
+def same_axes():
+    return [r'$\nu_x$',r'$\nu_e$',r'$\bar{\nu_e}$']
+
 def axes_scint20kt():
-    return ['ibd','nue+es','nc']
+    return same_axes()
 
 def axes_ar40kt():
-    return ['nue','nuebar','nc']
+    return same_axes()
 
 def axes_wc100kt30prct():
-    return ['ibd','nue+es','nc']
+    return same_axes()

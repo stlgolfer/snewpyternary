@@ -34,19 +34,19 @@ modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
-step = 0.04 #0.01 for best results
+step = 0.1 #0.01 for best results
 deltat=step*u.s
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
 print(os.environ['SNOWGLOBES'])
 smearing = 'smeared'
-multithreading = True # only use this when you don't need output
 print(f'Timeframe of model is from {model.time[0]} to {model.time[len(model.time)-1]}')
 
 # pulled the following from snowglobes-snewpy integration code
 flavor_transformation_dict = {'NoTransformation': NoTransformation(), 'AdiabaticMSW_NMO': AdiabaticMSW(mh=MassHierarchy.NORMAL), 'AdiabaticMSW_IMO': AdiabaticMSW(mh=MassHierarchy.INVERTED), 'NonAdiabaticMSWH_NMO': NonAdiabaticMSWH(mh=MassHierarchy.NORMAL), 'NonAdiabaticMSWH_IMO': NonAdiabaticMSWH(mh=MassHierarchy.INVERTED), 'TwoFlavorDecoherence': TwoFlavorDecoherence(), 'ThreeFlavorDecoherence': ThreeFlavorDecoherence(), 'NeutrinoDecay_NMO': NeutrinoDecay(mh=MassHierarchy.NORMAL), 'NeutrinoDecay_IMO': NeutrinoDecay(mh=MassHierarchy.INVERTED)}
 transform_list = list(flavor_transformation_dict.keys())
+transformation = 'AdiabaticMSW_NMO'
 
 profiles = handlers.build_detector_profiles()
 
@@ -59,35 +59,35 @@ def process_detector(detector, transform):
                                                 deltat=deltat,
                                                 transformation=transform,
                                                 data_calc=profiles[detector]['handler'],
-                                                use_cache=True
+                                                use_cache=True,
+                                                log_bins=True
                                                 )
     # also create heatmap using Rishi's code
-    heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
+    # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
     figure, tax = t.create_default_detector_plot(plot_data,
                                                   profiles[detector]['axes'](),
                                                   f'{model_type} {detector} {transform} Ternary',
-                                                  heatmap=heatmap_dict,
-                                                  show=False,
+                                                  show=True,
                                                   save=True)
     # create left-point time bins
-    time_bins = []
-    for point in range(len(raw_data)):
-        coordinate = (point*step)+0.5
-        time_bins.append(coordinate)
-        #if coordinate < 1: # this is for limiting the time domain
+    # time_bins = []
+    # for point in range(len(raw_data)):
+    #     coordinate = (point*step)+0.5
+    #     time_bins.append(coordinate)
+    #     #if coordinate < 1: # this is for limiting the time domain
             
-    t.create_regular_plot(
-        plot_data=raw_data[:len(time_bins)],
-        axes_titles=profiles[detector]['axes'](),
-        plot_title=f'{model_type} {detector} {transform}',
-        ylab="Event Counts",
-        xlab="Right Time Bin Coordinate (s)",
-        x_axis=time_bins,
-        save=True,
-        use_x_log=True,
-        use_y_log=True
-        )
-    return figure, tax, plot_data, raw_data, heatmap_dict
+    # t.create_regular_plot(
+    #     plot_data=raw_data[:len(time_bins)],
+    #     axes_titles=profiles[detector]['axes'](),
+    #     plot_title=f'{model_type} {detector} {transform}',
+    #     ylab="Event Counts",
+    #     xlab="Right Time Bin Coordinate (s)",
+    #     x_axis=time_bins,
+    #     save=True,
+    #     use_x_log=True,
+    #     use_y_log=True
+    #     )
+    return plot_data, raw_data
 
 def process_flux(transform):
     flux_scatter_data,raw_data= t.create_flux_scatter(modelFilePath, model_type, model, deltat=deltat, transform=transform,use_cache=True)
@@ -95,14 +95,14 @@ def process_flux(transform):
     for point in range(len(raw_data)):
         time_bins.append((point*step)+0.5)
     t.create_default_flux_plot(flux_scatter_data, "{model} Flux {transform}".format(model=model_type,transform=transform))
-    t.create_regular_plot(
-        plot_data=raw_data,
-        x_axis=time_bins,
-        axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-        plot_title=f'{model_type} Truth Flux {transform}',
-        ylab="Total Integrated Flux flavor/cm^2",
-        xlab="Right Time in Coordinate (s)",
-        use_x_log=True)
+    # t.create_regular_plot(
+    #     plot_data=raw_data,
+    #     x_axis=time_bins,
+    #     axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
+    #     plot_title=f'{model_type} Truth Flux {transform}',
+    #     ylab="Total Integrated Flux flavor/cm^2",
+    #     xlab="Right Time in Coordinate (s)",
+    #     use_x_log=False,save=True)
 
 transforms_to_analyze = ['AdiabaticMSW_NMO','AdiabaticMSW_IMO']
 
@@ -116,39 +116,64 @@ def remap_dict(dictionary,newval):
             new_dict[k] = 0
     return new_dict
 
+p_data, r_data = process_detector('ar40kt',transformation)
+# need to convert data to an array
+all_plot_data = [list(key) for key in r_data]# going to take each detector and add them up
+
+for detector in ['wc100kt30prct','scint20kt']:
+    p_data, r_data = process_detector(detector,transformation)
+    all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
+# need to figure out a way to sum all the detectors
+# now renormalize and convert all points back to tuples
+t.create_regular_plot(r_data, ['nc','nue+es','ibd'], 'Regular plot of *Detectors', ylab='Event rate')
+
+normalized = []
+for point in all_plot_data:
+    a=point[0]
+    b=point[1]
+    c=point[2]
+    tot=a+b+c
+    normalized.append((a/tot,b/tot,c/tot))
+# all_plot_data = [tuple(point[0]) for point in all_plot_data]
+figure, tax = t.create_default_detector_plot(normalized,
+                                              handlers.same_axes(),
+                                              f'{model_type} *Detectors {transformation} Ternary Logged Bins',
+                                              show=True,
+                                              save=True)
+process_flux(transformation)
+
 # for d in handlers.supported_detectors:
-for d in handlers.supported_detectors:
-    nmo_figure, nmo_tax, nmo_plot_data, nmo_raw_data, nmo_hp = process_detector(d,transforms_to_analyze[0])
-    imo_figure, imo_tax, imo_plot_data, imo_raw_data, imo_hp = process_detector(d,transforms_to_analyze[1])
+# for d in handlers.supported_detectors:
+#     nmo_figure, nmo_tax, nmo_plot_data, nmo_raw_data, nmo_hp = process_detector(d,transforms_to_analyze[0])
+#     imo_figure, imo_tax, imo_plot_data, imo_raw_data, imo_hp = process_detector(d,transforms_to_analyze[1])
     
-    # just gonna have to create a new graph for combining things
-    figure, tax = ternary.figure(scale=100)
-    tax.boundary(linewidth=2.0)
-    tax.gridlines(color="black", multiple=10)
-    title = f'{model_type} {d} NMO vs IMO'
-    tax.set_title(title)
-    # data is organized in top, right, left
+#     # just gonna have to create a new graph for combining things
+#     figure, tax = ternary.figure(scale=100)
+#     tax.boundary(linewidth=2.0)
+#     tax.gridlines(color="black", multiple=10)
+#     title = f'{model_type} {d} NMO vs IMO'
+#     tax.set_title(title)
+#     # data is organized in top, right, left
     
-    axes_titles = profiles[d]['axes']()
-    ### TODO: make sure that data_files[1] actually points to something that can get the header
-    tax.bottom_axis_label(axes_titles[0])
-    tax.right_axis_label(axes_titles[1])
-    tax.left_axis_label(axes_titles[2])
+#     axes_titles = profiles[d]['axes']()
+#     ### TODO: make sure that data_files[1] actually points to something that can get the header
+#     tax.bottom_axis_label(axes_titles[0])
+#     tax.right_axis_label(axes_titles[1])
+#     tax.left_axis_label(axes_titles[2])
+#     d1 = nmo_hp.copy()
+#     d2 = imo_hp.copy()
+#     newval = 0.6
+#     d2 = remap_dict(d2,newval)
+#     tax.heatmap(consolidate_heatmap_data(d1,d2),cbarlabel='In 68% CL')
     
-    d1 = nmo_hp.copy()
-    d2 = imo_hp.copy()
-    newval = 0.6
-    d2 = remap_dict(d2,newval)
-    tax.heatmap(consolidate_heatmap_data(d1,d2),cbarlabel='In 68% CL')
+#     tax.scatter(points=nmo_plot_data, color='red')
+#     tax.scatter(points=imo_plot_data, color='blue')
     
-    tax.scatter(points=nmo_plot_data, color='red')
-    tax.scatter(points=imo_plot_data, color='blue')
-    
-    tax.ticks(axis='lbr', linewidth=1, multiple=10)
-    tax.clear_matplotlib_ticks()
-    # tax.get_axes().axis('off') # disables regular matlab plot axes
-    tax.show()
-    tax.savefig(f'./plots/{title}.png')
+#     tax.ticks(axis='lbr', linewidth=1, multiple=10)
+#     tax.clear_matplotlib_ticks()
+#     # tax.get_axes().axis('off') # disables regular matlab plot axes
+#     tax.show()
+#     tax.savefig(f'./plots/{title}.png')
 
 # for trans in transforms_to_analyze: process_flux(trans)
 
