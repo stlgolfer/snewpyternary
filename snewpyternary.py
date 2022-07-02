@@ -345,7 +345,8 @@ def create_flux_scatter(modelFilePath,
                         deltat,
                         d=10,
                         transform="NoTransformation",
-                        use_cache=False
+                        use_cache=False,
+                        log_bins=False
                         ):
     '''
     Similar to create_detector_event_scatter, although here we are just plotting
@@ -392,12 +393,13 @@ def create_flux_scatter(modelFilePath,
     #print("Using detector schema: " + detector)
     print("Using transform: " + transform)
     print("=============================")
-    tarball_path = snowglobes.generate_time_series(
+    tarball_path = wrapper.w_generate_time_series(
         model_path=modelFilePath,
         model_type=modeltype,
         transformation_type=transform,
         d=d,
-        deltat=deltat
+        deltat=deltat,
+        log_bins=log_bins
         )
     fluence_data = []
     with TemporaryDirectory(prefix='snowglobes') as tempdir:
@@ -431,8 +433,9 @@ def create_flux_scatter(modelFilePath,
         b=math.log(aNuE) if use_log else aNuE
         c=math.log(NuE) if use_log else NuE
         total = a+b+c
-        plotting_data.append((scale*a/total,scale*c/total,scale*b/total))
+        plotting_data.append((scale*a/total,scale*b/total,scale*c/total))
         raw.append((NuX+aNuX,aNuE,NuE))
+    # data is organized into nux,aNuE,NuE
         
     ca.cache(f'{cache_base}_plot_data', plotting_data)
     ca.cache(f'{cache_base}_raw_data', raw)
@@ -466,8 +469,8 @@ def create_default_flux_plot(plotting_data,plot_title,save=True):
 
     ### TODO: make sure that data_files[1] actually points to something that can get the header
     tax.bottom_axis_label(r'$\nu_x$')
-    tax.left_axis_label(r'$\bar{\nu_e}$')
-    tax.right_axis_label(r'$\nu_e$')
+    tax.right_axis_label(r'$\bar{\nu_e}$')
+    tax.left_axis_label(r'$\nu_e$')
 
     tax.scatter(points=plotting_data, color="red")
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
