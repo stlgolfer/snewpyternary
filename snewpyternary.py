@@ -481,3 +481,16 @@ def create_default_flux_plot(plotting_data,plot_title,save=True):
     if save:
         tax.savefig(f'./plots/{plot_title}')
     return figure, tax
+
+# make an abstraction for analysis config
+class MetaAnalysisConfig:
+    def __init__(
+            self,
+            model_file_path,
+            model_type,
+            model,
+            transformation):
+        self.model_file_path = model_file_path
+        self.model_type = model_type
+        self.model = model
+        self.transformation = transformation
