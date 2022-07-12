@@ -144,16 +144,10 @@ def process_transformation(config):
 
     tax.show()
 
-modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
-modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
-model = Nakazato_2013(modelFilePath)
-model_type="Nakazato_2013"
+from model_wrappers import snewpy_models
 
-configs = [
-    t.MetaAnalysisConfig(modelFilePath,model_type,model,'NoTransformation')
-    ]
-
-process_transformation(configs[0])
+for transformation in transforms_to_analyze:
+    process_transformation(t.MetaAnalysisConfig(snewpy_models['Nakazato_2013'], transformation))
 
 # for d in handlers.supported_detectors:
 # for d in handlers.supported_detectors:
