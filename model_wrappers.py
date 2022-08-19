@@ -6,7 +6,7 @@ Created on Mon Jul 11 23:43:12 2022
 @author: physics
 """
 
-from snewpy.models import Nakazato_2013, Bollig_2016
+from snewpy.models import *
 
 class SNEWPYModel:
     """
@@ -18,10 +18,80 @@ class SNEWPYModel:
         self.file_path = file_path
         self.model_type = model_type
         self.model = model
-
-# now we must process each one
+        #TODO: must also include a time step that makes sense
 
 snewpy_models = {}
+
+'''
+Zha_2021
+'''
+fname = './SNEWPY_models/Zha_2021/s17.dat'
+snewpy_models['Zha_2021'] = SNEWPYModel(
+    fname,
+    'Zha_2021',
+    Zha_2021(fname)
+    )
+
+'''
+Warren_2020
+'''
+fname = './SNEWPY_models/Warren_2020/stir_a1.23/stir_multimessenger_a1.23_m10.0.h5'
+snewpy_models['Warren_2020'] = SNEWPYModel(
+    fname,
+    'Warren_2020',
+    Warren_2020(fname)
+    )
+
+'''
+Walk_2018
+'''
+fname = './SNEWPY_models/Walk_2018/s15.0c_3D_nonrot_dir1'
+snewpy_models['Walk_2018'] = SNEWPYModel(
+    fname,
+    'Walk_2018',
+    Walk_2018(fname)
+    )
+
+'''
+Tamborra_2014
+'''
+fname = './SNEWPY_models/Tamborra_2014/s20.0c_3D_dir1'
+snewpy_models['Tamborra_2014'] = SNEWPYModel(
+    fname,
+    'Tamborra_2014',
+    Tamborra_2014(fname)
+    )
+
+'''
+Sukhbold_2015
+'''
+fname = './SNEWPY_models/Sukhbold_2015/sukhbold-SFHo-z9.6.fits'
+snewpy_models['Sukhbold_2015'] = SNEWPYModel(
+    fname,
+    'Sukhbold_2015',
+    Sukhbold_2015(fname)
+    )
+
+'''
+Kuroda_2020
+'''
+# TODO: note that there are several different models in this set
+fname = './SNEWPY_models/Kuroda_2020/LnuR00B00.dat'
+snewpy_models['Kuroda_2020'] = SNEWPYModel(
+    fname,
+    'Kuroda_2020',
+    Kuroda_2020(fname)
+    )
+
+'''
+Fornax_2021
+'''
+fname = './SNEWPY_models/Fornax_2021/lum_spec_12M_r10000_dat.h5'
+snewpy_models['Fornax_2021'] = SNEWPYModel(
+    fname,
+    'Fornax_2021',
+    Fornax_2021(fname)
+    )
 
 '''
 Nakazato_2013
@@ -50,4 +120,15 @@ snewpy_models['Walk_2019'] = SNEWPYModel(
     fname,
     'Walk_2019',
     Bollig_2016(fname)
+    )
+
+
+'''
+Fornax_2019
+'''
+fname = './SNEWPY_models/Fornax_2019/lum_spec_10M.h5'
+snewpy_models['Fornax_2019'] = SNEWPYModel(
+    fname,
+    'Fornax_2019',
+    Fornax_2019(fname)
     )
