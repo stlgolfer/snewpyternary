@@ -20,7 +20,7 @@ import ternary
 import math
 from snewpy.flavor_transformation import *
 import data_handlers as handlers
-from multiprocessing import Process
+import multiprocessing as mp
 import caching as cache
 import sys
 sys.path.insert(0,'./SURF2020fork')
@@ -129,7 +129,8 @@ def process_transformation(config):
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    tax.set_title(f'{config.model_type} *Detectors {config.transformation} Ternary Logged Bins')
+    title=f'{config.model_type} *Detectors {config.transformation} Ternary Logged Bins'
+    tax.set_title(title)
     # data is organized in top, right, left
 
     ### TODO: make sure that data_files[1] actually points to something that can get the header
@@ -141,13 +142,18 @@ def process_transformation(config):
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
-
+    tax.savefig(title)
     tax.show()
 
 from model_wrappers import snewpy_models
 
-for transformation in transforms_to_analyze:
-    process_transformation(t.MetaAnalysisConfig(snewpy_models['Nakazato_2013'], transformation))
+if __name__ == '__main__': # for multiprocessing
+    for transformation in transforms_to_analyze:
+        for model in snewpy_models.keys():
+            proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], transformation)])
+            proc.start()
+            proc.join()
+            process_transformation(t.MetaAnalysisConfig(snewpy_models[model], transformation))
 
 # for d in handlers.supported_detectors:
 # for d in handlers.supported_detectors:
