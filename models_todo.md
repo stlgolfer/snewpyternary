@@ -1,3 +1,6 @@
+# SNEWPY Model Integration Checklist
+Here we track the status of which SNEWPY models are ready to use in the library
+
 - ~~Bollig_2016~~
 - ~~Fornax_2019~~
 - ~~Fornax_2021~~
