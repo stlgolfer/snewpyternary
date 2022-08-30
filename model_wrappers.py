@@ -6,7 +6,7 @@ Created on Mon Jul 11 23:43:12 2022
 @author: physics
 """
 
-from snewpy.models import *
+from snewpy.models import Bollig_2016, Fornax_2019, Fornax_2021, Kuroda_2020, Nakazato_2013, Sukhbold_2015, Tamborra_2014, Walk_2018, Walk_2019, Warren_2020, Zha_2021
 
 class SNEWPYModel:
     """
@@ -18,9 +18,10 @@ class SNEWPYModel:
         self.file_path = file_path
         self.model_type = model_type
         self.model = model
-        #TODO: must also include a time step that makes sense
 
 snewpy_models = {}
+
+#TODO: must also include a time step that makes sense. let's use a seperate dictionary for this to keep things organized
 
 '''
 Zha_2021
