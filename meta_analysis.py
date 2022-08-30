@@ -45,6 +45,12 @@ transformation = 'AdiabaticMSW_NMO'
 transforms_to_analyze = ['AdiabaticMSW_NMO','AdiabaticMSW_IMO','NoTransformation']
 profiles = handlers.build_detector_profiles()
 
+# param parser
+# if len(sys.argv) <= 1:
+#     raise "Invalid program arguments"
+
+show_charts: bool = True #True if sys.argv[1].split('--show=')[1] == "True" else False
+
 def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
         config.model_file_path,
@@ -62,7 +68,7 @@ def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
     figure, tax = t.create_default_detector_plot(plot_data,
                                                   profiles[detector]['axes'](),
                                                   f'{config.model_type} {detector} {config.transformation} Ternary',
-                                                  show=True,
+                                                  show=show_charts,
                                                   save=True)
     return plot_data, raw_data
 
@@ -78,7 +84,8 @@ def process_flux(config: t.MetaAnalysisConfig) -> None:
     )
     t.create_default_flux_plot(
         flux_scatter_data,
-        "{model} Flux {transform}".format(model=config.model_type,transform=config.transformation)
+        "{model} Flux {transform}".format(model=config.model_type,transform=config.transformation),
+        show=show_charts
         )
     
     t.create_regular_plot(
@@ -87,6 +94,7 @@ def process_flux(config: t.MetaAnalysisConfig) -> None:
         plot_title=f'{config.model_type} Truth Flux {config.transformation}',
         ylab="Total Integrated Flux flavor/cm^2",
         xlab="Right Time in Coordinate (s)",
+        show=show_charts,
         use_x_log=False,save=True)
 
 def remap_dict(dictionary,newval):
@@ -142,7 +150,9 @@ def process_transformation(config: t.MetaAnalysisConfig):
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
     tax.savefig(title)
-    tax.show()
+    
+    if show_charts:
+        tax.show()
 
 from model_wrappers import snewpy_models
 

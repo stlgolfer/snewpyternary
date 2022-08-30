@@ -441,7 +441,7 @@ def create_flux_scatter(modelFilePath,
     ca.cache(f'{cache_base}_raw_data', raw)
     return plotting_data, raw
 
-def create_default_flux_plot(plotting_data,plot_title,save=True):
+def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     '''
     Creates a ternary plot from the truth flux data
 
@@ -477,7 +477,9 @@ def create_default_flux_plot(plotting_data,plot_title,save=True):
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
 
-    tax.show()
+    if show == True:
+        tax.show()
+        
     if save:
         tax.savefig(f'./plots/{plot_title}')
     return figure, tax
