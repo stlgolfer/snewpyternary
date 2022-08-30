@@ -45,7 +45,7 @@ transformation = 'AdiabaticMSW_NMO'
 transforms_to_analyze = ['AdiabaticMSW_NMO','AdiabaticMSW_IMO','NoTransformation']
 profiles = handlers.build_detector_profiles()
 
-def process_detector(config,detector):
+def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
         config.model_file_path,
         config.model_type,
@@ -66,7 +66,7 @@ def process_detector(config,detector):
                                                   save=True)
     return plot_data, raw_data
 
-def process_flux(config):
+def process_flux(config: t.MetaAnalysisConfig) -> None:
     flux_scatter_data,raw_data= t.create_flux_scatter(
         config.model_file_path,
         config.model_type,
@@ -75,7 +75,6 @@ def process_flux(config):
         transform=config.transformation,
         use_cache=True,
         log_bins=True
-    
     )
     t.create_default_flux_plot(
         flux_scatter_data,
@@ -100,7 +99,7 @@ def remap_dict(dictionary,newval):
             new_dict[k] = 0
     return new_dict
 
-def process_transformation(config):
+def process_transformation(config: t.MetaAnalysisConfig):
     # first get the flux data
     process_flux(config)
     
@@ -153,7 +152,6 @@ if __name__ == '__main__': # for multiprocessing
             proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], transformation)])
             proc.start()
             proc.join()
-            process_transformation(t.MetaAnalysisConfig(snewpy_models[model], transformation))
 
 # for d in handlers.supported_detectors:
 # for d in handlers.supported_detectors:
