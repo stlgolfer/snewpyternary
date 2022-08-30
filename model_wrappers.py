@@ -127,9 +127,10 @@ snewpy_models['Walk_2019'] = SNEWPYModel(
 '''
 Fornax_2019
 '''
-fname = './SNEWPY_models/Fornax_2019/lum_spec_10M.h5'
-snewpy_models['Fornax_2019'] = SNEWPYModel(
-    fname,
-    'Fornax_2019',
-    Fornax_2019(fname)
-    )
+# fname = './SNEWPY_models/Fornax_2019/lum_spec_10M.h5'
+# #TODO: fix issue with 'missing 2 required positional arguments'
+# snewpy_models['Fornax_2019'] = SNEWPYModel(
+#     fname,
+#     'Fornax_2019',
+#     Fornax_2019(fname)
+#     )

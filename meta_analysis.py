@@ -41,8 +41,7 @@ smearing = 'smeared'
 # pulled the following from snowglobes-snewpy integration code
 flavor_transformation_dict = {'NoTransformation': NoTransformation(), 'AdiabaticMSW_NMO': AdiabaticMSW(mh=MassHierarchy.NORMAL), 'AdiabaticMSW_IMO': AdiabaticMSW(mh=MassHierarchy.INVERTED), 'NonAdiabaticMSWH_NMO': NonAdiabaticMSWH(mh=MassHierarchy.NORMAL), 'NonAdiabaticMSWH_IMO': NonAdiabaticMSWH(mh=MassHierarchy.INVERTED), 'TwoFlavorDecoherence': TwoFlavorDecoherence(), 'ThreeFlavorDecoherence': ThreeFlavorDecoherence(), 'NeutrinoDecay_NMO': NeutrinoDecay(mh=MassHierarchy.NORMAL), 'NeutrinoDecay_IMO': NeutrinoDecay(mh=MassHierarchy.INVERTED)}
 transform_list = list(flavor_transformation_dict.keys())
-transformation = 'AdiabaticMSW_NMO'
-transforms_to_analyze = ['AdiabaticMSW_NMO','AdiabaticMSW_IMO','NoTransformation']
+transforms_to_analyze = ['NoTransformation'] #['AdiabaticMSW_NMO','AdiabaticMSW_IMO','NoTransformation']
 profiles = handlers.build_detector_profiles()
 
 # param parser
@@ -149,7 +148,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
-    tax.savefig(title)
+    tax.savefig(f'./all_detector_plots/{title}')
     
     if show_charts:
         tax.show()
