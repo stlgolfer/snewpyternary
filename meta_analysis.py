@@ -48,7 +48,7 @@ profiles = handlers.build_detector_profiles()
 # if len(sys.argv) <= 1:
 #     raise "Invalid program arguments"
 
-show_charts: bool = True #True if sys.argv[1].split('--show=')[1] == "True" else False
+show_charts: bool = False #True if sys.argv[1].split('--show=')[1] == "True" else False
 
 def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
@@ -119,7 +119,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
     # need to figure out a way to sum all the detectors
     # now renormalize and convert all points back to tuples
-    t.create_regular_plot(all_plot_data, handlers.same_axes(), 'Regular plot of *Detectors', ylab='Event rate')
+    t.create_regular_plot(all_plot_data, handlers.same_axes(), 'Regular plot of *Detectors', ylab='Event rate',show=show_charts)
     
     normalized = []
     for point in all_plot_data:
@@ -129,7 +129,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
         tot=a+b+c
         normalized.append((100*a/tot,100*b/tot,100*c/tot))
     # all_plot_data = [tuple(point[0]) for point in all_plot_data]
-    t.create_regular_plot(normalized, handlers.same_axes(), 'Super normalized ternary points', 'Event Rate')
+    t.create_regular_plot(normalized, handlers.same_axes(), 'Super normalized ternary points', 'Event Rate',show=show_charts)
     
     scale=100
     figure, tax = ternary.figure(scale=scale)
@@ -150,7 +150,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     tax.get_axes().axis('off') # disables regular matlab plot axes
     tax.savefig(f'./all_detector_plots/{title}')
     
-    if show_charts:
+    if show_charts == True:
         tax.show()
 
 from model_wrappers import snewpy_models

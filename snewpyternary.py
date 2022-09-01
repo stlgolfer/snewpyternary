@@ -269,6 +269,9 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heat
     if show == True:
         print('Show is true')
         tax.show()
+    else:
+        print('Show is false')
+        
     if save == True:
         tax.savefig(f'./plots/{plot_title}.png')
     return figure, tax
@@ -308,6 +311,7 @@ def create_regular_plot(plot_data,
     -------
 
     '''
+    plt.figure()
     a = []
     b = []
     c = []
