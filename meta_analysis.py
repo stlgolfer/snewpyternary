@@ -25,13 +25,9 @@ import caching as cache
 import sys
 sys.path.insert(0,'./SURF2020fork')
 from SURF2020fork.ternary_helpers import shared_plotting_script,generate_heatmap_dict,consolidate_heatmap_data
-
-# snewpy-snowglobes stuff
-import snewpy.snowglobes as snowglobes
+from model_wrappers import snewpy_models, sn_model_default_time_step
 
 #simulation details
-step = 0.1 #0.01 for best results
-deltat=step*u.s
 d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
@@ -45,10 +41,10 @@ transforms_to_analyze = ['NoTransformation'] #['AdiabaticMSW_NMO','AdiabaticMSW_
 profiles = handlers.build_detector_profiles()
 
 # param parser
-# if len(sys.argv) <= 1:
-#     raise "Invalid program arguments"
+if len(sys.argv) <= 1:
+    raise RuntimeError("Usage: python meta_analysis.py --show=<True | False>")
 
-show_charts: bool = False #True if sys.argv[1].split('--show=')[1] == "True" else False
+show_charts: bool = True if sys.argv[1].split('--show=')[1] == "True" else False
 
 def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
@@ -56,7 +52,7 @@ def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
         config.model_type,
         detector,
         config.model,
-        deltat=deltat,
+        deltat=sn_model_default_time_step(config.model_type),
         transformation=config.transformation,
         data_calc=profiles[detector]['handler'],
         use_cache=True,
@@ -76,7 +72,7 @@ def process_flux(config: t.MetaAnalysisConfig) -> None:
         config.model_file_path,
         config.model_type,
         config.model,
-        deltat=deltat,
+        deltat=sn_model_default_time_step(config.model_type),
         transform=config.transformation,
         use_cache=True,
         log_bins=True
@@ -107,6 +103,7 @@ def remap_dict(dictionary,newval):
     return new_dict
 
 def process_transformation(config: t.MetaAnalysisConfig):
+    print(f'Now processing {config.model_type}')
     # first get the flux data
     process_flux(config)
     
@@ -139,7 +136,6 @@ def process_transformation(config: t.MetaAnalysisConfig):
     tax.set_title(title)
     # data is organized in top, right, left
 
-    ### TODO: make sure that data_files[1] actually points to something that can get the header
     tax.bottom_axis_label('nux')
     tax.right_axis_label('nuebar')
     tax.left_axis_label('nue')
@@ -153,7 +149,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     if show_charts == True:
         tax.show()
 
-from model_wrappers import snewpy_models
+# process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
 
 if __name__ == '__main__': # for multiprocessing
     for transformation in transforms_to_analyze:

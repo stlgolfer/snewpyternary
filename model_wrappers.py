@@ -7,6 +7,7 @@ Created on Mon Jul 11 23:43:12 2022
 """
 
 from snewpy.models import Bollig_2016, Fornax_2019, Fornax_2021, Kuroda_2020, Nakazato_2013, Sukhbold_2015, Tamborra_2014, Walk_2018, Walk_2019, Warren_2020, Zha_2021
+from astropy import units as u
 
 class SNEWPYModel:
     """
@@ -15,13 +16,33 @@ class SNEWPYModel:
     """
     
     def __init__(self,file_path,model_type,model):
-        self.file_path = file_path
-        self.model_type = model_type
-        self.model = model
+        self.file_path: str = file_path
+        self.model_type: str = model_type
+        self.model: any  = model
 
 snewpy_models = {}
 
-#TODO: must also include a time step that makes sense. let's use a seperate dictionary for this to keep things organized
+__sn_model_def_time_step_lib = {}
+#TODO: might make a function that pulls the time and serves a default time if a key isn't found
+__sn_model_def_time_step_lib['Bollig_2016'] = 0.014*u.s
+__sn_model_def_time_step_lib['Fornax_2019'] = 0.1*u.s
+__sn_model_def_time_step_lib['Fornax_2021'] = 0.025*u.s
+__sn_model_def_time_step_lib['Kuroda_2020'] = 0.25*u.s
+__sn_model_def_time_step_lib['Nakazato_2013'] = 0.1*u.s
+__sn_model_def_time_step_lib['Sukhbold_2015'] = 0.007*u.s
+__sn_model_def_time_step_lib['Tamborra_2014'] = 0.33*u.s
+__sn_model_def_time_step_lib['Walk_2018'] = 0.33*u.s
+__sn_model_def_time_step_lib['Walk_2019'] = 0.2*u.s
+__sn_model_def_time_step_lib['Warren_2020'] = 0.025*u.s
+__sn_model_def_time_step_lib['Zha_2021'] = 0.05*u.s
+
+
+def sn_model_default_time_step(modelname: str) -> u.s:
+    if modelname in __sn_model_def_time_step_lib.keys():
+        return __sn_model_def_time_step_lib[modelname]
+    else:
+        print("Model name doesn't have a default time step, so using 1s as default")
+        return 1.0*u.s
 
 '''
 Zha_2021

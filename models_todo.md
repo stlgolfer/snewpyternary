@@ -17,7 +17,7 @@
 | Walk_2018     | ✔️ |
 | Walk_2019     | ✔️ |
 | Warren_2020   | ✔️ |
-| Zha_2021      |  ‡ |
+| Zha_2021      | ✔️‡ |
 
 ### Special Notes
 - † temporarily omitted due to special construction
