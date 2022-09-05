@@ -26,6 +26,7 @@ import sys
 sys.path.insert(0,'./SURF2020fork')
 from SURF2020fork.ternary_helpers import shared_plotting_script,generate_heatmap_dict,consolidate_heatmap_data
 from model_wrappers import snewpy_models, sn_model_default_time_step
+import click
 
 #simulation details
 d = 10 # in pc, distance to SN
@@ -41,10 +42,11 @@ transforms_to_analyze = ['NoTransformation'] #['AdiabaticMSW_NMO','AdiabaticMSW_
 profiles = handlers.build_detector_profiles()
 
 # param parser
-if len(sys.argv) <= 1:
-    raise RuntimeError("Usage: python meta_analysis.py --show=<True | False>")
+# if len(sys.argv) <= 1:
+#     raise RuntimeError("Usage: python meta_analysis.py --show=<True | False>")
 
-show_charts: bool = True if sys.argv[1].split('--show=')[1] == "True" else False
+show_charts: bool = True
+
 
 def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
@@ -150,13 +152,25 @@ def process_transformation(config: t.MetaAnalysisConfig):
         tax.show()
 
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
-
-if __name__ == '__main__': # for multiprocessing
+@click.command()
+@click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
+@click.argument('models',required=True,type=str,nargs=-1)
+@click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
+def start(showc,models,distance):
+    global show_charts
+    show_charts = showc
+    
+    global d
+    d = distance
+    
     for transformation in transforms_to_analyze:
-        for model in snewpy_models.keys():
+        for model in models:
             proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], transformation)])
             proc.start()
             proc.join()
+            
+if __name__ == '__main__': # for multiprocessing
+    start()
 
 # for d in handlers.supported_detectors:
 # for d in handlers.supported_detectors:
