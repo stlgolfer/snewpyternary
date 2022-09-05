@@ -12,7 +12,7 @@
 | OConnor_2015  |  †   |
 | PISN          |  †   |
 | Sukhbold_2015 | ✔️ | 0.007s, but likely a greater one can be used |
-| Tamborra_2014 | ✔️ |
+| Tamborra_2014 | ✔️ | 0.005s |
 | Type_1a       |  †   |
 | Walk_2018     | ✔️ |
 | Walk_2019     | ✔️ |
