@@ -129,6 +129,7 @@ def w_generate_time_series(model_path,
             #keep in mind needed_offset will still be a negative number here 
             log_edges = log_edges + needed_offset
         times = 0.5*(log_edges[1:] + log_edges[:-1])
+        print(f'Proceeding with {len(times)} bin(s)')
         # plt.figure()
         # plt.scatter([no for no in range(len(times))], times)
         # plt.show()

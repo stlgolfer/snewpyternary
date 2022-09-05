@@ -6,7 +6,7 @@
 | Bollig_2016   | ✔️ | 0.014s |
 | Fornax_2019   | ✔️ |
 | Fornax_2021   | ✔️ | 0.025s |
-| Kuroda_2020   | ✔️ |
+| Kuroda_2020   | ✔️ | 0.005s |
 | Nakazato_2013 | ✔️ | 0.1s |
 | OConnor_2013  |  †   |
 | OConnor_2015  |  †   |

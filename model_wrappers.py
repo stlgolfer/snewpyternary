@@ -27,7 +27,9 @@ __sn_model_def_time_step_lib = {}
 __sn_model_def_time_step_lib['Bollig_2016'] = 0.014*u.s
 __sn_model_def_time_step_lib['Fornax_2019'] = 0.1*u.s
 __sn_model_def_time_step_lib['Fornax_2021'] = 0.025*u.s
-__sn_model_def_time_step_lib['Kuroda_2020'] = 0.25*u.s
+
+__sn_model_def_time_step_lib['Kuroda_2020'] = 0.005*u.s
+
 __sn_model_def_time_step_lib['Nakazato_2013'] = 0.1*u.s
 __sn_model_def_time_step_lib['Sukhbold_2015'] = 0.007*u.s
 __sn_model_def_time_step_lib['Tamborra_2014'] = 0.33*u.s

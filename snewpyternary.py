@@ -385,9 +385,10 @@ def create_flux_scatter(modelFilePath,
         The unnormalized data in NuX, aNuE, NuE order
 
     '''
-    cache_base = f'{modeltype}_flux_d{d}_{transform}_dt{str(deltat)}'
+    cache_base = f'{modeltype}_flux_d{d}_{transform}_dt{str(deltat)}_log{log_bins}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
+        print(f'{cache_base} located in cache')
         plot_data = ca.load_cache(f'{cache_base}_plot_data')
         raw_data = ca.load_cache(f'{cache_base}_raw_data')
         return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data]

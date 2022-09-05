@@ -46,6 +46,7 @@ profiles = handlers.build_detector_profiles()
 #     raise RuntimeError("Usage: python meta_analysis.py --show=<True | False>")
 
 show_charts: bool = True
+use_log: bool = True
 
 
 def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
@@ -58,7 +59,7 @@ def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
         transformation=config.transformation,
         data_calc=profiles[detector]['handler'],
         use_cache=True,
-        log_bins=True
+        log_bins=use_log
     )
     # also create heatmap using Rishi's code
     # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
@@ -70,14 +71,14 @@ def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
     return plot_data, raw_data
 
 def process_flux(config: t.MetaAnalysisConfig) -> None:
-    flux_scatter_data,raw_data= t.create_flux_scatter(
+    flux_scatter_data,raw_data = t.create_flux_scatter(
         config.model_file_path,
         config.model_type,
         config.model,
         deltat=sn_model_default_time_step(config.model_type),
         transform=config.transformation,
         use_cache=True,
-        log_bins=True
+        log_bins=use_log
     )
     t.create_default_flux_plot(
         flux_scatter_data,
@@ -156,12 +157,16 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
 @click.argument('models',required=True,type=str,nargs=-1)
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
-def start(showc,models,distance):
+@click.option('--uselog',default=True,type=bool)
+def start(showc,models,distance,uselog):
     global show_charts
     show_charts = showc
     
     global d
     d = distance
+    
+    global use_log
+    use_log = uselog
     
     for transformation in transforms_to_analyze:
         for model in models:
