@@ -14,9 +14,9 @@
 | Sukhbold_2015 | ✔️ | 0.007s, but likely a greater one can be used |
 | Tamborra_2014 | ✔️ | 0.005s |
 | Type_1a       |  †   |
-| Walk_2018     | ✔️ |
-| Walk_2019     | ✔️ |
-| Warren_2020   | ✔️ |
+| Walk_2018     | ✔️ | 0.005s |
+| Walk_2019     | ✔️ | 0.005s |
+| Warren_2020 (very sporadic data)   | ✔️ | 0.015s |
 | Zha_2021      | ✔️‡ |
 
 ### Special Notes
