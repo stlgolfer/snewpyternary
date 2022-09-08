@@ -1,0 +1,1 @@
+nohup python meta_analysis.py Bollig_2016 Fornax_2021 Kuroda_2020 Nakazato_2013 Sukhbold_2015 Tamborra_2014 Walk_2018 Walk_2019 Warren_2020 Zha_2021 --showc=False &
