@@ -269,6 +269,9 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heat
     if show == True:
         print('Show is true')
         tax.show()
+    else:
+        print('Show is false')
+        
     if save == True:
         tax.savefig(f'./plots/{plot_title}.png')
     return figure, tax
@@ -308,6 +311,7 @@ def create_regular_plot(plot_data,
     -------
 
     '''
+    plt.figure()
     a = []
     b = []
     c = []
@@ -381,9 +385,10 @@ def create_flux_scatter(modelFilePath,
         The unnormalized data in NuX, aNuE, NuE order
 
     '''
-    cache_base = f'{modeltype}_flux_d{d}_{transform}_dt{str(deltat)}'
+    cache_base = f'{modeltype}_flux_d{d}_{transform}_dt{str(deltat)}_log{log_bins}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
+        print(f'{cache_base} located in cache')
         plot_data = ca.load_cache(f'{cache_base}_plot_data')
         raw_data = ca.load_cache(f'{cache_base}_raw_data')
         return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data]
@@ -441,7 +446,7 @@ def create_flux_scatter(modelFilePath,
     ca.cache(f'{cache_base}_raw_data', raw)
     return plotting_data, raw
 
-def create_default_flux_plot(plotting_data,plot_title,save=True):
+def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     '''
     Creates a ternary plot from the truth flux data
 
@@ -477,7 +482,17 @@ def create_default_flux_plot(plotting_data,plot_title,save=True):
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
 
-    tax.show()
+    if show == True:
+        tax.show()
+        
     if save:
         tax.savefig(f'./plots/{plot_title}')
     return figure, tax
+
+# make an abstraction for analysis config
+class MetaAnalysisConfig:
+    def __init__(self,snewpy_model,transformation):
+        self.model_file_path = snewpy_model.file_path
+        self.model_type = snewpy_model.model_type
+        self.model = snewpy_model.model
+        self.transformation = transformation
