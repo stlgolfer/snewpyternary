@@ -155,10 +155,11 @@ def process_transformation(config: t.MetaAnalysisConfig):
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
 @click.command()
 @click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
+@click.argument('prescription',required=True,type=str,nargs=1)
 @click.argument('models',required=True,type=str,nargs=-1)
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
 @click.option('--uselog',default=True,type=bool)
-def start(showc,models,distance,uselog):
+def start(showc,models,distance,uselog,prescription):
     global show_charts
     show_charts = showc
     
@@ -167,10 +168,9 @@ def start(showc,models,distance,uselog):
     
     global use_log
     use_log = uselog
-    
-    for transformation in transforms_to_analyze:
-        for model in models:
-            proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], transformation)])
+
+    for model in models:
+            proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], prescription)])
             proc.start()
             proc.join()
             
