@@ -41,13 +41,11 @@ complete_transform_list = list(flavor_transformation_dict.keys())
 transforms_to_analyze = complete_transform_list # ['NoTransformation'] #['AdiabaticMSW_NMO','AdiabaticMSW_IMO','NoTransformation']
 profiles = handlers.build_detector_profiles()
 
-# param parser
-# if len(sys.argv) <= 1:
-#     raise RuntimeError("Usage: python meta_analysis.py --show=<True | False>")
-
 show_charts: bool = True
 use_log: bool = True
+show_time_heatmap: bool = False
 
+heatmap_radius: int = 4
 
 def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
@@ -143,7 +141,32 @@ def process_transformation(config: t.MetaAnalysisConfig):
     tax.right_axis_label('nuebar')
     tax.left_axis_label('nue')
 
-    tax.scatter(points=normalized, color="red")
+    # heatmap line goes here
+    #timemap = {}
+    #colorspace = [c for c in range(len(all_plot_data))]
+    #for j, n in enumerate(normalized):
+        #timemap[n] = float(j+10)
+        # then vary each coordinate
+        #p_i = n # initial tuple coordinate in ternary space
+        #for r in range(heatmap_radius):
+            #p_pos = (int(p_i[0]) + r,int(p_i[1]) + r, int(p_i[2]) +r)
+            #p_neg = (int(p_i[0]) - r,int(p_i[1]) - r, int(p_i[2]) -r)
+            # add to timemap
+            #timemap[p_pos] = j
+            #timemap[p_neg] = j
+            
+    #if show_time_heatmap == True:
+    #    tax.heatmap(timemap)
+
+    #going to try dynamically sized points between lines?
+    widths = np.linspace(0.01,1,num=len(normalized))
+    for p in range(len(normalized)-1):
+        if (p + 1 >= len(normalized)):
+            break
+        tax.line(normalized[p],normalized[p+1],color=(widths[p],0,0,1),linestyle=':',linewidth=3)
+
+    #tax.scatter(points=normalized)
+    
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
@@ -159,7 +182,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.argument('models',required=True,type=str,nargs=-1)
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
 @click.option('--uselog',default=True,type=bool)
-def start(showc,models,distance,uselog,prescription):
+@click.option('--theatmap',default=False,type=bool)
+def start(showc,models,distance,uselog,prescription,theatmap):
     global show_charts
     show_charts = showc
     
@@ -169,7 +193,10 @@ def start(showc,models,distance,uselog,prescription):
     global use_log
     use_log = uselog
 
-    for model in models:
+    global show_time_heatmap
+    show_time_heatmap = theatmap
+
+    for model in (snewpy_models.keys() if models[0] == "ALL" else models):
             proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], prescription)])
             proc.start()
             proc.join()
