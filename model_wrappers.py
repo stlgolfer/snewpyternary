@@ -47,9 +47,23 @@ def sn_model_default_time_step(modelname: str) -> u.s:
 '''
 Zha_2021
 '''
-fname = './SNEWPY_models/Zha_2021/s17.dat'
+fname = './SNEWPY_models/Zha_2021/s16.dat'
 snewpy_models['Zha_2021'] = SNEWPYModel(
-    [fname],
+    [
+        fname,
+        './SNEWPY_models/Zha_2021/s17.dat',
+        './SNEWPY_models/Zha_2021/s18.dat',
+        './SNEWPY_models/Zha_2021/s19.dat',
+        './SNEWPY_models/Zha_2021/s20.dat',
+        './SNEWPY_models/Zha_2021/s21.dat',
+        './SNEWPY_models/Zha_2021/s22.dat',
+        './SNEWPY_models/Zha_2021/s23.dat',
+        './SNEWPY_models/Zha_2021/s24.dat',
+        './SNEWPY_models/Zha_2021/s25.dat',
+        './SNEWPY_models/Zha_2021/s26.dat',
+        './SNEWPY_models/Zha_2021/s30.dat',
+        './SNEWPY_models/Zha_2021/s33.dat'
+    ],
     'Zha_2021',
     Zha_2021(fname)
     )
