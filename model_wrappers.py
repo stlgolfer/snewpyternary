@@ -73,7 +73,13 @@ Warren_2020
 '''
 fname = './SNEWPY_models/Warren_2020/stir_a1.23/stir_multimessenger_a1.23_m10.0.h5'
 snewpy_models['Warren_2020'] = SNEWPYModel(
-    [fname],
+    [
+        fname,
+        './SNEWPY_models/Warren_2020/stir_a1.23/stir_multimessenger_a1.23_m25.0.h5',
+        './SNEWPY_models/Warren_2020/stir_a1.27/stir_multimessenger_a1.27_m10.0.h5',
+        './SNEWPY_models/Warren_2020/stir_a1.27/stir_multimessenger_a1.27_m25.0.h5',
+        './SNEWPY_models/Warren_2020/stir_a1.25/stir_multimessenger_a1.25_m55.0.h5'
+    ],
     'Warren_2020',
     Warren_2020(fname)
     )
