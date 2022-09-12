@@ -20,6 +20,7 @@ import io
 import tarfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from model_wrappers import SNEWPYModel
 
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
@@ -491,8 +492,8 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
 
 # make an abstraction for analysis config
 class MetaAnalysisConfig:
-    def __init__(self,snewpy_model,transformation):
-        self.model_file_path = snewpy_model.file_path
+    def __init__(self,snewpy_model: SNEWPYModel, set_no: int, transformation):
+        self.model_file_path = snewpy_model.file_path[set_no]
         self.model_type = snewpy_model.model_type
         self.model = snewpy_model.model
         self.transformation = transformation

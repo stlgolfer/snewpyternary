@@ -179,7 +179,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.argument('models',required=True,type=str,nargs=-1)
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
 @click.option('--uselog',default=True,type=bool)
-def start(showc,models,distance,uselog,prescription):
+@click.option('--setno', required=False, default=0,type=int)
+def start(showc,models,distance,uselog,prescription, setno):
     global show_charts
     show_charts = showc
     
@@ -190,9 +191,13 @@ def start(showc,models,distance,uselog,prescription):
     use_log = uselog
     
     for model in (snewpy_models.keys() if models[0] == "ALL" else models):
-            proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], prescription)])
-            proc.start()
-            proc.join()
+        # check to see if valid model set number
+        if setno >= len(snewpy_models[model].file_paths):
+            raise ValueError(f"Invalid model set id. Max is {len(snewpy_models[model].file_paths)-1}")
+
+        proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], setno, prescription)])
+        proc.start()
+        proc.join()
             
 if __name__ == '__main__': # for multiprocessing
     start()
