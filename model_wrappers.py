@@ -99,9 +99,12 @@ Tamborra_2014
 '''
 fname = './SNEWPY_models/Tamborra_2014/s20.0c_3D_dir1'
 snewpy_models['Tamborra_2014'] = SNEWPYModel(
-    [fname],
+    [
+        fname,
+        './SNEWPY_models/Tamborra_2014/s27.0c_3D_dir1'
+    ],
     'Tamborra_2014',
-    Tamborra_2014(fname)
+    Tamborra_2014(fname, 'LS220')
     )
 
 '''
@@ -109,7 +112,12 @@ Sukhbold_2015
 '''
 fname = './SNEWPY_models/Sukhbold_2015/sukhbold-SFHo-z9.6.fits'
 snewpy_models['Sukhbold_2015'] = SNEWPYModel(
-    [fname],
+    [
+        fname,
+        './SNEWPY_models/Sukhbold_2015/sukhbold-SFHo-s27.0.fits',
+        './SNEWPY_models/Sukhbold_2015/sukhbold-LS220-s27.0.fits',
+        './SNEWPY_models/Sukhbold_2015/sukhbold-LS220-z9.6.fits'
+    ],
     'Sukhbold_2015',
     Sukhbold_2015(fname)
     )
@@ -120,7 +128,11 @@ Kuroda_2020
 # TODO: note that there are several different models in this set
 fname = './SNEWPY_models/Kuroda_2020/LnuR00B00.dat'
 snewpy_models['Kuroda_2020'] = SNEWPYModel(
-    [fname],
+    [
+        fname,
+        './SNEWPY_models/Kuroda_2020/LnuR10B12.dat',
+        './SNEWPY_models/Kuroda_2020/LnuR10B13.dat'
+    ],
     'Kuroda_2020',
     Kuroda_2020(fname)
     )
@@ -130,7 +142,22 @@ Fornax_2021
 '''
 fname = './SNEWPY_models/Fornax_2021/lum_spec_12M_r10000_dat.h5'
 snewpy_models['Fornax_2021'] = SNEWPYModel(
-    [fname],
+    [
+        fname,
+        './SNEWPY_models/Fornax_2021/lum_spec_13M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_14M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_15M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_16M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_17M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_18M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_19M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_20M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_21M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_22M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_23M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_25M_r10000_dat.h5',
+        './SNEWPY_models/Fornax_2021/lum_spec_26M_r10000_dat.h5'
+    ],
     'Fornax_2021',
     Fornax_2021(fname)
     )
@@ -140,7 +167,33 @@ Nakazato_2013
 '''
 fname = './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev100ms-s20.0.fits'
 snewpy_models['Nakazato_2013'] = SNEWPYModel(
-    [fname],
+    [
+        fname,
+        './SNEWPY_models/Nakazato_2013/nakazato-LS220-BH-z0.004-s30.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev200ms-s13.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev300ms-s50.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev200ms-s13.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev300ms-s20.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-BH-z0.004-s30.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev200ms-s20.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev100ms-s13.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev200ms-s20.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev300ms-s30.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev100ms-s13.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev200ms-s50.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev100ms-s20.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev200ms-s30.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev300ms-s50.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev100ms-s20.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev300ms-s13.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev100ms-s30.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev200ms-s50.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-togashi-BH-z0.004-s30.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev100ms-s50.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev300ms-s20.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev100ms-s50.0.fits',
+        './SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev300ms-s13.0.fits'
+    ],
     'Nakazato_2013',
     Nakazato_2013(fname)
     )
@@ -150,7 +203,10 @@ Bollig_2016
 '''
 fname = './SNEWPY_models/Bollig_2016/s11.2c'
 snewpy_models['Bollig_2016'] = SNEWPYModel(
-    [fname],
+    [
+        fname,
+        './SNEWPY_models/Bollig_2016/s27.0c'
+    ],
     'Bollig_2016',
     Bollig_2016(fname)
     )
