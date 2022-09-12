@@ -492,8 +492,9 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
 
 # make an abstraction for analysis config
 class MetaAnalysisConfig:
-    def __init__(self,snewpy_model: SNEWPYModel, set_no: int, transformation):
-        self.model_file_path = snewpy_model.file_paths[set_no]
-        self.model_type = snewpy_model.model_type
-        self.model = snewpy_model.model
-        self.transformation = transformation
+    def __init__(self,snewpy_model: SNEWPYModel, set_nos: list, transformation: str):
+        self.model_file_path: list = snewpy_model.file_paths
+        self.model_type: str = snewpy_model.model_type
+        self.model: any = snewpy_model.model
+        self.set_numbers: list = set_nos
+        self.transformation: str = transformation
