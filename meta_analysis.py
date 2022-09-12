@@ -43,9 +43,6 @@ profiles = handlers.build_detector_profiles()
 
 show_charts: bool = True
 use_log: bool = True
-show_time_heatmap: bool = False
-
-heatmap_radius: int = 4
 
 def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
@@ -182,8 +179,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.argument('models',required=True,type=str,nargs=-1)
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
 @click.option('--uselog',default=True,type=bool)
-@click.option('--theatmap',default=False,type=bool)
-def start(showc,models,distance,uselog,prescription,theatmap):
+def start(showc,models,distance,uselog,prescription):
     global show_charts
     show_charts = showc
     
@@ -192,10 +188,7 @@ def start(showc,models,distance,uselog,prescription,theatmap):
     
     global use_log
     use_log = uselog
-
-    global show_time_heatmap
-    show_time_heatmap = theatmap
-
+    
     for model in (snewpy_models.keys() if models[0] == "ALL" else models):
             proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], prescription)])
             proc.start()
