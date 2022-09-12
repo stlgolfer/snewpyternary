@@ -115,7 +115,7 @@ def create_detector_event_scatter(
         raise("Cannot accept 'all' as detector type")
         
     # check the cache
-    cache_base = f'{model_type}_{transformation}_d{d}_{detector}_dt{str(deltat)}_log{log_bins}'
+    cache_base = f'{model_type}_{modelFilePath}_{transformation}_d{d}_{detector}_dt{str(deltat)}_log{log_bins}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
         print('Cache hit. Loading from cache')
@@ -386,7 +386,7 @@ def create_flux_scatter(modelFilePath,
         The unnormalized data in NuX, aNuE, NuE order
 
     '''
-    cache_base = f'{modeltype}_flux_d{d}_{transform}_dt{str(deltat)}_log{log_bins}'
+    cache_base = f'{modeltype}_{modelFilePath}_flux_d{d}_{transform}_dt{str(deltat)}_log{log_bins}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
         print(f'{cache_base} located in cache')
