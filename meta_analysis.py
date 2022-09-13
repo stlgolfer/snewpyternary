@@ -102,7 +102,7 @@ def remap_dict(dictionary,newval):
             new_dict[k] = 0
     return new_dict
 
-def aggregate_detector(config: t.MetaAnalysisConfig, number: int, tax: TernaryAxesSubplot) -> None:
+def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot) -> None:
     process_flux(config, number)
 
     p_data, r_data = process_detector(config, number, 'ar40kt')
@@ -133,7 +133,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, tax: TernaryAx
     for p in range(len(normalized) - 1):
         if (p + 1 >= len(normalized)):
             break
-        tax.line(normalized[p], normalized[p + 1], color=(widths[p], 0, 0, 1), linestyle=':', linewidth=3)
+        tax.line(normalized[p], normalized[p + 1], color=(widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 1 else 0, 1), linestyle=':', linewidth=3)
 
 
 def process_transformation(config: t.MetaAnalysisConfig):
@@ -169,8 +169,12 @@ def process_transformation(config: t.MetaAnalysisConfig):
             
     #if show_time_heatmap == True:
     #    tax.heatmap(timemap)
+
+    # need to create different colors
+    colorid: int = 0
     for set_number in config.set_numbers:
-        aggregate_detector(config,set_number,tax)
+        aggregate_detector(config,set_number, colorid, tax)
+        colorid+=1
 
     #tax.scatter(points=normalized)
     
@@ -204,6 +208,9 @@ def start(showc,models,distance,uselog,prescription, setno):
     
     for model in (snewpy_models.keys() if models[0] == "ALL" else models):
         # check to see if valid model set number
+        if len(setno) > 3:
+            raise ValueError("Can only superimpose a maximum of 3 sets onto one chart")
+
         for no in setno:
             if no >= len(snewpy_models[model].file_paths):
                 raise ValueError(f"Invalid model set id. Max is {len(snewpy_models[model].file_paths)-1}")
