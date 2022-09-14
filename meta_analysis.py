@@ -133,7 +133,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     for p in range(len(normalized) - 1):
         if (p + 1 >= len(normalized)):
             break
-        tax.line(normalized[p], normalized[p + 1], color=(widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 1 else 0, 1), linestyle=':', linewidth=3)
+        tax.line(normalized[p], normalized[p + 1], color=(widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1), linestyle=':', linewidth=3)
 
 
 def process_transformation(config: t.MetaAnalysisConfig):
@@ -189,12 +189,12 @@ def process_transformation(config: t.MetaAnalysisConfig):
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
 @click.command()
 @click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
-@click.argument('prescription',required=True,type=str,nargs=1)
-@click.argument('models',required=True,type=str,nargs=-1)
+@click.argument('model',required=True,type=str,nargs=1)
+@click.argument('prescriptions',required=True,type=str,nargs=-1)
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
 @click.option('--uselog',default=True,type=bool)
 @click.option('--setno', required=False, default=[0],type=int,multiple=True)
-def start(showc,models,distance,uselog,prescription, setno):
+def start(showc,model,distance,uselog,prescriptions, setno):
     global show_charts
     show_charts = showc
     
@@ -206,7 +206,7 @@ def start(showc,models,distance,uselog,prescription, setno):
 
     print(setno)
     
-    for model in (snewpy_models.keys() if models[0] == "ALL" else models):
+    for prescription in (flavor_transformation_dict.keys() if model == "ALL" else prescriptions):
         # check to see if valid model set number
         if len(setno) > 3:
             raise ValueError("Can only superimpose a maximum of 3 sets onto one chart")

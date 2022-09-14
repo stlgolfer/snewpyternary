@@ -1,1 +1,17 @@
-nohup python meta_analysis.py Bollig_2016 Fornax_2021 Kuroda_2020 Nakazato_2013 Sukhbold_2015 Tamborra_2014 Walk_2018 Walk_2019 Warren_2020 Zha_2021 --showc=False &
+nohup python meta_analysis.py Fornax_2021 NoTransformation AdiabaticMSW_NMO AdiabaticMSW_IMO --setno=0 --setno=1 --setno=2 &
+wait
+nohup python meta_analysis.py Kuroda_2020 NoTransformation AdiabaticMSW_NMO AdiabaticMSW_IMO --setno=0 --setno=1 --setno=2 &
+wait
+nohup python meta_analysis.py Nakazato_2013 NoTransformation AdiabaticMSW_NMO AdiabaticMSW_IMO --setno=0 --setno=1 --setno=2 &
+wait
+nohup python meta_analysis.py Sukhbold_2015 NoTransformation AdiabaticMSW_NMO AdiabaticMSW_IMO --setno=0 --setno=1 --setno=2 &
+wait
+nohup python meta_analysis.py Warren_2020 NoTransformation AdiabaticMSW_NMO AdiabaticMSW_IMO --setno=0 --setno=1 --setno=2 &
+wait
+nohup python meta_analysis.py Zha_2021 NoTransformation AdiabaticMSW_NMO AdiabaticMSW_IMO --setno=0 --setno=1 --setno=2 &
+wait
+
+#Bollig_2016
+#Tamborra_2014
+#Walk_2018
+#Walk_2019
