@@ -189,12 +189,12 @@ def process_transformation(config: t.MetaAnalysisConfig):
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
 @click.command()
 @click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
-@click.argument('model',required=True,type=str,nargs=1)
-@click.argument('prescriptions',required=True,type=str,nargs=-1)
+@click.argument('models',required=True,type=str,nargs=-1)
+@click.option('-p',required=False, multiple=True, type=str, default=['NoTransformation'])
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
 @click.option('--uselog',default=True,type=bool)
 @click.option('--setno', required=False, default=[0],type=int,multiple=True)
-def start(showc,model,distance,uselog,prescriptions, setno):
+def start(showc,models,distance,uselog,p, setno):
     global show_charts
     show_charts = showc
     
@@ -204,20 +204,26 @@ def start(showc,model,distance,uselog,prescriptions, setno):
     global use_log
     use_log = uselog
 
-    print(setno)
-    
-    for prescription in (flavor_transformation_dict.keys() if model == "ALL" else prescriptions):
-        # check to see if valid model set number
-        if len(setno) > 3:
-            raise ValueError("Can only superimpose a maximum of 3 sets onto one chart")
+    # check set numbers
+    if len(setno) > 3:
+        raise ValueError("Can only superimpose a maximum of 3 sets onto one chart")
 
-        for no in setno:
-            if no >= len(snewpy_models[model].file_paths):
-                raise ValueError(f"Invalid model set id. Max is {len(snewpy_models[model].file_paths)-1}")
+    # want to iterate by model, then prescription, then set
 
-        proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], setno, prescription)])
-        proc.start()
-        proc.join()
+    for model in models:
+        for prescription in (flavor_transformation_dict.keys() if model == "ALL" else p):
+            # check to see if valid model set number
+
+            for no in setno:
+                if no >= len(snewpy_models[model].file_paths):
+                    raise ValueError(f"Invalid model set id. Max is {len(snewpy_models[model].file_paths)-1}")
+
+            # remove multithreading for now. run sequentially
+            process_transformation(t.MetaAnalysisConfig(snewpy_models[model], setno, prescription))
+
+            # proc = mp.Process(target=process_transformation, args=[])
+            # proc.start()
+            # proc.join()
             
 if __name__ == '__main__': # for multiprocessing
     start()
