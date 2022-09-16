@@ -14,6 +14,8 @@ from astropy import units as u
 from snewpy.neutrino import Flavor, MassHierarchy
 from snewpy.models import Nakazato_2013, OConnor_2015
 from snewpy.flavor_transformation import NoTransformation # just use NoTransformation for now to keep things simple
+from ternary import TernaryAxesSubplot
+
 import snewpyternary as t
 import os
 import ternary
@@ -44,9 +46,9 @@ profiles = handlers.build_detector_profiles()
 show_charts: bool = True
 use_log: bool = True
 
-def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
+def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
-        config.model_file_path,
+        config.model_file_paths[set_no],
         config.model_type,
         detector,
         config.model,
@@ -65,9 +67,9 @@ def process_detector(config: t.MetaAnalysisConfig, detector: str) -> None:
                                                   save=True)
     return plot_data, raw_data
 
-def process_flux(config: t.MetaAnalysisConfig) -> None:
+def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
     flux_scatter_data,raw_data = t.create_flux_scatter(
-        config.model_file_path,
+        config.model_file_paths[set_no],
         config.model_type,
         config.model,
         deltat=sn_model_default_time_step(config.model_type),
@@ -100,37 +102,50 @@ def remap_dict(dictionary,newval):
             new_dict[k] = 0
     return new_dict
 
-def process_transformation(config: t.MetaAnalysisConfig):
-    print(f'Now processing {config.model_type}')
-    # first get the flux data
-    process_flux(config)
-    
-    p_data, r_data = process_detector(config,'ar40kt')
+def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot) -> None:
+    process_flux(config, number)
+
+    p_data, r_data = process_detector(config, number, 'ar40kt')
     # need to convert data to an array
-    all_plot_data = [list(key) for key in r_data]# going to take each detector and add them up
-    
-    for detector in ['wc100kt30prct','scint20kt']:
-        p_data, r_data = process_detector(config,detector)
+    all_plot_data = [list(key) for key in r_data]  # going to take each detector and add them up
+
+    for detector in ['wc100kt30prct', 'scint20kt']:
+        p_data, r_data = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
     # need to figure out a way to sum all the detectors
     # now renormalize and convert all points back to tuples
-    t.create_regular_plot(all_plot_data, handlers.same_axes(), 'Regular plot of *Detectors', ylab='Event rate',show=show_charts)
-    
+    t.create_regular_plot(all_plot_data, handlers.same_axes(), 'Regular plot of *Detectors', ylab='Event rate',
+                          show=show_charts)
+
     normalized = []
     for point in all_plot_data:
-        a=point[0]
-        b=point[1]
-        c=point[2]
-        tot=a+b+c
-        normalized.append((100*a/tot,100*b/tot,100*c/tot))
+        a = point[0]
+        b = point[1]
+        c = point[2]
+        tot = a + b + c
+        normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
     # all_plot_data = [tuple(point[0]) for point in all_plot_data]
-    t.create_regular_plot(normalized, handlers.same_axes(), 'Super normalized ternary points', 'Event Rate',show=show_charts)
+    t.create_regular_plot(normalized, handlers.same_axes(), 'Super normalized ternary points', 'Event Rate',
+                          show=show_charts)
+
+    # going to try dynamically sized points between lines?
+    widths = np.linspace(0.01, 1, num=len(normalized))
+    for p in range(len(normalized) - 1):
+        if (p + 1 >= len(normalized)):
+            break
+        tax.line(normalized[p], normalized[p + 1], color=(widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1), linestyle=':', linewidth=3)
+
+
+def process_transformation(config: t.MetaAnalysisConfig):
+    print(f'Now processing {config.model_type}')
+    # first get the flux data
+
     
     scale=100
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=f'{config.model_type} *Detectors {config.transformation} Ternary Logged Bins'
+    title=f'{config.model_type} *Detectors {config.transformation} Logged Bins'
     tax.set_title(title)
     # data is organized in top, right, left
 
@@ -155,12 +170,11 @@ def process_transformation(config: t.MetaAnalysisConfig):
     #if show_time_heatmap == True:
     #    tax.heatmap(timemap)
 
-    #going to try dynamically sized points between lines?
-    widths = np.linspace(0.01,1,num=len(normalized))
-    for p in range(len(normalized)-1):
-        if (p + 1 >= len(normalized)):
-            break
-        tax.line(normalized[p],normalized[p+1],color=(widths[p],0,0,1),linestyle=':',linewidth=3)
+    # need to create different colors
+    colorid: int = 0
+    for set_number in config.set_numbers:
+        aggregate_detector(config,set_number, colorid, tax)
+        colorid+=1
 
     #tax.scatter(points=normalized)
     
@@ -175,12 +189,12 @@ def process_transformation(config: t.MetaAnalysisConfig):
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
 @click.command()
 @click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
-@click.argument('prescription',required=True,type=str,nargs=1)
 @click.argument('models',required=True,type=str,nargs=-1)
+@click.option('-p',required=False, multiple=True, type=str, default=['NoTransformation'])
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
 @click.option('--uselog',default=True,type=bool)
-@click.option('--setno', required=False, default=0,type=int)
-def start(showc,models,distance,uselog,prescription, setno):
+@click.option('--setno', required=False, default=[0],type=int,multiple=True)
+def start(showc,models,distance,uselog,p, setno):
     global show_charts
     show_charts = showc
     
@@ -189,15 +203,27 @@ def start(showc,models,distance,uselog,prescription, setno):
     
     global use_log
     use_log = uselog
-    
-    for model in (snewpy_models.keys() if models[0] == "ALL" else models):
-        # check to see if valid model set number
-        if setno >= len(snewpy_models[model].file_paths):
-            raise ValueError(f"Invalid model set id. Max is {len(snewpy_models[model].file_paths)-1}")
 
-        proc = mp.Process(target=process_transformation, args=[t.MetaAnalysisConfig(snewpy_models[model], setno, prescription)])
-        proc.start()
-        proc.join()
+    # check set numbers
+    if len(setno) > 3:
+        raise ValueError("Can only superimpose a maximum of 3 sets onto one chart")
+
+    # want to iterate by model, then prescription, then set
+
+    for model in models:
+        for prescription in (flavor_transformation_dict.keys() if model == "ALL" else p):
+            # check to see if valid model set number
+
+            for no in setno:
+                if no >= len(snewpy_models[model].file_paths):
+                    raise ValueError(f"Invalid model set id. Max is {len(snewpy_models[model].file_paths)-1}")
+
+            # remove multithreading for now. run sequentially
+            process_transformation(t.MetaAnalysisConfig(snewpy_models[model], setno, prescription))
+
+            # proc = mp.Process(target=process_transformation, args=[])
+            # proc.start()
+            # proc.join()
             
 if __name__ == '__main__': # for multiprocessing
     start()

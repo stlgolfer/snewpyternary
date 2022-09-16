@@ -115,7 +115,7 @@ def create_detector_event_scatter(
         raise("Cannot accept 'all' as detector type")
         
     # check the cache
-    cache_base = f'{model_type}_{modelFilePath}_{transformation}_d{d}_{detector}_dt{str(deltat)}_log{log_bins}'
+    cache_base = f'{model_type}_{modelFilePath.split("/")[-1]}_{transformation}_d{d}_{detector}_dt{str(deltat)}_log{log_bins}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
         print('Cache hit. Loading from cache')
@@ -386,7 +386,7 @@ def create_flux_scatter(modelFilePath,
         The unnormalized data in NuX, aNuE, NuE order
 
     '''
-    cache_base = f'{modeltype}_{modelFilePath}_flux_d{d}_{transform}_dt{str(deltat)}_log{log_bins}'
+    cache_base = f'{modeltype}_{modelFilePath.split("/")[-1]}_flux_d{d}_{transform}_dt{str(deltat)}_log{log_bins}'
     if use_cache and ca.in_cache(f'{cache_base}_plot_data'):
         # soft check complete and there is cache available. Load it
         print(f'{cache_base} located in cache')
@@ -492,8 +492,9 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
 
 # make an abstraction for analysis config
 class MetaAnalysisConfig:
-    def __init__(self,snewpy_model: SNEWPYModel, set_no: int, transformation):
-        self.model_file_path = snewpy_model.file_paths[set_no]
-        self.model_type = snewpy_model.model_type
-        self.model = snewpy_model.model
-        self.transformation = transformation
+    def __init__(self,snewpy_model: SNEWPYModel, set_nos: list, transformation: str):
+        self.model_file_paths: list = snewpy_model.file_paths
+        self.model_type: str = snewpy_model.model_type
+        self.model: any = snewpy_model.model
+        self.set_numbers: list = set_nos
+        self.transformation: str = transformation
