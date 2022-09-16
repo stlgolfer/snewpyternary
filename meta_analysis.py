@@ -46,6 +46,8 @@ profiles = handlers.build_detector_profiles()
 show_charts: bool = True
 use_log: bool = True
 
+_colors = ['RED', 'GREEN', 'BLUE']
+
 def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
         config.model_file_paths[set_no],
@@ -105,6 +107,9 @@ def remap_dict(dictionary,newval):
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot) -> None:
     process_flux(config, number)
 
+    # print out information of the set
+    print(config.model(config.model_file_paths[number]))
+
     p_data, r_data = process_detector(config, number, 'ar40kt')
     # need to convert data to an array
     all_plot_data = [list(key) for key in r_data]  # going to take each detector and add them up
@@ -114,7 +119,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
     # need to figure out a way to sum all the detectors
     # now renormalize and convert all points back to tuples
-    t.create_regular_plot(all_plot_data, handlers.same_axes(), 'Regular plot of *Detectors', ylab='Event rate',
+    t.create_regular_plot(all_plot_data, handlers.same_axes(), f'*Detectors {config.model_type} {config.transformation} {_colors[number]} {config.model_file_paths[number].split("/")[-1]}.png', ylab='Event rate',
                           show=show_charts)
 
     normalized = []
@@ -125,7 +130,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         tot = a + b + c
         normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
     # all_plot_data = [tuple(point[0]) for point in all_plot_data]
-    t.create_regular_plot(normalized, handlers.same_axes(), 'Super normalized ternary points', 'Event Rate',
+    t.create_regular_plot(normalized, handlers.same_axes(), f'{config.model_type} Super Normalized Ternary Points', 'Event Rate',
                           show=show_charts)
 
     # going to try dynamically sized points between lines?
@@ -172,9 +177,15 @@ def process_transformation(config: t.MetaAnalysisConfig):
 
     # need to create different colors
     colorid: int = 0
+    f = open(f'./all_detector_plots/{title}.txt', 'w')
     for set_number in config.set_numbers:
+        # write model metadata as well
+        f.write(f'{_colors[colorid]}\n==========\n')
+        f.write(repr(config.model(config.model_file_paths[set_number])))
+        f.write('\n\n')
         aggregate_detector(config,set_number, colorid, tax)
         colorid+=1
+    f.close()
 
     #tax.scatter(points=normalized)
     
