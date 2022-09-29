@@ -83,8 +83,6 @@ def w_generate_time_series(model_path,
     -------
     str
         Path of compressed .tar file with neutrino flux data.
-    times
-        The time midpoints of the bins
     """
     model_class = getattr(snewpy.models.ccsn, model_type)
 
@@ -189,4 +187,4 @@ def w_generate_time_series(model_path,
             info.size = len(output)
             tf.addfile(info, io.BytesIO(output))
 
-    return os.path.join(model_dir, tfname), times
+    return os.path.join(model_dir, tfname)
