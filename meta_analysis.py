@@ -43,8 +43,10 @@ complete_transform_list = list(flavor_transformation_dict.keys())
 transforms_to_analyze = complete_transform_list # ['NoTransformation'] #['AdiabaticMSW_NMO','AdiabaticMSW_IMO','NoTransformation']
 profiles = handlers.build_detector_profiles()
 
+# global params
 show_charts: bool = True
 use_log: bool = True
+use_cache: bool = True
 
 _colors = ['RED', 'GREEN', 'BLUE']
 
@@ -57,7 +59,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         deltat=sn_model_default_time_step(config.model_type),
         transformation=config.transformation,
         data_calc=profiles[detector]['handler'],
-        use_cache=True,
+        use_cache=use_cache,
         log_bins=use_log
     )
     # also create heatmap using Rishi's code
@@ -76,7 +78,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
         config.model,
         deltat=sn_model_default_time_step(config.model_type),
         transform=config.transformation,
-        use_cache=True,
+        use_cache=use_cache,
         log_bins=use_log
     )
     t.create_default_flux_plot(
@@ -199,13 +201,14 @@ def process_transformation(config: t.MetaAnalysisConfig):
 
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
 @click.command()
-@click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
 @click.argument('models',required=True,type=str,nargs=-1)
-@click.option('-p',required=False, multiple=True, type=str, default=['NoTransformation'])
+@click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
+@click.option('-p',required=False, multiple=True, type=str, default=['NoTransformation'], help='Prescriptions to use')
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
-@click.option('--uselog',default=True,type=bool)
-@click.option('--setno', required=False, default=[0],type=int,multiple=True)
-def start(showc,models,distance,uselog,p, setno):
+@click.option('--uselog',default=True,type=bool, help='Use logarithmically spaced (and shifted) time bins')
+@click.option('--setno', required=False, default=[0],type=int,multiple=True, help='Model set index. See model_wrappers.py')
+@click.option('--cache', required=False, default=True, type=bool, help='If true, use cache')
+def start(showc,models,distance,uselog,p, setno, cache):
     global show_charts
     show_charts = showc
     
@@ -214,6 +217,9 @@ def start(showc,models,distance,uselog,p, setno):
     
     global use_log
     use_log = uselog
+
+    global use_cache
+    use_cache = cache
 
     # check set numbers
     if len(setno) > 3:
