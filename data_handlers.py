@@ -67,6 +67,7 @@ Data handler axes labels definitions
 '''
 
 def same_axes():
+    # TODO: these should really be proxy labels and not the true particle
     return [r'$\nu_x$',r'$\nu_e$',r'$\bar{\nu_e}$']
 
 def axes_scint20kt():

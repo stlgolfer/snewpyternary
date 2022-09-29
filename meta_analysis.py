@@ -25,6 +25,9 @@ import data_handlers as handlers
 import multiprocessing as mp
 import caching as cache
 import sys
+
+import snowglobes_wrapper
+
 sys.path.insert(0,'./SURF2020fork')
 from SURF2020fork.ternary_helpers import shared_plotting_script,generate_heatmap_dict,consolidate_heatmap_data
 from model_wrappers import snewpy_models, sn_model_default_time_step
@@ -119,11 +122,24 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     for detector in ['wc100kt30prct', 'scint20kt']:
         p_data, r_data = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
-    # need to figure out a way to sum all the detectors
-    # now renormalize and convert all points back to tuples
-    t.create_regular_plot(all_plot_data, handlers.same_axes(), f'*Detectors {config.model_type} {config.transformation} {_colors[number]} {config.model_file_paths[number].split("/")[-1]}.png', ylab='Event rate',
-                          show=show_charts)
 
+    # now get the time bins
+    time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
+        config.model_file_paths[number],
+        config.model_type,
+        deltat=sn_model_default_time_step(config.model_type),
+        log_bins=use_log
+    )
+
+    t.create_regular_plot(all_plot_data,
+                          handlers.same_axes(),
+                          f'*Detectors {config.model_type} {config.transformation} {_colors[number]} {config.model_file_paths[number].split("/")[-1]}.png',
+                          x_axis=time_bins_x_axis,
+                          ylab='Event rate',
+                          show=show_charts
+                          )
+
+    # now renormalize and convert all points back to tuples
     normalized = []
     for point in all_plot_data:
         a = point[0]
