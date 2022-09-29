@@ -85,7 +85,6 @@ def calculate_time_bins(model_path: str, model_type, ntbins=30, deltat=None, log
             # keep in mind needed_offset will still be a negative number here
             log_edges = log_edges + needed_offset
         times = 0.5 * (log_edges[1:] + log_edges[:-1])
-        print(f'Proceeding with {len(times)} bin(s)')
         # plt.figure()
         # plt.scatter([no for no in range(len(times))], times)
         # plt.show()
@@ -145,6 +144,7 @@ def w_generate_time_series(model_path,
     tmax = snmodel.get_time()[-1]
 
     times, dt = calculate_time_bins(model_path,model_type,ntbins,deltat,log_bins,snmodel_dict)
+    print(f'Proceeding with {len(times)} bin(s)')
 
     # Generate output.
     if output_filename is not None:
