@@ -34,7 +34,6 @@ from model_wrappers import snewpy_models, sn_model_default_time_step
 import click
 
 #simulation details
-d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
 print(os.environ['SNOWGLOBES'])
@@ -51,6 +50,7 @@ show_charts: bool = True
 use_log: bool = True
 use_cache: bool = True
 use_presn: bool = False
+d: int = 10 # in pc, distance to SN
 
 _colors = ['RED', 'GREEN', 'BLUE']
 
