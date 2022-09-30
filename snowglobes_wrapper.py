@@ -44,23 +44,28 @@ from snewpy.neutrino import Flavor, MassHierarchy
 
 logger = logging.getLogger(__name__)
 
-def calculate_time_bins(model_path: str, model_type, ntbins=30, deltat=None, log_bins=False, snmodel_dict={}):
+def calculate_time_bins(model_path: str, model_type, ntbins=30, deltat=None, log_bins=False, snmodel_dict={}, presn=False):
     model_class = getattr(snewpy.models.ccsn, model_type)
     model_dir, model_file = os.path.split(os.path.abspath(model_path))
     snmodel = model_class(model_path, **snmodel_dict)
 
+    print(presn)
+    if presn and log_bins:
+        raise RuntimeError("Cannot use log bins on pre-SN calculations: bins will be too small!")
+
     # Subsample the model time. Default to 30 time slices.
     tmin = snmodel.get_time()[0]
-    tmax = snmodel.get_time()[-1]
+    tmax = snmodel.get_time()[-1] if presn == False else 0*u.s
+    # print(f'tmin: {tmin}, tmax: {tmax}')
     if deltat is not None:
         dt = deltat
         ntbins = int((tmax - tmin) / dt)
     else:
         dt = (tmax - tmin) / (ntbins + 1)
 
+    # log bins are guaranteed to not be here, so we can process presn calculation
     tedges = np.arange(tmin / u.s, tmax / u.s, dt / u.s) * u.s
     times = 0.5 * (tedges[1:] + tedges[:-1])
-    # print(list(times))
 
     # now process log data
     if log_bins:
@@ -89,17 +94,19 @@ def calculate_time_bins(model_path: str, model_type, ntbins=30, deltat=None, log
         # plt.scatter([no for no in range(len(times))], times)
         # plt.show()
         # print(len(times))
-        return times, dt
+    return times, dt
 
 def w_generate_time_series(model_path,
-                         model_type,
-                         transformation_type,
-                         d,
-                         output_filename=None,
-                         ntbins=30,
-                         deltat=None,
-                         snmodel_dict={},
-                         log_bins=False):
+                           model_type,
+                           transformation_type,
+                           d,
+                           output_filename=None,
+                           ntbins=30,
+                           deltat=None,
+                           snmodel_dict={},
+                           log_bins=False,
+                           presn=False
+                           ):
     """Generate time series files in SNOwGLoBES format.
 
     This version will subsample the times in a supernova model, produce energy
@@ -143,7 +150,7 @@ def w_generate_time_series(model_path,
     tmin = snmodel.get_time()[0]
     tmax = snmodel.get_time()[-1]
 
-    times, dt = calculate_time_bins(model_path,model_type,ntbins,deltat,log_bins,snmodel_dict)
+    times, dt = calculate_time_bins(model_path,model_type,ntbins,deltat,log_bins,snmodel_dict,presn)
     print(f'Proceeding with {len(times)} bin(s)')
 
     # Generate output.

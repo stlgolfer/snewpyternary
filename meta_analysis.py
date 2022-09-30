@@ -50,6 +50,7 @@ profiles = handlers.build_detector_profiles()
 show_charts: bool = True
 use_log: bool = True
 use_cache: bool = True
+use_presn: bool = False
 
 _colors = ['RED', 'GREEN', 'BLUE']
 
@@ -63,16 +64,27 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         transformation=config.transformation,
         data_calc=profiles[detector]['handler'],
         use_cache=use_cache,
-        log_bins=use_log
+        log_bins=use_log,
+        presn=use_presn
     )
+
+    # ok but now we want to only select time bins computed for presn option
+    times, dt = snowglobes_wrapper.calculate_time_bins(
+        config.model_file_paths[set_no],
+        config.model_type,
+        deltat=sn_model_default_time_step(config.model_type),
+        log_bins=use_log,
+        presn=use_presn
+    )
+
     # also create heatmap using Rishi's code
     # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
-    figure, tax = t.create_default_detector_plot(plot_data,
+    figure, tax = t.create_default_detector_plot(plot_data[0:len(times)],
                                                   profiles[detector]['axes'](),
                                                   f'{config.model_type} {detector} {config.transformation} Ternary',
                                                   show=show_charts,
                                                   save=True)
-    return plot_data, raw_data
+    return plot_data[0:len(times)], raw_data[0:len(times)]
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
     flux_scatter_data,raw_data = t.create_flux_scatter(
@@ -82,7 +94,8 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
         deltat=sn_model_default_time_step(config.model_type),
         transform=config.transformation,
         use_cache=use_cache,
-        log_bins=use_log
+        log_bins=use_log,
+        presn=use_presn
     )
     t.create_default_flux_plot(
         flux_scatter_data,
@@ -128,8 +141,10 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         config.model_file_paths[number],
         config.model_type,
         deltat=sn_model_default_time_step(config.model_type),
-        log_bins=use_log
+        log_bins=use_log,
+        presn=use_presn
     )
+    time_bins_x_axis = time_bins_x_axis
 
     t.create_regular_plot(all_plot_data,
                           handlers.same_axes(),
@@ -224,7 +239,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--uselog',default=True,type=bool, help='Use logarithmically spaced (and shifted) time bins')
 @click.option('--setno', required=False, default=[0],type=int,multiple=True, help='Model set index. See model_wrappers.py')
 @click.option('--cache', required=False, default=True, type=bool, help='If true, use cache')
-def start(showc,models,distance,uselog,p, setno, cache):
+@click.option('--presn', required=False, default=False, type=bool, help='If true, compute time bins from t<=0')
+def start(showc,models,distance,uselog,p, setno, cache, presn):
     global show_charts
     show_charts = showc
     
@@ -237,9 +253,15 @@ def start(showc,models,distance,uselog,p, setno, cache):
     global use_cache
     use_cache = cache
 
+    global use_presn
+    use_presn = presn
+
     # check set numbers
     if len(setno) > 3:
         raise ValueError("Can only superimpose a maximum of 3 sets onto one chart")
+
+    if use_presn and use_log:
+        raise RuntimeError("Using log time bins on presn calculations are not currently supported")
 
     # want to iterate by model, then prescription, then set
 
