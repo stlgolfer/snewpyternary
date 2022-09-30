@@ -68,15 +68,6 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         presn=use_presn
     )
 
-    # ok but now we want to only select time bins computed for presn option
-    times, dt = snowglobes_wrapper.calculate_time_bins(
-        config.model_file_paths[set_no],
-        config.model_type,
-        deltat=sn_model_default_time_step(config.model_type),
-        log_bins=use_log,
-        presn=use_presn
-    )
-
     # also create heatmap using Rishi's code
     # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
     figure, tax = t.create_default_detector_plot(plot_data,

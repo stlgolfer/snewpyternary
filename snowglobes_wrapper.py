@@ -148,7 +148,7 @@ def w_generate_time_series(model_path,
     snmodel = model_class(model_path, **snmodel_dict)
 
     tmin = snmodel.get_time()[0]
-    tmax = snmodel.get_time()[-1]
+    tmax = snmodel.get_time()[-1] # TODO: really this should pull information from calculate_time_bins, but ok for now
 
     times, dt = calculate_time_bins(model_path,model_type,ntbins,deltat,log_bins,snmodel_dict,presn)
     print(f'Proceeding with {len(times)} bin(s)')
