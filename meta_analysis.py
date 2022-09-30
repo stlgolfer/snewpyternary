@@ -25,6 +25,9 @@ import data_handlers as handlers
 import multiprocessing as mp
 import caching as cache
 import sys
+
+import snowglobes_wrapper
+
 sys.path.insert(0,'./SURF2020fork')
 from SURF2020fork.ternary_helpers import shared_plotting_script,generate_heatmap_dict,consolidate_heatmap_data
 from model_wrappers import snewpy_models, sn_model_default_time_step
@@ -43,8 +46,12 @@ complete_transform_list = list(flavor_transformation_dict.keys())
 transforms_to_analyze = complete_transform_list # ['NoTransformation'] #['AdiabaticMSW_NMO','AdiabaticMSW_IMO','NoTransformation']
 profiles = handlers.build_detector_profiles()
 
+# global params
 show_charts: bool = True
 use_log: bool = True
+use_cache: bool = True
+
+_colors = ['RED', 'GREEN', 'BLUE']
 
 def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
@@ -55,7 +62,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         deltat=sn_model_default_time_step(config.model_type),
         transformation=config.transformation,
         data_calc=profiles[detector]['handler'],
-        use_cache=True,
+        use_cache=use_cache,
         log_bins=use_log
     )
     # also create heatmap using Rishi's code
@@ -74,7 +81,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
         config.model,
         deltat=sn_model_default_time_step(config.model_type),
         transform=config.transformation,
-        use_cache=True,
+        use_cache=use_cache,
         log_bins=use_log
     )
     t.create_default_flux_plot(
@@ -105,6 +112,9 @@ def remap_dict(dictionary,newval):
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot) -> None:
     process_flux(config, number)
 
+    # print out information of the set
+    print(config.model(config.model_file_paths[number]))
+
     p_data, r_data = process_detector(config, number, 'ar40kt')
     # need to convert data to an array
     all_plot_data = [list(key) for key in r_data]  # going to take each detector and add them up
@@ -112,11 +122,24 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     for detector in ['wc100kt30prct', 'scint20kt']:
         p_data, r_data = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
-    # need to figure out a way to sum all the detectors
-    # now renormalize and convert all points back to tuples
-    t.create_regular_plot(all_plot_data, handlers.same_axes(), 'Regular plot of *Detectors', ylab='Event rate',
-                          show=show_charts)
 
+    # now get the time bins
+    time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
+        config.model_file_paths[number],
+        config.model_type,
+        deltat=sn_model_default_time_step(config.model_type),
+        log_bins=use_log
+    )
+
+    t.create_regular_plot(all_plot_data,
+                          handlers.same_axes(),
+                          f'*Detectors {config.model_type} {config.transformation} {_colors[number]} {config.model_file_paths[number].split("/")[-1]}.png',
+                          x_axis=time_bins_x_axis,
+                          ylab='Event rate',
+                          show=show_charts
+                          )
+
+    # now renormalize and convert all points back to tuples
     normalized = []
     for point in all_plot_data:
         a = point[0]
@@ -125,7 +148,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         tot = a + b + c
         normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
     # all_plot_data = [tuple(point[0]) for point in all_plot_data]
-    t.create_regular_plot(normalized, handlers.same_axes(), 'Super normalized ternary points', 'Event Rate',
+    t.create_regular_plot(normalized, handlers.same_axes(), f'{config.model_type} Super Normalized Ternary Points', 'Event Rate',
                           show=show_charts)
 
     # going to try dynamically sized points between lines?
@@ -172,9 +195,15 @@ def process_transformation(config: t.MetaAnalysisConfig):
 
     # need to create different colors
     colorid: int = 0
+    f = open(f'./all_detector_plots/{title}.txt', 'w')
     for set_number in config.set_numbers:
+        # write model metadata as well
+        f.write(f'{_colors[colorid]}\n==========\n')
+        f.write(repr(config.model(config.model_file_paths[set_number])))
+        f.write('\n\n')
         aggregate_detector(config,set_number, colorid, tax)
         colorid+=1
+    f.close()
 
     #tax.scatter(points=normalized)
     
@@ -188,13 +217,14 @@ def process_transformation(config: t.MetaAnalysisConfig):
 
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
 @click.command()
-@click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
 @click.argument('models',required=True,type=str,nargs=-1)
-@click.option('-p',required=False, multiple=True, type=str, default=['NoTransformation'])
+@click.option('--showc',default=False,type=bool,help='Whether to show generated plots or not. Will always save and cache')
+@click.option('-p',required=False, multiple=True, type=str, default=['NoTransformation'], help='Prescriptions to use')
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
-@click.option('--uselog',default=True,type=bool)
-@click.option('--setno', required=False, default=[0],type=int,multiple=True)
-def start(showc,models,distance,uselog,p, setno):
+@click.option('--uselog',default=True,type=bool, help='Use logarithmically spaced (and shifted) time bins')
+@click.option('--setno', required=False, default=[0],type=int,multiple=True, help='Model set index. See model_wrappers.py')
+@click.option('--cache', required=False, default=True, type=bool, help='If true, use cache')
+def start(showc,models,distance,uselog,p, setno, cache):
     global show_charts
     show_charts = showc
     
@@ -203,6 +233,9 @@ def start(showc,models,distance,uselog,p, setno):
     
     global use_log
     use_log = uselog
+
+    global use_cache
+    use_cache = cache
 
     # check set numbers
     if len(setno) > 3:

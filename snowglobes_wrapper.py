@@ -44,6 +44,53 @@ from snewpy.neutrino import Flavor, MassHierarchy
 
 logger = logging.getLogger(__name__)
 
+def calculate_time_bins(model_path: str, model_type, ntbins=30, deltat=None, log_bins=False, snmodel_dict={}):
+    model_class = getattr(snewpy.models.ccsn, model_type)
+    model_dir, model_file = os.path.split(os.path.abspath(model_path))
+    snmodel = model_class(model_path, **snmodel_dict)
+
+    # Subsample the model time. Default to 30 time slices.
+    tmin = snmodel.get_time()[0]
+    tmax = snmodel.get_time()[-1]
+    if deltat is not None:
+        dt = deltat
+        ntbins = int((tmax - tmin) / dt)
+    else:
+        dt = (tmax - tmin) / (ntbins + 1)
+
+    tedges = np.arange(tmin / u.s, tmax / u.s, dt / u.s) * u.s
+    times = 0.5 * (tedges[1:] + tedges[:-1])
+    # print(list(times))
+
+    # now process log data
+    if log_bins:
+        needed_offset = -1 * u.s
+        # need to offset the times so no negatives
+        if tedges[0] < 0:
+            needed_offset = tedges[0] + 0.0001 * u.s
+            tedges = tedges + tedges[0] + 0.0001 * u.s  # shift so it's very close to 0
+            tmin = 0.0001 * u.s
+            tmax += tmin
+        log_edges = np.asarray([])
+
+        tstep = math.log10(abs(tmax / tmin)) / len(times)
+        for i in range(0, len(times)):
+            t = (tmin / u.s) * (10 ** (i * tstep))
+            # print(t)
+            log_edges = np.append(log_edges, t)
+        # log_edges = np.logspace(math.log((tmin/u.s).value),math.log((tmax/u.s).value),len(times))
+        # print((tmax/u.s).value)
+        log_edges = log_edges * u.s
+        if needed_offset > -1 * u.s:
+            # keep in mind needed_offset will still be a negative number here
+            log_edges = log_edges + needed_offset
+        times = 0.5 * (log_edges[1:] + log_edges[:-1])
+        # plt.figure()
+        # plt.scatter([no for no in range(len(times))], times)
+        # plt.show()
+        # print(len(times))
+        return times, dt
+
 def w_generate_time_series(model_path,
                          model_type,
                          transformation_type,
@@ -93,47 +140,11 @@ def w_generate_time_series(model_path,
     model_dir, model_file = os.path.split(os.path.abspath(model_path))
     snmodel = model_class(model_path, **snmodel_dict)
 
-    # Subsample the model time. Default to 30 time slices.
     tmin = snmodel.get_time()[0]
     tmax = snmodel.get_time()[-1]
-    if deltat is not None:
-        dt = deltat
-        ntbins = int((tmax-tmin)/dt)
-    else:
-        dt = (tmax - tmin) / (ntbins+1)
 
-    tedges = np.arange(tmin/u.s, tmax/u.s, dt/u.s)*u.s
-    times = 0.5*(tedges[1:] + tedges[:-1])
-    # print(list(times))
-    
-    # now process log data
-    if (log_bins==True):
-        needed_offset = -1*u.s
-        # need to offset the times so no negatives
-        if tedges[0] < 0:
-            needed_offset = tedges[0] + 0.0001*u.s
-            tedges = tedges + tedges[0] + 0.0001*u.s #shift so it's very close to 0
-            tmin = 0.0001*u.s
-            tmax+=tmin
-        log_edges = np.asarray([])
-        
-        tstep = math.log10(abs(tmax/tmin))/len(times)
-        for i in range(0,len(times)):
-            t = (tmin/u.s)*(10**(i*tstep))
-            # print(t)
-            log_edges = np.append(log_edges,t)
-        # log_edges = np.logspace(math.log((tmin/u.s).value),math.log((tmax/u.s).value),len(times))
-        # print((tmax/u.s).value)
-        log_edges = log_edges*u.s
-        if needed_offset>-1*u.s:
-            #keep in mind needed_offset will still be a negative number here 
-            log_edges = log_edges + needed_offset
-        times = 0.5*(log_edges[1:] + log_edges[:-1])
-        print(f'Proceeding with {len(times)} bin(s)')
-        # plt.figure()
-        # plt.scatter([no for no in range(len(times))], times)
-        # plt.show()
-        # print(len(times))
+    times, dt = calculate_time_bins(model_path,model_type,ntbins,deltat,log_bins,snmodel_dict)
+    print(f'Proceeding with {len(times)} bin(s)')
 
     # Generate output.
     if output_filename is not None:

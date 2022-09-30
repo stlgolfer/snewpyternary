@@ -67,7 +67,7 @@ Data handler axes labels definitions
 '''
 
 def same_axes():
-    return [r'$\nu_x$',r'$\nu_e$',r'$\bar{\nu_e}$']
+    return [r'$\nu_x$ Proxy',r'$\nu_e$ Proxy',r'$\bar{\nu_e}$ Proxy']
 
 def axes_scint20kt():
     return same_axes()
