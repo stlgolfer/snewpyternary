@@ -79,12 +79,12 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     # also create heatmap using Rishi's code
     # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
-    figure, tax = t.create_default_detector_plot(plot_data[0:len(times)],
+    figure, tax = t.create_default_detector_plot(plot_data,
                                                   profiles[detector]['axes'](),
-                                                  f'{config.model_type} {detector} {config.transformation} Ternary',
+                                                  f'{config.model_type} {detector} {config.transformation} Ternary{" PreSN" if use_presn else ""}',
                                                   show=show_charts,
                                                   save=True)
-    return plot_data[0:len(times)], raw_data[0:len(times)]
+    return plot_data, raw_data
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
     flux_scatter_data,raw_data = t.create_flux_scatter(
@@ -106,7 +106,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
     t.create_regular_plot(
         plot_data=raw_data,
         axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-        plot_title=f'{config.model_type} Truth Flux {config.transformation}',
+        plot_title=f'{config.model_type} Truth Flux {config.transformation}{" PreSN" if use_presn else ""}',
         ylab="Total Integrated Flux flavor/cm^2",
         xlab="Right Time in Coordinate (s)",
         show=show_charts,
@@ -144,11 +144,10 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         log_bins=use_log,
         presn=use_presn
     )
-    time_bins_x_axis = time_bins_x_axis
 
     t.create_regular_plot(all_plot_data,
                           handlers.same_axes(),
-                          f'*Detectors {config.model_type} {config.transformation} {_colors[number]} {config.model_file_paths[number].split("/")[-1]}.png',
+                          f'*Detectors {config.model_type} {config.transformation} {_colors[number]} {config.model_file_paths[number].split("/")[-1]}{" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event rate',
                           show=show_charts
@@ -176,14 +175,11 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
 
 def process_transformation(config: t.MetaAnalysisConfig):
     print(f'Now processing {config.model_type}')
-    # first get the flux data
-
-    
     scale=100
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=f'{config.model_type} *Detectors {config.transformation} Logged Bins'
+    title=f'{config.model_type} *Detectors {config.transformation} Logged Bins{" PreSN" if use_presn else ""}'
     tax.set_title(title)
     # data is organized in top, right, left
 
