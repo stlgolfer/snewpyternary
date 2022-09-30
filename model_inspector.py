@@ -11,7 +11,7 @@ from model_wrappers import snewpy_models, sn_model_default_time_step
 @click.command()
 @click.argument('models',required=True,type=str,nargs=-1)
 @click.option('--setno', required=False, default=[0], multiple=True, help="Set numbers")
-@click.option('--all', required=False, default=False, help="For all set numbers")
+@click.option('--all', required=False, default=False, help="For all set numbers. Will override setno param")
 def start(models, setno, all):
     for model in models:
         print(model)
