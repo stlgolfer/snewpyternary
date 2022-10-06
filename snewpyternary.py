@@ -59,7 +59,8 @@ def create_detector_event_scatter(
         smearing="smeared",
         weighting="weighted",
         use_cache=False,
-        log_bins=False
+        log_bins=False,
+        presn=False
         ):
     '''
     Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
@@ -134,7 +135,8 @@ def create_detector_event_scatter(
         d=d,
         output_filename=snowglobes_out_name,
         deltat=deltat,
-        log_bins=log_bins
+        log_bins=log_bins,
+        presn=presn
         )
     print("NEW SNOwGLoBES Simulation\n=============================")
     print("Using detector schema: " + detector)
@@ -351,7 +353,8 @@ def create_flux_scatter(modelFilePath,
                         d=10,
                         transform="NoTransformation",
                         use_cache=False,
-                        log_bins=False
+                        log_bins=False,
+                        presn=False
                         ):
     '''
     Similar to create_detector_event_scatter, although here we are just plotting
@@ -405,7 +408,8 @@ def create_flux_scatter(modelFilePath,
         transformation_type=transform,
         d=d,
         deltat=deltat,
-        log_bins=log_bins
+        log_bins=log_bins,
+        presn=presn
         )
     fluence_data = []
     with TemporaryDirectory(prefix='snowglobes') as tempdir:

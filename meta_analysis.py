@@ -34,7 +34,6 @@ from model_wrappers import snewpy_models, sn_model_default_time_step
 import click
 
 #simulation details
-d = 10 # in pc, distance to SN
 snowglobes_out_name="snowglobes-output"
 snowglobes_dir = os.environ['SNOWGLOBES']
 print(os.environ['SNOWGLOBES'])
@@ -50,6 +49,8 @@ profiles = handlers.build_detector_profiles()
 show_charts: bool = True
 use_log: bool = True
 use_cache: bool = True
+use_presn: bool = False
+d: int = 10 # in pc, distance to SN
 
 _colors = ['RED', 'GREEN', 'BLUE']
 
@@ -63,13 +64,15 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         transformation=config.transformation,
         data_calc=profiles[detector]['handler'],
         use_cache=use_cache,
-        log_bins=use_log
+        log_bins=use_log,
+        presn=use_presn
     )
+
     # also create heatmap using Rishi's code
     # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
     figure, tax = t.create_default_detector_plot(plot_data,
                                                   profiles[detector]['axes'](),
-                                                  f'{config.model_type} {detector} {config.transformation} Ternary',
+                                                  f'{config.model_type} {detector} {config.transformation} Ternary{" PreSN" if use_presn else ""}',
                                                   show=show_charts,
                                                   save=True)
     return plot_data, raw_data
@@ -82,7 +85,8 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
         deltat=sn_model_default_time_step(config.model_type),
         transform=config.transformation,
         use_cache=use_cache,
-        log_bins=use_log
+        log_bins=use_log,
+        presn=use_presn
     )
     t.create_default_flux_plot(
         flux_scatter_data,
@@ -93,7 +97,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
     t.create_regular_plot(
         plot_data=raw_data,
         axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-        plot_title=f'{config.model_type} Truth Flux {config.transformation}',
+        plot_title=f'{config.model_type} Truth Flux {config.transformation}{" PreSN" if use_presn else ""}',
         ylab="Total Integrated Flux flavor/cm^2",
         xlab="Right Time in Coordinate (s)",
         show=show_charts,
@@ -128,12 +132,13 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         config.model_file_paths[number],
         config.model_type,
         deltat=sn_model_default_time_step(config.model_type),
-        log_bins=use_log
+        log_bins=use_log,
+        presn=use_presn
     )
 
     t.create_regular_plot(all_plot_data,
                           handlers.same_axes(),
-                          f'*Detectors {config.model_type} {config.transformation} {_colors[number]} {config.model_file_paths[number].split("/")[-1]}.png',
+                          f'*Detectors {config.model_type} {config.transformation} {_colors[number]} {config.model_file_paths[number].split("/")[-1]}{" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event rate',
                           show=show_charts
@@ -161,14 +166,11 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
 
 def process_transformation(config: t.MetaAnalysisConfig):
     print(f'Now processing {config.model_type}')
-    # first get the flux data
-
-    
     scale=100
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=f'{config.model_type} *Detectors {config.transformation} Logged Bins'
+    title=f'{config.model_type} *Detectors {config.transformation} Logged Bins{" PreSN" if use_presn else ""}'
     tax.set_title(title)
     # data is organized in top, right, left
 
@@ -224,7 +226,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--uselog',default=True,type=bool, help='Use logarithmically spaced (and shifted) time bins')
 @click.option('--setno', required=False, default=[0],type=int,multiple=True, help='Model set index. See model_wrappers.py')
 @click.option('--cache', required=False, default=True, type=bool, help='If true, use cache')
-def start(showc,models,distance,uselog,p, setno, cache):
+@click.option('--presn', required=False, default=False, type=bool, help='If true, compute time bins from t<=0')
+def start(showc,models,distance,uselog,p, setno, cache, presn):
     global show_charts
     show_charts = showc
     
@@ -237,9 +240,15 @@ def start(showc,models,distance,uselog,p, setno, cache):
     global use_cache
     use_cache = cache
 
+    global use_presn
+    use_presn = presn
+
     # check set numbers
     if len(setno) > 3:
         raise ValueError("Can only superimpose a maximum of 3 sets onto one chart")
+
+    if use_presn and use_log:
+        raise RuntimeError("Using log time bins on presn calculations are not currently supported")
 
     # want to iterate by model, then prescription, then set
 
