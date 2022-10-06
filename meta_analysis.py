@@ -97,9 +97,9 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
     t.create_regular_plot(
         plot_data=raw_data,
         axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-        plot_title=f'{config.model_type} Truth Flux {config.transformation}{" PreSN" if use_presn else ""}',
+        plot_title=f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux {config.transformation}{" PreSN" if use_presn else ""}',
         ylab="Total Integrated Flux flavor/cm^2",
-        xlab="Right Time in Coordinate (s)",
+        xlab="Mid-Point Time in Coordinate (s)",
         show=show_charts,
         use_x_log=False,save=True)
 
