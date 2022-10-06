@@ -56,7 +56,7 @@ def calculate_time_bins(model_path: str, model_type, ntbins=30, deltat=None, log
     # Subsample the model time. Default to 30 time slices.
     tmin = snmodel.get_time()[0]
     tmax = snmodel.get_time()[-1] if presn == False else 0*u.s
-    # print(f'tmin: {tmin}, tmax: {tmax}')
+    print(f'tmin: {tmin}, tmax: {tmax}')
     if deltat is not None:
         dt = deltat
         ntbins = int((tmax - tmin) / dt)
