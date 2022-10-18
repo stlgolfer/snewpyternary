@@ -116,7 +116,7 @@ class ConfigBestChannel(__DetectorProxyConfiguration__):
         return [0, np.sum(data['nue_Ar40']) + np.sum(data['e']), 0]
 
     def h_wc100kt30prct(self,data):
-        return [0, 0, np.sum(data('ibd'))]
+        return [0, 0, np.sum(data['ibd'])]
 
     def __str__(self):
         return "BstChnl"

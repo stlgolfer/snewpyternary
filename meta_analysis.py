@@ -16,6 +16,7 @@ from snewpy.models import Nakazato_2013, OConnor_2015
 from snewpy.flavor_transformation import NoTransformation # just use NoTransformation for now to keep things simple
 from ternary import TernaryAxesSubplot
 
+import data_handlers
 import snewpyternary as t
 import os
 import ternary
@@ -228,7 +229,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--cache', required=False, default=True, type=bool, help='If true, use cache')
 @click.option('--presn', required=False, default=False, type=bool, help='If true, compute time bins from t<=0')
 @click.option('--tflux', required=False, default=False, type=bool, help='If true, only calculate the truth flux. set numbers are not superimposed')
-def start(showc,models,distance,uselog,p, setno, cache, presn, tflux):
+@click.option('--detproxy', required=False, type=str, default='AgDet', help='Detector proxy configuration. Options: AgDet or BstChnl')
+def start(showc,models,distance,uselog,p, setno, cache, presn, tflux, detproxy):
     global show_charts
     show_charts = showc
     
@@ -262,11 +264,13 @@ def start(showc,models,distance,uselog,p, setno, cache, presn, tflux):
                     raise ValueError(f"Invalid model set id. Max is {len(snewpy_models[model].file_paths)-1}")
 
             # remove multithreading for now. run sequentially
+            proxy = data_handlers.ConfigAggregateDetectors() if detproxy == 'AgDet' else data_handlers.ConfigBestChannel()
+            config = t.MetaAnalysisConfig(snewpy_models[model], setno, prescription,proxy_config=proxy)
             if tflux:
                 for num in setno:
-                    process_flux(t.MetaAnalysisConfig(snewpy_models[model], setno, prescription), num)
+                    process_flux(config, num)
             else:
-                process_transformation(t.MetaAnalysisConfig(snewpy_models[model], setno, prescription))
+                process_transformation(config)
 
             # proc = mp.Process(target=process_transformation, args=[])
             # proc.start()
