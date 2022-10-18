@@ -21,6 +21,7 @@ import tarfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from model_wrappers import SNEWPYModel
+from data_handlers import __DetectorProxyConfiguration__, ConfigAggregateDetectors
 
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
@@ -502,9 +503,11 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
 
 # make an abstraction for analysis config
 class MetaAnalysisConfig:
-    def __init__(self,snewpy_model: SNEWPYModel, set_nos: list, transformation: str):
+    def __init__(self, snewpy_model: SNEWPYModel, set_nos: list, transformation: str,
+                 proxy_config: __DetectorProxyConfiguration__ = ConfigAggregateDetectors()):
         self.model_file_paths: list = snewpy_model.file_paths
         self.model_type: str = snewpy_model.model_type
         self.model: any = snewpy_model.model
         self.set_numbers: list = set_nos
         self.transformation: str = transformation
+        self.proxyconfig: __DetectorProxyConfiguration__ = proxy_config

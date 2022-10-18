@@ -15,7 +15,7 @@ supported_detectors = [
     'wc100kt30prct'
     ]
 
-class DetectorProxyConfiguration(ABC):
+class __DetectorProxyConfiguration__(ABC):
     '''
     What follows are the calculations that are made for each time bin when collated
     data comes through. Each time bin has event rates per energy bin. Order should
@@ -27,15 +27,19 @@ class DetectorProxyConfiguration(ABC):
     '''
 
     @abstractmethod
-    def h_scint20kt(self):
+    def h_scint20kt(self,data):
         pass
 
     @abstractmethod
-    def h_ar40kt(self):
+    def h_ar40kt(self,data):
         pass
 
     @abstractmethod
-    def h_wc100kt30prct(self):
+    def h_wc100kt30prct(self,data):
+        pass
+
+    @abstractmethod
+    def __str__(self):
         pass
 
     '''
@@ -54,43 +58,65 @@ class DetectorProxyConfiguration(ABC):
     def axes_wc100kt30prct(self):
         return self.same_axes()
 
-class ConfigAggregateDetectors(DetectorProxyConfiguration):
+    def build_detector_profiles(self):
+        '''
+        Builds a profile for a detector that includes a dictionary of data handlers
+        and the corresponding data labels (used for labeling axes)
 
-    def h_scint20kt(data):
+        Returns
+        -------
+        detector_defs : dictionary
+            A dictionary with the supported_detectors as the keys and the respective values are the handler and axes
+            defs
+            TODO: might not have to run this at runtime: might be able to just construct it
+
+        '''
+
+        detector_defs = {}
+        module_scope = self # __import__(__name__)
+        for detector in supported_detectors:
+            detector_defs[detector] = {
+                'handler': getattr(module_scope, f'h_{detector}'),
+                'axes': getattr(module_scope, f'axes_{detector}')
+            }
+        return detector_defs
+
+class ConfigAggregateDetectors(__DetectorProxyConfiguration__):
+
+    def h_scint20kt(self,data):
         # must return a list of a, b, c
         nue_plus_es=np.sum(data['nue_C12'])+np.sum(data['nue_C13']+data['e']) # nue
         ibd = np.sum(data['ibd'])
         nc = np.sum(data['nc'])
         return [nc,nue_plus_es,ibd]
 
-    def h_ar40kt(data):
+    def h_ar40kt(self,data):
         nue_plus_es = np.sum(data['nue_Ar40'])+np.sum(data['e'])
         nc = np.sum(data['nc'])
         nue_bar = np.sum(data['nuebar_Ar40'])
         return [nc,nue_plus_es,nue_bar]
 
-    def h_wc100kt30prct(data):
+    def h_wc100kt30prct(self,data):
         ibd = np.sum(data['ibd'])
         nue_plus_es=np.sum(data['nue_O16'])+np.sum(data['e'])
         nc = np.sum(data['nc'])
         return [nc,nue_plus_es,ibd]
 
-# def build_detector_profiles():
-#     '''
-#     Builds a profile for a detector that includes a dictionary of data handlers
-#     and the corresponding data labels (used for labeling axes)
-#
-#     Returns
-#     -------
-#     detector_defs : dictionary
-#         The dictionary of profiles
-#
-#     '''
-#     detector_defs = {}
-#     module_scope = __import__(__name__)
-#     for detector in supported_detectors:
-#         detector_defs[detector] = {
-#             'handler':getattr(module_scope, f'h_{detector}'),
-#             'axes':getattr(module_scope,f'axes_{detector}')
-#             }
-#     return detector_defs
+    def __str__(self):
+        return "AgDet"
+
+class ConfigBestChannel(__DetectorProxyConfiguration__):
+
+    def h_scint20kt(self, data):
+        ibd = np.sum(data['ibd'])
+        nc = np.sum(data['nc'])
+        return [nc, 0, ibd]
+
+    def h_ar40kt(self, data):
+        return [0, np.sum(data['nue_Ar40']) + np.sum(data['e']), 0]
+
+    def h_wc100kt30prct(self,data):
+        return [0, 0, np.sum(data('ibd'))]
+
+    def __str__(self):
+        return "BstChnl"
