@@ -1,0 +1,491 @@
+Bollig_2016
+==================================================
+
+Bollig_2016:0 | ./SNEWPY_models/Bollig_2016/s11.2c
+Bollig_2016 Model: s11.2c
+Progenitor mass  : 11.2 solMass
+EOS              : LS220
+------------------------------------------------
+
+Bollig_2016:1 | ./SNEWPY_models/Bollig_2016/s27.0c
+Bollig_2016 Model: s27.0c
+Progenitor mass  : 27.0 solMass
+EOS              : LS220
+------------------------------------------------
+
+Fornax_2021
+==================================================
+
+Fornax_2021:0 | ./SNEWPY_models/Fornax_2021/lum_spec_12M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 12.0 solMass
+------------------------------------------------
+
+Fornax_2021:1 | ./SNEWPY_models/Fornax_2021/lum_spec_13M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 13.0 solMass
+------------------------------------------------
+
+Fornax_2021:2 | ./SNEWPY_models/Fornax_2021/lum_spec_14M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 14.0 solMass
+------------------------------------------------
+
+Fornax_2021:3 | ./SNEWPY_models/Fornax_2021/lum_spec_15M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 15.0 solMass
+------------------------------------------------
+
+Fornax_2021:4 | ./SNEWPY_models/Fornax_2021/lum_spec_16M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 16.0 solMass
+------------------------------------------------
+
+Fornax_2021:5 | ./SNEWPY_models/Fornax_2021/lum_spec_17M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 17.0 solMass
+------------------------------------------------
+
+Fornax_2021:6 | ./SNEWPY_models/Fornax_2021/lum_spec_18M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 18.0 solMass
+------------------------------------------------
+
+Fornax_2021:7 | ./SNEWPY_models/Fornax_2021/lum_spec_19M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 19.0 solMass
+------------------------------------------------
+
+Fornax_2021:8 | ./SNEWPY_models/Fornax_2021/lum_spec_20M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 20.0 solMass
+------------------------------------------------
+
+Fornax_2021:9 | ./SNEWPY_models/Fornax_2021/lum_spec_21M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 21.0 solMass
+------------------------------------------------
+
+Fornax_2021:10 | ./SNEWPY_models/Fornax_2021/lum_spec_22M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 22.0 solMass
+------------------------------------------------
+
+Fornax_2021:11 | ./SNEWPY_models/Fornax_2021/lum_spec_23M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 23.0 solMass
+------------------------------------------------
+
+Fornax_2021:12 | ./SNEWPY_models/Fornax_2021/lum_spec_25M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 25.0 solMass
+------------------------------------------------
+
+Fornax_2021:13 | ./SNEWPY_models/Fornax_2021/lum_spec_26M_r10000_dat.h5
+Fornax_2021 Model
+Progenitor mass  : 26.0 solMass
+------------------------------------------------
+
+Kuroda_2020
+==================================================
+
+Kuroda_2020:0 | ./SNEWPY_models/Kuroda_2020/LnuR00B00.dat
+Kuroda_2020 Model: ./SNEWPY_models/Kuroda_2020/LnuR00B00.dat
+Progenitor mass  : 20.0 solMass
+EOS              : LS220
+------------------------------------------------
+
+Kuroda_2020:1 | ./SNEWPY_models/Kuroda_2020/LnuR10B12.dat
+Kuroda_2020 Model: ./SNEWPY_models/Kuroda_2020/LnuR10B12.dat
+Progenitor mass  : 20.0 solMass
+EOS              : LS220
+------------------------------------------------
+
+Kuroda_2020:2 | ./SNEWPY_models/Kuroda_2020/LnuR10B13.dat
+Kuroda_2020 Model: ./SNEWPY_models/Kuroda_2020/LnuR10B13.dat
+Progenitor mass  : 20.0 solMass
+EOS              : LS220
+------------------------------------------------
+
+Nakazato_2013
+==================================================
+
+Nakazato_2013:0 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev100ms-s20.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev100ms-s20.0.fits
+Progenitor mass  : 20.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 100.0 ms
+------------------------------------------------
+
+Nakazato_2013:1 | ./SNEWPY_models/Nakazato_2013/nakazato-LS220-BH-z0.004-s30.0.fits
+Nakazato_2013 Model: nakazato-LS220-BH-z0.004-s30.0.fits
+Progenitor mass  : 30.0 solMass
+EOS              : LS220
+Metallicity      : 0.004
+Revival time     : 0.0 ms
+------------------------------------------------
+
+Nakazato_2013:2 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev200ms-s13.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev200ms-s13.0.fits
+Progenitor mass  : 13.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 200.0 ms
+------------------------------------------------
+
+Nakazato_2013:3 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev300ms-s50.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev300ms-s50.0.fits
+Progenitor mass  : 50.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 300.0 ms
+------------------------------------------------
+
+Nakazato_2013:4 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev200ms-s13.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev200ms-s13.0.fits
+Progenitor mass  : 13.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 200.0 ms
+------------------------------------------------
+
+Nakazato_2013:5 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev300ms-s20.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev300ms-s20.0.fits
+Progenitor mass  : 20.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 300.0 ms
+------------------------------------------------
+
+Nakazato_2013:6 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-BH-z0.004-s30.0.fits
+Nakazato_2013 Model: nakazato-shen-BH-z0.004-s30.0.fits
+Progenitor mass  : 30.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 0.0 ms
+------------------------------------------------
+
+Nakazato_2013:7 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev200ms-s20.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev200ms-s20.0.fits
+Progenitor mass  : 20.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 200.0 ms
+------------------------------------------------
+
+Nakazato_2013:8 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev100ms-s13.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev100ms-s13.0.fits
+Progenitor mass  : 13.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 100.0 ms
+------------------------------------------------
+
+Nakazato_2013:9 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev200ms-s20.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev200ms-s20.0.fits
+Progenitor mass  : 20.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 200.0 ms
+------------------------------------------------
+
+Nakazato_2013:10 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev300ms-s30.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev300ms-s30.0.fits
+Progenitor mass  : 30.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 300.0 ms
+------------------------------------------------
+
+Nakazato_2013:11 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev100ms-s13.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev100ms-s13.0.fits
+Progenitor mass  : 13.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 100.0 ms
+------------------------------------------------
+
+Nakazato_2013:12 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev200ms-s50.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev200ms-s50.0.fits
+Progenitor mass  : 50.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 200.0 ms
+------------------------------------------------
+
+Nakazato_2013:13 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev100ms-s20.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev100ms-s20.0.fits
+Progenitor mass  : 20.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 100.0 ms
+------------------------------------------------
+
+Nakazato_2013:14 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev200ms-s30.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev200ms-s30.0.fits
+Progenitor mass  : 30.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 200.0 ms
+------------------------------------------------
+
+Nakazato_2013:15 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev300ms-s50.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev300ms-s50.0.fits
+Progenitor mass  : 50.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 300.0 ms
+------------------------------------------------
+
+Nakazato_2013:16 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev100ms-s20.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev100ms-s20.0.fits
+Progenitor mass  : 20.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 100.0 ms
+------------------------------------------------
+
+Nakazato_2013:17 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev300ms-s13.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev300ms-s13.0.fits
+Progenitor mass  : 13.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 300.0 ms
+------------------------------------------------
+
+Nakazato_2013:18 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev100ms-s30.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev100ms-s30.0.fits
+Progenitor mass  : 30.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 100.0 ms
+------------------------------------------------
+
+Nakazato_2013:19 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev200ms-s50.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev200ms-s50.0.fits
+Progenitor mass  : 50.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 200.0 ms
+------------------------------------------------
+
+Nakazato_2013:20 | ./SNEWPY_models/Nakazato_2013/nakazato-togashi-BH-z0.004-s30.0.fits
+Nakazato_2013 Model: nakazato-togashi-BH-z0.004-s30.0.fits
+Progenitor mass  : 30.0 solMass
+EOS              : TOGASHI
+Metallicity      : 0.004
+Revival time     : 0.0 ms
+------------------------------------------------
+
+Nakazato_2013:21 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev100ms-s50.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev100ms-s50.0.fits
+Progenitor mass  : 50.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 100.0 ms
+------------------------------------------------
+
+Nakazato_2013:22 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.004-t_rev300ms-s20.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.004-t_rev300ms-s20.0.fits
+Progenitor mass  : 20.0 solMass
+EOS              : SHEN
+Metallicity      : 0.004
+Revival time     : 300.0 ms
+------------------------------------------------
+
+Nakazato_2013:23 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev100ms-s50.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev100ms-s50.0.fits
+Progenitor mass  : 50.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 100.0 ms
+------------------------------------------------
+
+Nakazato_2013:24 | ./SNEWPY_models/Nakazato_2013/nakazato-shen-z0.02-t_rev300ms-s13.0.fits
+Nakazato_2013 Model: nakazato-shen-z0.02-t_rev300ms-s13.0.fits
+Progenitor mass  : 13.0 solMass
+EOS              : SHEN
+Metallicity      : 0.02
+Revival time     : 300.0 ms
+------------------------------------------------
+
+Sukhbold_2015
+==================================================
+
+Sukhbold_2015:0 | ./SNEWPY_models/Sukhbold_2015/sukhbold-SFHo-z9.6.fits
+Sukhbold_2015 Model: sukhbold-SFHo-z9.6.fits
+Progenitor mass  : 9.6 solMass
+EOS              : SFHo
+------------------------------------------------
+
+Sukhbold_2015:1 | ./SNEWPY_models/Sukhbold_2015/sukhbold-SFHo-s27.0.fits
+Sukhbold_2015 Model: sukhbold-SFHo-s27.0.fits
+Progenitor mass  : 27.0 solMass
+EOS              : SFHo
+------------------------------------------------
+
+Sukhbold_2015:2 | ./SNEWPY_models/Sukhbold_2015/sukhbold-LS220-s27.0.fits
+Sukhbold_2015 Model: sukhbold-LS220-s27.0.fits
+Progenitor mass  : 27.0 solMass
+EOS              : LS220
+------------------------------------------------
+
+Sukhbold_2015:3 | ./SNEWPY_models/Sukhbold_2015/sukhbold-LS220-z9.6.fits
+Sukhbold_2015 Model: sukhbold-LS220-z9.6.fits
+Progenitor mass  : 9.6 solMass
+EOS              : LS220
+------------------------------------------------
+
+Tamborra_2014
+==================================================
+
+Tamborra_2014:0 | ./SNEWPY_models/Tamborra_2014/s20.0c_3D_dir1
+Tamborra_2014 Model: s20.0c_3D_dir1
+Progenitor mass  : 20.0 solMass
+EOS              : LS220
+------------------------------------------------
+
+Tamborra_2014:1 | ./SNEWPY_models/Tamborra_2014/s27.0c_3D_dir1
+Tamborra_2014 Model: s27.0c_3D_dir1
+Progenitor mass  : 27.0 solMass
+EOS              : LS220
+------------------------------------------------
+
+Walk_2018
+==================================================
+
+Walk_2018:0 | ./SNEWPY_models/Walk_2018/s15.0c_3D_nonrot_dir1
+Walk_2018 Model: s15.0c_3D_nonrot_dir1
+Progenitor mass  : 15.0 solMass
+EOS              : LS220
+------------------------------------------------
+
+Walk_2019
+==================================================
+
+Walk_2019:0 | ./SNEWPY_models/Walk_2019/s40.0c_3DBH_dir1
+Bollig_2016 Model: s40.0c_3DBH_dir1
+Progenitor mass  : 40.0 solMass
+EOS              : LS220
+------------------------------------------------
+
+Warren_2020
+==================================================
+
+Warren_2020:0 | ./SNEWPY_models/Warren_2020/stir_a1.23/stir_multimessenger_a1.23_m10.0.h5
+Warren_2020 Model: stir_multimessenger_a1.23_m10.0.h5
+Progenitor mass  : 10.0 solMass
+Turb. mixing param. : 1.23
+EOS              : SFHo
+------------------------------------------------
+
+Warren_2020:1 | ./SNEWPY_models/Warren_2020/stir_a1.23/stir_multimessenger_a1.23_m25.0.h5
+Warren_2020 Model: stir_multimessenger_a1.23_m25.0.h5
+Progenitor mass  : 25.0 solMass
+Turb. mixing param. : 1.23
+EOS              : SFHo
+------------------------------------------------
+
+Warren_2020:2 | ./SNEWPY_models/Warren_2020/stir_a1.27/stir_multimessenger_a1.27_m10.0.h5
+Warren_2020 Model: stir_multimessenger_a1.27_m10.0.h5
+Progenitor mass  : 10.0 solMass
+Turb. mixing param. : 1.27
+EOS              : SFHo
+------------------------------------------------
+
+Warren_2020:3 | ./SNEWPY_models/Warren_2020/stir_a1.27/stir_multimessenger_a1.27_m25.0.h5
+Warren_2020 Model: stir_multimessenger_a1.27_m25.0.h5
+Progenitor mass  : 25.0 solMass
+Turb. mixing param. : 1.27
+EOS              : SFHo
+------------------------------------------------
+
+Warren_2020:4 | ./SNEWPY_models/Warren_2020/stir_a1.25/stir_multimessenger_a1.25_m55.h5
+Warren_2020 Model: stir_multimessenger_a1.25_m55.h5
+Progenitor mass  : 55.0 solMass
+Turb. mixing param. : 1.25
+EOS              : SFHo
+------------------------------------------------
+
+Zha_2021
+==================================================
+
+Zha_2021:0 | ./SNEWPY_models/Zha_2021/s16.dat
+Zha_2021 Model: Zha2021_s16
+Progenitor mass  : 16.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:1 | ./SNEWPY_models/Zha_2021/s17.dat
+Zha_2021 Model: Zha2021_s17
+Progenitor mass  : 17.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:2 | ./SNEWPY_models/Zha_2021/s18.dat
+Zha_2021 Model: Zha2021_s18
+Progenitor mass  : 18.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:3 | ./SNEWPY_models/Zha_2021/s19.dat
+Zha_2021 Model: Zha2021_s19
+Progenitor mass  : 19.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:4 | ./SNEWPY_models/Zha_2021/s20.dat
+Zha_2021 Model: Zha2021_s20
+Progenitor mass  : 20.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:5 | ./SNEWPY_models/Zha_2021/s21.dat
+Zha_2021 Model: Zha2021_s21
+Progenitor mass  : 21.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:6 | ./SNEWPY_models/Zha_2021/s22.dat
+Zha_2021 Model: Zha2021_s22
+Progenitor mass  : 22.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:7 | ./SNEWPY_models/Zha_2021/s23.dat
+Zha_2021 Model: Zha2021_s23
+Progenitor mass  : 23.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:8 | ./SNEWPY_models/Zha_2021/s24.dat
+Zha_2021 Model: Zha2021_s24
+Progenitor mass  : 24.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:9 | ./SNEWPY_models/Zha_2021/s25.dat
+Zha_2021 Model: Zha2021_s25
+Progenitor mass  : 25.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:10 | ./SNEWPY_models/Zha_2021/s26.dat
+Zha_2021 Model: Zha2021_s26
+Progenitor mass  : 26.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:11 | ./SNEWPY_models/Zha_2021/s30.dat
+Zha_2021 Model: Zha2021_s30
+Progenitor mass  : 30.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+
+Zha_2021:12 | ./SNEWPY_models/Zha_2021/s33.dat
+Zha_2021 Model: Zha2021_s33
+Progenitor mass  : 33.0 solMass
+EOS              : STOS_B145
+------------------------------------------------
+

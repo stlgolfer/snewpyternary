@@ -482,7 +482,13 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     tax.right_axis_label(r'$\bar{\nu_e}$')
     tax.left_axis_label(r'$\nu_e$')
 
-    tax.scatter(points=plotting_data, color="red")
+    # tax.scatter(points=plotting_data, color="red")
+    widths = np.linspace(0.01, 1, num=len(plotting_data))
+    for p in range(len(plotting_data) - 1):
+        if (p + 1 >= len(plotting_data)):
+            break
+        tax.line(plotting_data[p], plotting_data[p + 1], color=(widths[p], 0, 0, 1), linestyle=':', linewidth=3)
+
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
@@ -491,7 +497,7 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
         tax.show()
         
     if save:
-        tax.savefig(f'./plots/{plot_title}')
+        tax.savefig(f'./fluxes/{plot_title}')
     return figure, tax
 
 # make an abstraction for analysis config

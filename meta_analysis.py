@@ -88,18 +88,19 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
         log_bins=use_log,
         presn=use_presn
     )
+
     t.create_default_flux_plot(
         flux_scatter_data,
-        "{model} Flux {transform}".format(model=config.model_type,transform=config.transformation),
+        f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Flux {config.transformation}.png',
         show=show_charts
         )
     
     t.create_regular_plot(
         plot_data=raw_data,
         axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-        plot_title=f'{config.model_type} Truth Flux {config.transformation}{" PreSN" if use_presn else ""}',
+        plot_title=f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux {config.transformation}{" PreSN" if use_presn else ""}.png',
         ylab="Total Integrated Flux flavor/cm^2",
-        xlab="Right Time in Coordinate (s)",
+        xlab="Mid-Point Time in Coordinate (s)",
         show=show_charts,
         use_x_log=False,save=True)
 
@@ -227,7 +228,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--setno', required=False, default=[0],type=int,multiple=True, help='Model set index. See model_wrappers.py')
 @click.option('--cache', required=False, default=True, type=bool, help='If true, use cache')
 @click.option('--presn', required=False, default=False, type=bool, help='If true, compute time bins from t<=0')
-def start(showc,models,distance,uselog,p, setno, cache, presn):
+@click.option('--tflux', required=False, default=False, type=bool, help='If true, only calculate the truth flux. set numbers are not superimposed')
+def start(showc,models,distance,uselog,p, setno, cache, presn, tflux):
     global show_charts
     show_charts = showc
     
@@ -261,7 +263,11 @@ def start(showc,models,distance,uselog,p, setno, cache, presn):
                     raise ValueError(f"Invalid model set id. Max is {len(snewpy_models[model].file_paths)-1}")
 
             # remove multithreading for now. run sequentially
-            process_transformation(t.MetaAnalysisConfig(snewpy_models[model], setno, prescription))
+            if tflux:
+                for num in setno:
+                    process_flux(t.MetaAnalysisConfig(snewpy_models[model], setno, prescription), num)
+            else:
+                process_transformation(t.MetaAnalysisConfig(snewpy_models[model], setno, prescription))
 
             # proc = mp.Process(target=process_transformation, args=[])
             # proc.start()
