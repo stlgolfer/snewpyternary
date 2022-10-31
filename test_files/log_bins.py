@@ -18,11 +18,11 @@ import snewpyternary as t
 import data_handlers as handlers
 
 import sys
-sys.path.insert(0,'./SURF2020fork')
+sys.path.insert(0,'../SURF2020fork')
 from SURF2020fork.ternary_helpers import generate_heatmap_dict
 
 #simulation details
-modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
+modelFilePathBase = "../SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"

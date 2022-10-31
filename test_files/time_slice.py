@@ -22,11 +22,11 @@ import PIL
 import imageio
 
 import sys
-sys.path.insert(0,'./SURF2020fork')
+sys.path.insert(0,'../SURF2020fork')
 from SURF2020fork.ternary_helpers import generate_heatmap_dict
 
 #simulation details
-modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
+modelFilePathBase = "../SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"
@@ -82,9 +82,9 @@ for bin_no in selected_bins:
         plt.close(fig)
 images = []
 for bin_no in selected_bins:
-    image = imageio.imread(f'./plots/ANIMATION F.{bin_no} Singular Bin {bin_no} Ternary dt={str(deltat)}.png')
+    image = imageio.imread(f'../plots/ANIMATION F.{bin_no} Singular Bin {bin_no} Ternary dt={str(deltat)}.png')
     images.append(image)
-imageio.mimsave('./plots/animation.gif',images,duration=2) # duration in seconds
+imageio.mimsave('../plots/animation.gif',images,duration=2) # duration in seconds
 
 for bin_no in selected_bins:
     nue_plus_es_energy = np.add(l_data[bin_no]['nue_O16'],l_data[bin_no]['e'])
@@ -106,7 +106,7 @@ for bin_no in selected_bins:
     y_max = float(list(plt.gca().get_ylim())[1])
     plt.text(0,-1*0.32*y_max,caption,ha='left')
     plt.legend()
-    plt.savefig(f'./plots/time_slices/{title}.png',bbox_inches='tight')
+    plt.savefig(f'../plots/time_slices/{title}.png',bbox_inches='tight')
     plt.show()
 
 # now we plot as normal
