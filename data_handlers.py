@@ -17,29 +17,61 @@ supported_detectors = [
 
 class __DetectorProxyConfiguration__(ABC):
     '''
-    What follows are the calculations that are made for each time bin when collated
-    data comes through. Each time bin has event rates per energy bin. Order should
-    be nc, nu_e+es, then inverse beta decay events.
-
-    Treat all the NC as nux,  all the nue-nucleus and ES as nue, and IBD+nuebar-nucleus as nuebar.
-
-    Each function here should return nux, nue, and anue, respectively if using the same_axes label
+    This is an abstract class that can be used to describe which channels should be used as proxies for neutrino
+    flavors.
     '''
 
+
     @abstractmethod
-    def h_scint20kt(self,data):
+    def h_scint20kt(self, data: dict) -> int:
+        '''
+        This is the abstract handler for the scint20kt
+        Parameters
+        ----------
+        data: a dictionary with channels as keys
+
+        Returns
+        -------
+        The summed event rates for the time bin
+        '''
         pass
 
     @abstractmethod
-    def h_ar40kt(self,data):
+    def h_ar40kt(self, data: dict) -> int:
+        '''
+                This is the abstract handler for the scint20kt
+                Parameters
+                ----------
+                data: a dictionary with channels as keys
+
+                Returns
+                -------
+                The summed event rates for the time bin
+                '''
         pass
 
     @abstractmethod
-    def h_wc100kt30prct(self,data):
+    def h_wc100kt30prct(self, data: dict) -> int:
+        '''
+                This is the abstract handler for the scint20kt
+                Parameters
+                ----------
+                data: a dictionary with channels as keys
+
+                Returns
+                -------
+                The summed event rates for the time bin
+                '''
         pass
 
     @abstractmethod
     def __str__(self):
+        '''
+
+        Returns
+        -------
+        the name of the proxy configuration
+        '''
         pass
 
     '''
@@ -69,7 +101,6 @@ class __DetectorProxyConfiguration__(ABC):
             A dictionary with the supported_detectors as the keys and the respective values are the handler and axes
             defs
             TODO: might not have to run this at runtime: might be able to just construct it
-
         '''
 
         detector_defs = {}
@@ -82,6 +113,15 @@ class __DetectorProxyConfiguration__(ABC):
         return detector_defs
 
 class ConfigAggregateDetectors(__DetectorProxyConfiguration__):
+    '''
+        What follows are the calculations that are made for each time bin when collated
+        data comes through. Each time bin has event rates per energy bin. Order should
+        be nc, nu_e+es, then inverse beta decay events.
+
+        Treat all the NC as nux,  all the nue-nucleus and ES as nue, and IBD+nuebar-nucleus as nuebar.
+
+        Each function here should return nux, nue, and anue, respectively if using the same_axes label
+        '''
 
     def h_scint20kt(self,data):
         # must return a list of a, b, c

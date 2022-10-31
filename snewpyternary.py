@@ -105,6 +105,8 @@ def create_detector_event_scatter(
         And stored in the cache just in case
     log_bins : bool
         Use log bins or not
+    presn : bool
+        Calculate only on time window for t<0
 
     Returns
     -------
