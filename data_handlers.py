@@ -15,6 +15,8 @@ supported_detectors = [
     'wc100kt30prct'
     ]
 
+__NA__: float = 6.0221E23
+
 class __DetectorProxyConfiguration__(ABC):
     '''
     This is an abstract class that can be used to describe which channels should be used as proxies for neutrino
@@ -23,7 +25,7 @@ class __DetectorProxyConfiguration__(ABC):
 
 
     @abstractmethod
-    def h_scint20kt(self, data: dict) -> int:
+    def h_scint20kt(self, data: dict) -> [float]:
         '''
         This is the abstract handler for the scint20kt
         Parameters
@@ -37,7 +39,7 @@ class __DetectorProxyConfiguration__(ABC):
         pass
 
     @abstractmethod
-    def h_ar40kt(self, data: dict) -> int:
+    def h_ar40kt(self, data: dict) -> [float]:
         '''
                 This is the abstract handler for the scint20kt
                 Parameters
@@ -51,7 +53,7 @@ class __DetectorProxyConfiguration__(ABC):
         pass
 
     @abstractmethod
-    def h_wc100kt30prct(self, data: dict) -> int:
+    def h_wc100kt30prct(self, data: dict) -> [float]:
         '''
                 This is the abstract handler for the scint20kt
                 Parameters
@@ -63,6 +65,37 @@ class __DetectorProxyConfiguration__(ABC):
                 The summed event rates for the time bin
                 '''
         pass
+
+    def Nt_scint20kt(self) -> [float]:
+        '''
+        Nt (number of targets calculation used in a simple unfolding)
+
+        Returns
+        -------
+        arr: array of Nt values in order of nux, nue, a_nue
+        '''
+        return [1.0, 1.0, 1.0]
+
+    def Nt_argon40kt(self) -> [float]:
+        '''
+        Nt (number of targets calculation used in a simple unfolding)
+
+        Returns
+        -------
+        arr: array of Nt values in order of nux, nue, a_nue
+        '''
+        return [1.0, 1.0, 1.0]
+
+    def Nt_wc100kt30prct(self):
+        '''
+        Nt (number of targets calculation used in a simple unfolding)
+
+        Returns
+        -------
+        arr: array of Nt values in order of nux, nue, a_nue
+        '''
+
+        return [1.0, 1.0, 1.0]
 
     @abstractmethod
     def __str__(self):
@@ -160,3 +193,13 @@ class ConfigBestChannel(__DetectorProxyConfiguration__):
 
     def __str__(self):
         return "BstChnl"
+
+    def Nt_scint20kt(self) -> [float]:
+        calc = 50*(100E9)*__NA__/12
+        return [calc, 1, 1]
+
+    def Nt_argon40kt(self) -> [float]:
+        return [1, 40*(100E9)*__NA__/39.9, 1]
+
+    def Nt_wc100kt30prct(self):
+        return [1, 1, (100)*(100E9)*2*__NA__/18]

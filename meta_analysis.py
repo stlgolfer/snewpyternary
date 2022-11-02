@@ -77,7 +77,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                                                   save=True)
     return plot_data, raw_data
 
-def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
+def process_flux(config: t.MetaAnalysisConfig, set_no: int):
+
     flux_scatter_data,raw_data = t.create_flux_scatter(
         config.model_file_paths[set_no],
         config.model_type,
@@ -103,6 +104,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int) -> None:
         xlab="Mid-Point Time in Coordinate (s)",
         show=show_charts,
         use_x_log=False,save=True)
+    return flux_scatter_data, raw_data
 
 def remap_dict(dictionary,newval):
     # remaps a dictionary's 1 value to a different value
@@ -115,7 +117,7 @@ def remap_dict(dictionary,newval):
     return new_dict
 
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot) -> None:
-    process_flux(config, number)
+    flux_scatter, flux_raw = process_flux(config, number)
 
     # print out information of the set
     print(config.model(config.model_file_paths[number]))
