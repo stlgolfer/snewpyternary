@@ -16,6 +16,7 @@ from snewpy.models import Nakazato_2013, OConnor_2015
 from snewpy.flavor_transformation import NoTransformation # just use NoTransformation for now to keep things simple
 from ternary import TernaryAxesSubplot
 
+import data_handlers
 import snewpyternary as t
 import os
 import ternary
@@ -43,7 +44,6 @@ smearing = 'smeared'
 flavor_transformation_dict = {'NoTransformation': NoTransformation(), 'AdiabaticMSW_NMO': AdiabaticMSW(mh=MassHierarchy.NORMAL), 'AdiabaticMSW_IMO': AdiabaticMSW(mh=MassHierarchy.INVERTED), 'NonAdiabaticMSWH_NMO': NonAdiabaticMSWH(mh=MassHierarchy.NORMAL), 'NonAdiabaticMSWH_IMO': NonAdiabaticMSWH(mh=MassHierarchy.INVERTED), 'TwoFlavorDecoherence': TwoFlavorDecoherence(), 'ThreeFlavorDecoherence': ThreeFlavorDecoherence(), 'NeutrinoDecay_NMO': NeutrinoDecay(mh=MassHierarchy.NORMAL), 'NeutrinoDecay_IMO': NeutrinoDecay(mh=MassHierarchy.INVERTED)}
 complete_transform_list = list(flavor_transformation_dict.keys())
 transforms_to_analyze = complete_transform_list # ['NoTransformation'] #['AdiabaticMSW_NMO','AdiabaticMSW_IMO','NoTransformation']
-profiles = handlers.build_detector_profiles()
 
 # global params
 show_charts: bool = True
@@ -62,7 +62,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         config.model,
         deltat=sn_model_default_time_step(config.model_type),
         transformation=config.transformation,
-        data_calc=profiles[detector]['handler'],
+        data_calc=config.proxyconfig.build_detector_profiles()[detector]['handler'],
         use_cache=use_cache,
         log_bins=use_log,
         presn=use_presn
@@ -71,8 +71,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # also create heatmap using Rishi's code
     # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
     figure, tax = t.create_default_detector_plot(plot_data,
-                                                  profiles[detector]['axes'](),
-                                                  f'{config.model_type} {detector} {config.transformation} Ternary{" PreSN" if use_presn else ""}',
+                                                  config.proxyconfig.build_detector_profiles()[detector]['axes'](),
+                                                  f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} Ternary{" PreSN" if use_presn else ""}',
                                                   show=show_charts,
                                                   save=True)
     return plot_data, raw_data
@@ -138,8 +138,8 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     )
 
     t.create_regular_plot(all_plot_data,
-                          handlers.same_axes(),
-                          f'*Detectors {config.model_type} {config.transformation} {_colors[number]} {config.model_file_paths[number].split("/")[-1]}{" PreSN" if use_presn else ""}.png',
+                          config.proxyconfig.same_axes(),
+                          f'*Detectors {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]}{" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event rate',
                           show=show_charts
@@ -154,8 +154,8 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         tot = a + b + c
         normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
     # all_plot_data = [tuple(point[0]) for point in all_plot_data]
-    t.create_regular_plot(normalized, handlers.same_axes(), f'{config.model_type} Super Normalized Ternary Points', 'Event Rate',
-                          show=show_charts)
+    # t.create_regular_plot(normalized, config.proxyconfig.same_axes(), f'{config.model_type} Super Normalized Ternary Points', 'Event Rate',
+    #                       show=show_charts)
 
     # going to try dynamically sized points between lines?
     widths = np.linspace(0.01, 1, num=len(normalized))
@@ -171,7 +171,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=f'{config.model_type} *Detectors {config.transformation} Logged Bins{" PreSN" if use_presn else ""}'
+    title=f'{config.model_type} *Detectors {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}'
     tax.set_title(title)
     # data is organized in top, right, left
 
@@ -229,7 +229,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--cache', required=False, default=True, type=bool, help='If true, use cache')
 @click.option('--presn', required=False, default=False, type=bool, help='If true, compute time bins from t<=0')
 @click.option('--tflux', required=False, default=False, type=bool, help='If true, only calculate the truth flux. set numbers are not superimposed')
-def start(showc,models,distance,uselog,p, setno, cache, presn, tflux):
+@click.option('--detproxy', required=False, type=str, default='AgDet', help='Detector proxy configuration. Options: AgDet or BstChnl')
+def start(showc,models,distance,uselog,p, setno, cache, presn, tflux, detproxy):
     global show_charts
     show_charts = showc
     
@@ -263,11 +264,13 @@ def start(showc,models,distance,uselog,p, setno, cache, presn, tflux):
                     raise ValueError(f"Invalid model set id. Max is {len(snewpy_models[model].file_paths)-1}")
 
             # remove multithreading for now. run sequentially
+            proxy = data_handlers.ConfigAggregateDetectors() if detproxy == 'AgDet' else data_handlers.ConfigBestChannel()
+            config = t.MetaAnalysisConfig(snewpy_models[model], setno, prescription,proxy_config=proxy)
             if tflux:
                 for num in setno:
-                    process_flux(t.MetaAnalysisConfig(snewpy_models[model], setno, prescription), num)
+                    process_flux(config, num)
             else:
-                process_transformation(t.MetaAnalysisConfig(snewpy_models[model], setno, prescription))
+                process_transformation(config)
 
             # proc = mp.Process(target=process_transformation, args=[])
             # proc.start()

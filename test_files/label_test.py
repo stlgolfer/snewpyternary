@@ -10,7 +10,7 @@ import snewpyternary as t
 from snewpy.models import Nakazato_2013
 from astropy import units as u
 
-modelFilePathBase = "./SNEWPY_models/Nakazato_2013/"
+modelFilePathBase = "../SNEWPY_models/Nakazato_2013/"
 modelFilePath = modelFilePathBase + "nakazato-shen-z0.004-t_rev100ms-s20.0.fits"
 model = Nakazato_2013(modelFilePath)
 model_type="Nakazato_2013"

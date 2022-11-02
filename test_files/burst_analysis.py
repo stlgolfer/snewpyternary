@@ -13,7 +13,7 @@ import numpy as np
 
 import snowglobes_wrapper
 
-sys.path.insert(0,'./SURF2020fork')
+sys.path.insert(0,'../SURF2020fork')
 from SURF2020fork.ternary_helpers import shared_plotting_script,generate_heatmap_dict,consolidate_heatmap_data
 from model_wrappers import snewpy_models, sn_model_default_time_step, SNEWPYModel
 import click
