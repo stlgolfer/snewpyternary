@@ -62,7 +62,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         config.model,
         deltat=sn_model_default_time_step(config.model_type),
         transformation=config.transformation,
-        data_calc=config.proxyconfig.build_detector_profiles()[detector]['handler'],
+        data_calc=config.proxyconfig.build_detector_profiles()[detector]['chans_to_add'],
         use_cache=use_cache,
         log_bins=use_log,
         presn=use_presn
@@ -115,6 +115,23 @@ def remap_dict(dictionary,newval):
         else:
             new_dict[k] = 0
     return new_dict
+
+def unfold(sigma, phi, Nt, dt):
+    '''
+    Returns a simple unfolding given the cross-section, phi kernel, and dt
+    Parameters
+    ----------
+    sigma the cross-section
+    phi the flux kernel
+    Nt number of targets
+    dt time bin dt
+
+    Returns
+    -------
+
+    '''
+    phi_t = np.sum(phi)*dt
+    sigma_avg = np.sum(np.multiply(sigma, phi))/phi_t
 
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot) -> None:
     flux_scatter, flux_raw = process_flux(config, number)

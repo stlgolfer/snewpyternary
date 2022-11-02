@@ -48,6 +48,30 @@ def sort_data_file_names(f):
             return int(s[4:])
     return 0
 
+def _sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
+    '''
+    Used internally to take the channels for a given proxy and sum them from the data
+    Parameters
+    ----------
+    data the dictionary from snewpyternary
+    channels the channels
+
+    Returns
+    -------
+    the total count
+    '''
+    proxies = [0, 0, 0]
+    for index, proxy_flavor in enumerate(list(channels)):
+        print(proxy_flavor)
+        # proxy_flavor has type [str]
+        if len(proxy_flavor) > 0:
+            sum = 0
+            for c in proxy_flavor:
+                sum = sum + np.sum(data[c])
+            proxies[index] = sum
+
+    return proxies
+
 def create_detector_event_scatter(
         modelFilePath,
         model_type,
@@ -96,10 +120,9 @@ def create_detector_event_scatter(
         Use detector smearing matrix. Either 'smeared' or 'unsmeared'. The default is 'smeared'.
     weighting : str "weighted" or "unweighted", optional
         Use detector data weights. The default is "weighted".
-    data_calc : def
-        Data calculation algorithm, since not all detector channel data is
-        uniform. Passes a dictionary of available detector channels with their
-        event rates in a given time bin organized by energy bin
+    data_calc : tuple of arrays
+        Tuple of arrays. In each array is a list of channels that are to summed from snowglobes to produce the correct
+        proxy calculation. See data_handlers for more information
     use_cache : bool
         Use the internal cache system. If false, data will always be regenerated.
         And stored in the cache just in case
@@ -204,7 +227,7 @@ def create_detector_event_scatter(
                 # build dictionary of available channels
                 for i in range(len(header)):
                     dict_data[header[i]]=data[i]
-                results = data_calc(dict_data)
+                results = _sum_proxy(dict_data, data_calc) # data_calc(dict_data)
                 labeled_data_by_energy.append(dict_data)
                 a= results[0]
                 b=results[1]

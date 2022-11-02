@@ -25,7 +25,7 @@ class __DetectorProxyConfiguration__(ABC):
 
 
     @abstractmethod
-    def h_scint20kt(self, data: dict) -> [float]:
+    def h_scint20kt(self) -> ([str], [str], [str]):
         '''
         This is the abstract handler for the scint20kt
         Parameters
@@ -39,7 +39,7 @@ class __DetectorProxyConfiguration__(ABC):
         pass
 
     @abstractmethod
-    def h_ar40kt(self, data: dict) -> [float]:
+    def h_ar40kt(self) -> ([str], [str], [str]):
         '''
                 This is the abstract handler for the scint20kt
                 Parameters
@@ -53,17 +53,13 @@ class __DetectorProxyConfiguration__(ABC):
         pass
 
     @abstractmethod
-    def h_wc100kt30prct(self, data: dict) -> [float]:
+    def h_wc100kt30prct(self) -> ([str], [str], [str]):
         '''
-                This is the abstract handler for the scint20kt
-                Parameters
-                ----------
-                data: a dictionary with channels as keys
 
-                Returns
-                -------
-                The summed event rates for the time bin
-                '''
+        Returns
+        -------
+        For each proxy, there is a list of channels that are to be summed for calculating the proxy
+        '''
         pass
 
     def Nt_scint20kt(self) -> [float]:
@@ -138,9 +134,15 @@ class __DetectorProxyConfiguration__(ABC):
 
         detector_defs = {}
         module_scope = self # __import__(__name__)
+        # unfortunately, now the handler code just got more complicated, because now we have to generically sum
+        # channels based on the names
         for detector in supported_detectors:
+            # print(f'h_{detector}')
+            h_channels = getattr(module_scope, f'h_{detector}')()
+            # print(h_channels)
+
             detector_defs[detector] = {
-                'handler': getattr(module_scope, f'h_{detector}'),
+                'chans_to_add': h_channels,
                 'axes': getattr(module_scope, f'axes_{detector}')
             }
         return detector_defs
@@ -156,40 +158,41 @@ class ConfigAggregateDetectors(__DetectorProxyConfiguration__):
         Each function here should return nux, nue, and anue, respectively if using the same_axes label
         '''
 
-    def h_scint20kt(self,data):
+    def h_scint20kt(self):
         # must return a list of a, b, c
-        nue_plus_es=np.sum(data['nue_C12'])+np.sum(data['nue_C13']+data['e']) # nue
-        ibd = np.sum(data['ibd'])
-        nc = np.sum(data['nc'])
-        return [nc,nue_plus_es,ibd]
+        # nue_plus_es=np.sum(data['nue_C12'])+np.sum(data['nue_C13']+data['e']) # nue
+        # ibd = np.sum(data['ibd'])
+        # nc = np.sum(data['nc'])
+        return (['nc'], ['nue_C12', 'nue_C13', 'e'], ['ibd'])
 
-    def h_ar40kt(self,data):
-        nue_plus_es = np.sum(data['nue_Ar40'])+np.sum(data['e'])
-        nc = np.sum(data['nc'])
-        nue_bar = np.sum(data['nuebar_Ar40'])
-        return [nc,nue_plus_es,nue_bar]
+    def h_ar40kt(self):
+        # nue_plus_es = np.sum(data['nue_Ar40'])+np.sum(data['e'])
+        # nc = np.sum(data['nc'])
+        # nue_bar = np.sum(data['nuebar_Ar40'])
+        return (['nc'], ['nue_Ar40', 'e'], ['nuebar_Ar40'])
 
-    def h_wc100kt30prct(self,data):
-        ibd = np.sum(data['ibd'])
-        nue_plus_es=np.sum(data['nue_O16'])+np.sum(data['e'])
-        nc = np.sum(data['nc'])
-        return [nc,nue_plus_es,ibd]
+    def h_wc100kt30prct(self):
+        # ibd = np.sum(data['ibd'])
+        # nue_plus_es=np.sum(data['nue_O16'])+np.sum(data['e'])
+        # nc = np.sum(data['nc'])
+        return (['nc'], ['nue_O16', 'e'], ['ibd'])
 
     def __str__(self):
         return "AgDet"
 
 class ConfigBestChannel(__DetectorProxyConfiguration__):
 
-    def h_scint20kt(self, data):
-        ibd = np.sum(data['ibd'])
-        nc = np.sum(data['nc'])
-        return [nc, 0, ibd]
+    def h_scint20kt(self):
+        # ibd = np.sum(data['ibd'])
+        # nc = np.sum(data['nc'])
+        # return [nc, 0, ibd]
+        return (['nc'], [], ['ibd'])
 
-    def h_ar40kt(self, data):
-        return [0, np.sum(data['nue_Ar40']) + np.sum(data['e']), 0]
+    def h_ar40kt(self):
+        return ([], ['nue_Ar40', 'e'], [])
 
-    def h_wc100kt30prct(self,data):
-        return [0, 0, np.sum(data['ibd'])]
+    def h_wc100kt30prct(self):
+        return ([], [], ['ibd'])
 
     def __str__(self):
         return "BstChnl"
