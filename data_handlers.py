@@ -143,7 +143,8 @@ class __DetectorProxyConfiguration__(ABC):
 
             detector_defs[detector] = {
                 'chans_to_add': h_channels,
-                'axes': getattr(module_scope, f'axes_{detector}')
+                'axes': getattr(module_scope, f'axes_{detector}'),
+                'N_t': getattr(module_scope, f'Nt_{detector}')
             }
         return detector_defs
 

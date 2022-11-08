@@ -75,7 +75,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                                                   f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} Ternary{" PreSN" if use_presn else ""}',
                                                   show=show_charts,
                                                   save=True)
-    return plot_data, raw_data
+
+    return plot_data, raw_data, l_data
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int):
 
@@ -116,35 +117,90 @@ def remap_dict(dictionary,newval):
             new_dict[k] = 0
     return new_dict
 
-def unfold(sigma, phi, Nt, dt):
+def unfold(config, detector, l_data, r_data, flux, bins):
     '''
     Returns a simple unfolding given the cross-section, phi kernel, and dt
     Parameters
     ----------
-    sigma the cross-section
-    phi the flux kernel
+    sigma the cross-section by time series
+    flux the model flux by time series
     Nt number of targets
-    dt time bin dt
+    bins the time bins
+    kernel the flux kernel we're trying to approximate
 
     Returns
     -------
 
+
     '''
-    phi_t = np.sum(phi)*dt
-    sigma_avg = np.sum(np.multiply(sigma, phi))/phi_t
+
+    # for each time bin, we need to find the sigma in each proxy
+    sigma: [([float], [float], [float])] = []
+    # sigma will contain an array of tuples
+    # each tuple will have the flavor proxy, but it will be an array of floats (E-Dependency event rate)
+    for bin_index, bin in enumerate(l_data):
+        # bin will be a dictionary of arrays with channels as keys
+        # get the channels we need to calculate
+        channels = config.proxyconfig.build_detector_profiles()['chans_to_add']
+
+        zeros_arr = np.zeros_like(bin['Energy']) # TODO: should be Energy key, but it might be E or something
+        proxies = [zeros_arr, zeros_arr, zeros_arr]
+        for index, proxy_flavor in enumerate(list(channels)):
+            # print(proxy_flavor)
+            # proxy_flavor has type [str]
+            if len(proxy_flavor) > 0:
+                for c in proxy_flavor:
+                    proxies[index] = np.add(proxies[index], bin[c])
+                # proxies[index] = sum
+
+    # in theory, we have the sigma array now, so now we need the flux's energy dependence
+    flux_E_dep: [([float], [float], [float])] = []
+    for flux_index, flux_bin in enumerate(flux):
+        nue = flux_bin[1]
+        nux = np.add(flux_bin[2], flux_bin[3])
+        anue = flux_bin[4]
+        anux = np.add(flux_bin[5], flux_bin[6])
+        # SWAPPING THE ORDER HERE TO CONFORM TO DETECTOR PROXY ORDER
+        flux_E_dep.append((np.add(nux, anux), nue, anue))
+
+    numerator: [(float, float, float)] = []
+    for sigma_bin_index, sigma_bin in enumerate(sigma):
+        # each sigma_bin is a tuple of arrays
+        nux_prox = np.sum(np.multiply(sigma_bin[0], flux_E_dep[sigma_bin_index][0]))
+        nue_prox = np.sum(np.multiply(sigma_bin[1], flux_E_dep[sigma_bin_index][1]))
+        anue_prox = np.sum(np.multiply(sigma_bin[2], flux_E_dep[sigma_bin_index][2]))
+
+        numerator.append((nux_prox, nue_prox, anue_prox))
+
+    # we'll ignore the kernel calculation for now
+    # TODO: add kernel calculation
+    # now find the phi_est for each time bin
+    phi_est: [(float, float, float)] = []
+    for phi_est_index, numerator_bin in enumerate(numerator):
+        phi_est_nux = r_data[phi_est_index][0] / (
+                numerator_bin[0]*config.proxyconfig.build_detector_profiles()['N_t'][detector][0])
+
+        phi_est_nue = r_data[phi_est_index][1] / (
+                    numerator_bin[1] * config.proxyconfig.build_detector_profiles()['N_t'][detector][1])
+
+        phi_est_anue = r_data[phi_est_index][2] / (
+                    numerator_bin[2] * config.proxyconfig.build_detector_profiles()['N_t'][detector][2])
+
+        phi_est.append((phi_est_nux, phi_est_nue, phi_est_anue))
+    return phi_est
 
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot) -> None:
-    flux_scatter, flux_raw = process_flux(config, number)
+    flux_scatter, flux_raw, flux_l_data = process_flux(config, number)
 
     # print out information of the set
     print(config.model(config.model_file_paths[number]))
 
-    p_data, r_data = process_detector(config, number, 'ar40kt')
+    p_data, r_data, l_data = process_detector(config, number, 'ar40kt')
     # need to convert data to an array
     all_plot_data = [list(key) for key in r_data]  # going to take each detector and add them up
 
     for detector in ['wc100kt30prct', 'scint20kt']:
-        p_data, r_data = process_detector(config, number, detector)
+        p_data, r_data, l_data = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
 
     # now get the time bins
@@ -155,6 +211,9 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         log_bins=use_log,
         presn=use_presn
     )
+
+    # do the unfolding
+
 
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
