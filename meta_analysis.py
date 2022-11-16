@@ -292,7 +292,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=f'{config.model_type} *Detectors {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}'
+    title=f'{config.model_type} *Detectors Unfolded {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}'
     tax.set_title(title)
     # data is organized in top, right, left
 
@@ -334,7 +334,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
-    tax.savefig(f'./all_detector_plots/{title}')
+    title_cleaned = title.replace("\n", "")
+    tax.savefig(f'./all_detector_plots/{title_cleaned}')
     
     if show_charts == True:
         tax.show()
