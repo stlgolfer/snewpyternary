@@ -422,7 +422,8 @@ def create_flux_scatter(modelFilePath,
         plot_data = ca.load_cache(f'{cache_base}_plot_data')
         raw_data = ca.load_cache(f'{cache_base}_raw_data')
         l_data = ca.load_cache(f'{cache_base}_l_data')
-        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data], [dict(point) for point in l_data]
+        l_data
+        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data], l_data
         #return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data')
     
     print("NEW SNOwGLoBES FLUENCE TIME SERIES GENERATION\n=============================")

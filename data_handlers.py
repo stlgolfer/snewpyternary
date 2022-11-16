@@ -72,7 +72,7 @@ class __DetectorProxyConfiguration__(ABC):
         '''
         return [1.0, 1.0, 1.0]
 
-    def Nt_argon40kt(self) -> [float]:
+    def Nt_ar40kt(self) -> [float]:
         '''
         Nt (number of targets calculation used in a simple unfolding)
 

@@ -54,6 +54,11 @@ d: int = 10 # in pc, distance to SN
 
 _colors = ['RED', 'GREEN', 'BLUE']
 
+# Nt constants
+NT_NUX = 1.004E35
+NT_NUE = 6.04E34
+NT_ANUE = 6.691E35
+
 def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
         config.model_file_paths[set_no],
@@ -80,7 +85,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int):
 
-    flux_scatter_data,raw_data = t.create_flux_scatter(
+    flux_scatter_data, raw_data, labeled = t.create_flux_scatter(
         config.model_file_paths[set_no],
         config.model_type,
         config.model,
@@ -105,7 +110,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         xlab="Mid-Point Time in Coordinate (s)",
         show=show_charts,
         use_x_log=False,save=True)
-    return flux_scatter_data, raw_data
+    return flux_scatter_data, raw_data, labeled
 
 def remap_dict(dictionary,newval):
     # remaps a dictionary's 1 value to a different value
@@ -202,6 +207,44 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     for detector in ['wc100kt30prct', 'scint20kt']:
         p_data, r_data, l_data = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
+
+    #region do simple unfolding
+    # all plot data has the raw counts across each detector for each flavor grouping
+    # in the order of nux, nue, and anue
+    # but recall that flux is in the order of NuX, aNuE, NuE
+    Ndet_tot_nux = 0
+    Ndet_tot_nue = 0
+    Ndet_tot_anue = 0
+
+    phi_tot_nux = 0
+    phi_tot_anue = 0
+    phi_tot_nue = 0
+
+    for i in range(len(all_plot_data)):
+        Ndet_tot_nux += all_plot_data[i][0]
+        Ndet_tot_nue += all_plot_data[i][1]
+        Ndet_tot_anue += all_plot_data[i][2]
+
+        # len(all_plot_data) should be same as len(flux)
+        phi_tot_nux += flux_raw[i][0]
+        phi_tot_anue += flux_raw[i][1]
+        phi_tot_nue += flux_raw[i][2]
+
+    # now compute flux average xscn constant
+    sigma_nux = Ndet_tot_nux/(phi_tot_nux*NT_NUX)
+    sigma_nue = Ndet_tot_nue / (phi_tot_nue * NT_NUE)
+    sigma_anue = Ndet_tot_anue / (phi_tot_anue * NT_ANUE)
+
+    # now we can unfold all bins
+    for i in range(len(all_plot_data)):
+        # data will be a tuple in detector format
+        temp = all_plot_data[i]
+        all_plot_data[i] = (
+            temp[0]/(sigma_nux*NT_NUX),
+            temp[1]/(sigma_nue*NT_NUE),
+            temp[2]/(sigma_anue*NT_ANUE)
+        )
+    #endregion
 
     # now get the time bins
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
