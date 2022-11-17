@@ -319,7 +319,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
 
     # need to create different colors
     colorid: int = 0
-    f = open(f'./all_detector_plots/{title}.txt', 'w')
+    title_cleaned = title.replace("\n", "")
+    f = open(f'./all_detector_plots/{title_cleaned}.txt', 'w')
     for set_number in config.set_numbers:
         # write model metadata as well
         f.write(f'{_colors[colorid]}\n==========\n')
@@ -334,7 +335,6 @@ def process_transformation(config: t.MetaAnalysisConfig):
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
-    title_cleaned = title.replace("\n", "")
     tax.savefig(f'./all_detector_plots/{title_cleaned}')
     
     if show_charts == True:
