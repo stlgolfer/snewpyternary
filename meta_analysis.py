@@ -109,6 +109,15 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         log_bins=use_log,
         presn=use_presn
     )
+
+    plt.figure()
+    time_axis = np.arange(1, len(time_bins_x_axis) + 1, step=1)
+    plt.plot(time_axis, time_bins_x_axis)
+    plt.xlabel('Time Bin No')
+    plt.ylabel('Calculated Time Coordinate')
+    time_bin_plot_title = f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux Time Bins {config.transformation}{" PreSN" if use_presn else ""}.png'
+    plt.title(time_bin_plot_title)
+    plt.savefig(f'./plots/{time_bin_plot_title}')
     
     t.create_regular_plot(
         plot_data=raw_data,

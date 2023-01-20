@@ -44,7 +44,7 @@ from snewpy.neutrino import Flavor, MassHierarchy
 
 logger = logging.getLogger(__name__)
 
-def calculate_time_bins(model_path: str, model_type, ntbins=30, deltat=None, log_bins=False, snmodel_dict={}, presn=False, create_timeplot=False):
+def calculate_time_bins(model_path: str, model_type, ntbins=30, deltat=None, log_bins=False, snmodel_dict={}, presn=False):
     model_class = getattr(snewpy.models.ccsn, model_type)
     model_dir, model_file = os.path.split(os.path.abspath(model_path))
     snmodel = model_class(model_path, **snmodel_dict)
@@ -94,14 +94,6 @@ def calculate_time_bins(model_path: str, model_type, ntbins=30, deltat=None, log
         # plt.scatter([no for no in range(len(times))], times)
         # plt.show()
         # print(len(times))
-
-    if create_timeplot:
-        plt.figure()
-        time_axis = np.arange(1, len(log_edges) + 1, step=1)
-        plt.plot(time_axis, log_edges)
-        plt.xlabel('Time Bin No')
-        plt.ylabel('Calculated Time Coordinate')
-        plt.show()
     return times, dt
 
 def w_generate_time_series(model_path,
