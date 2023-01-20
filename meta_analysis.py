@@ -101,6 +101,14 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Flux {config.transformation}.png',
         show=show_charts
         )
+
+    time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
+        config.model_file_paths[set_no],
+        config.model_type,
+        deltat=sn_model_default_time_step(config.model_type),
+        log_bins=use_log,
+        presn=use_presn
+    )
     
     t.create_regular_plot(
         plot_data=raw_data,
@@ -108,6 +116,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         plot_title=f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux {config.transformation}{" PreSN" if use_presn else ""}.png',
         ylab="Total Integrated Flux flavor/cm^2",
         xlab="Mid-Point Time in Coordinate (s)",
+        x_axis=time_bins_x_axis,
         show=show_charts,
         use_x_log=False,save=True)
     return flux_scatter_data, raw_data, labeled
@@ -208,6 +217,24 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         p_data, r_data, l_data = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
 
+    # want the folded/convolved event rates as well
+
+    # now get the time bins
+    time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
+        config.model_file_paths[number],
+        config.model_type,
+        deltat=sn_model_default_time_step(config.model_type),
+        log_bins=use_log,
+        presn=use_presn
+    )
+    t.create_regular_plot(all_plot_data,
+                          config.proxyconfig.same_axes(),
+                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]}{" PreSN" if use_presn else ""}.png',
+                          x_axis=time_bins_x_axis,
+                          ylab='Event rate',
+                          show=show_charts
+                          )
+
     #region do simple unfolding
     # all plot data has the raw counts across each detector for each flavor grouping
     # in the order of nux, nue, and anue
@@ -219,6 +246,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     phi_tot_nux = 0
     phi_tot_anue = 0
     phi_tot_nue = 0
+
 
     for i in range(len(all_plot_data)):
         Ndet_tot_nux += all_plot_data[i][0]
@@ -246,21 +274,12 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         )
     #endregion
 
-    # now get the time bins
-    time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
-        config.model_file_paths[number],
-        config.model_type,
-        deltat=sn_model_default_time_step(config.model_type),
-        log_bins=use_log,
-        presn=use_presn
-    )
-
     # do the unfolding
 
 
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]}{" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]}{" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event rate',
                           show=show_charts

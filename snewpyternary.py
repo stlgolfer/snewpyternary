@@ -48,6 +48,21 @@ def sort_data_file_names(f):
             return int(s[4:])
     return 0
 
+def clean_newline(raw_title):
+
+    '''
+    Small routine to clean the newline character from strings
+    Parameters
+    ----------
+    raw_title the title in question
+
+    Returns
+    -------
+    the cleaned title
+    '''
+
+    return raw_title.replace("\n", "")
+
 def _sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
     '''
     Used internally to take the channels for a given proxy and sum them from the data
@@ -302,7 +317,7 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heat
         print('Show is false')
         
     if save == True:
-        tax.savefig(f'./plots/{plot_title}.png')
+        tax.savefig(f'./plots/{clean_newline(plot_title)}.png')
     return figure, tax
 
 def create_regular_plot(plot_data,
@@ -367,7 +382,7 @@ def create_regular_plot(plot_data,
         plt.yscale('log')
     plt.legend()
     if save:
-        plt.savefig(f'./plots/{plot_title}')
+        plt.savefig(f'./plots/{clean_newline(plot_title)}')
     if show:
         plt.show()
     return
@@ -526,7 +541,7 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
         tax.show()
         
     if save:
-        tax.savefig(f'./fluxes/{plot_title}')
+        tax.savefig(f'./fluxes/{clean_newline(plot_title)}')
     return figure, tax
 
 # make an abstraction for analysis config
