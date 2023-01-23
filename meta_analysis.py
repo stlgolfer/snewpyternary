@@ -81,10 +81,21 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                                                   show=show_charts,
                                                   save=True)
 
+    time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
+        config.model_file_paths[set_no],
+        config.model_type,
+        deltat=sn_model_default_time_step(config.model_type),
+        log_bins=use_log,
+        presn=use_presn
+    )
+
     # we also want a TD representation
     t.create_regular_plot(plot_data,
                           config.proxyconfig.build_detector_profiles()[detector]['axes'](),
                           f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins TD {" PreSN" if use_presn else ""}',
+                          ylab="Event rate",
+                          xlab="Time (s)",
+                          x_axis=time_bins_x_axis,
                           show=show_charts,
                           save=True
                           )
