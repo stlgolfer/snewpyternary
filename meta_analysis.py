@@ -77,9 +77,17 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
     figure, tax = t.create_default_detector_plot(plot_data,
                                                   config.proxyconfig.build_detector_profiles()[detector]['axes'](),
-                                                  f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} Ternary{" PreSN" if use_presn else ""}',
+                                                  f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins Ternary{" PreSN" if use_presn else ""}',
                                                   show=show_charts,
                                                   save=True)
+
+    # we also want a TD representation
+    t.create_regular_plot(plot_data,
+                          config.proxyconfig.build_detector_profiles()[detector]['axes'](),
+                          f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins TD {" PreSN" if use_presn else ""}',
+                          show=show_charts,
+                          save=True
+                          )
 
     return plot_data, raw_data, l_data
 
@@ -98,7 +106,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
 
     t.create_default_flux_plot(
         flux_scatter_data,
-        f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Flux {config.transformation}.png',
+        f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Flux {"Logged" if use_log else "Linear"} Bins {config.transformation}.png',
         show=show_charts
         )
 
@@ -115,14 +123,14 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
     plt.plot(time_axis, time_bins_x_axis)
     plt.xlabel('Time Bin No')
     plt.ylabel('Calculated Time Coordinate')
-    time_bin_plot_title = f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux Time Bins {config.transformation}{" PreSN" if use_presn else ""}.png'
+    time_bin_plot_title = f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux {"Logged" if use_log else "Linear"} Time Bins {config.transformation}{" PreSN" if use_presn else ""}.png'
     plt.title(time_bin_plot_title)
     plt.savefig(f'./plots/{time_bin_plot_title}')
     
     t.create_regular_plot(
         plot_data=raw_data,
         axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-        plot_title=f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux {config.transformation}{" PreSN" if use_presn else ""}.png',
+        plot_title=f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux {"Logged" if use_log else "Linear"} Bins {config.transformation}{" PreSN" if use_presn else ""}.png',
         ylab="Total Integrated Flux flavor/cm^2",
         xlab="Mid-Point Time in Coordinate (s)",
         x_axis=time_bins_x_axis,
@@ -238,7 +246,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     )
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]}{" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event rate',
                           show=show_charts
@@ -288,7 +296,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
 
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]}{" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event rate',
                           show=show_charts
