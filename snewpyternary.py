@@ -103,7 +103,11 @@ def _column_sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
     A 3xN (N corresponding to number of time bins) array of the energy-dependent counts
 
     '''
-    proxies = [[], [], []]
+    proxies = [
+        np.zeros_like(data['Energy']),
+        np.zeros_like(data['Energy']),
+        np.zeros_like(data['Energy'])
+    ]
     for index, proxy_flavor in enumerate(list(channels)):
         print(proxy_flavor)
         # proxy_flavor has type [str]
@@ -246,7 +250,12 @@ def create_detector_event_scatter(
     '''
     print("\nNote that the data columns are as follows: a0, a1, a2, a2, ...")
     showing_columns = True
-    for file in data_files: # which effectively goes through each time bin
+
+    # now we have to make a 3d plot of what's going on here
+    # spt_fig = plt.figure()
+    # spt_ax = spt_fig.add_subplot(projection='3d')
+
+    for t_bin_no, file in enumerate(data_files): # which effectively goes through each time bin
         # we want to only have the ones that end in 'unweighted' for now
         # need to process the filename. though 'weighted' and 'unweighted' will
         # both have the word 'weighted' in them, so we have to split on '_'
@@ -284,6 +293,17 @@ def create_detector_event_scatter(
                 
                 total = a+b+c
                 plotting_data.append((100*a/total,100*b/total,100*c/total))
+
+                # append to spt plot
+                spt_content = _column_sum_proxy(dict_data, data_calc)
+                # k is the time bin
+                # spt_ax.bar(dict_data['Energy'], spt_content, zs=t_bin_no, zir='y')
+                #TODO: can't have this new figure here since we're already trying to create one in meta_analysis.
+                # going to have to export the spt_content and show it later on meta_analysis
+                plt.figure()
+                plt.hist(dict_data['Energy'], spt_content)
+                plt.show()
+                print("Completed")
                 
     # now retrieve header files
     #header_info = tables.get(data_files[1]).get("header").split(" ")
@@ -292,6 +312,8 @@ def create_detector_event_scatter(
     ca.cache(f'{cache_base}_plot_data', plotting_data)
     ca.cache(f'{cache_base}_raw_data', processed_raw),
     ca.cache(f'{cache_base}_l_data',labeled_data_by_energy)
+
+    # spt_fig.show()
             
     return plotting_data, processed_raw,labeled_data_by_energy
 
