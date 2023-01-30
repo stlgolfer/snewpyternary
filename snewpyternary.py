@@ -68,8 +68,10 @@ def _sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
     Used internally to take the channels for a given proxy and sum them from the data
     Parameters
     ----------
-    data the dictionary from snewpyternary
-    channels the channels
+    data : dic
+        the dictionary from snewpyternary
+    channels : ([str], [str], [str])
+        the channels
 
     Returns
     -------
@@ -87,6 +89,33 @@ def _sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
 
     return proxies
 
+def _column_sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
+    '''
+    Like _sum_proxy, but does a column sum instead
+
+    Parameters
+    ----------
+    data
+    channels
+
+    Returns
+    -------
+    A 3xN (N corresponding to number of time bins) array of the energy-dependent counts
+
+    '''
+    proxies = [[], [], []]
+    for index, proxy_flavor in enumerate(list(channels)):
+        print(proxy_flavor)
+        # proxy_flavor has type [str]
+        if len(proxy_flavor) > 0:
+            sum = np.zeros_like(data['Energy'])
+
+            for c in proxy_flavor:
+                sum = np.add(sum,data[c])
+            proxies[index] = sum
+
+    return proxies
+
 def create_detector_event_scatter(
         modelFilePath,
         model_type,
@@ -100,7 +129,8 @@ def create_detector_event_scatter(
         weighting="weighted",
         use_cache=False,
         log_bins=False,
-        presn=False
+        presn=False,
+        visualze_spectra=False
         ):
     '''
     Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
@@ -145,6 +175,9 @@ def create_detector_event_scatter(
         Use log bins or not
     presn : bool
         Calculate only on time window for t<0
+    visualze_spectra : bool
+        Should we create a 3d plot of the column-sum event rate as a function of energy and time?. A 3d plot of selected
+        spectra to be summed in time.
 
     Returns
     -------
@@ -244,9 +277,9 @@ def create_detector_event_scatter(
                     dict_data[header[i]]=data[i]
                 results = _sum_proxy(dict_data, data_calc) # data_calc(dict_data)
                 labeled_data_by_energy.append(dict_data)
-                a= results[0]
-                b=results[1]
-                c=results[2]
+                a = results[0]
+                b = results[1]
+                c = results[2]
                 processed_raw.append((results[0],results[1],results[2]))
                 
                 total = a+b+c
