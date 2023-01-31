@@ -79,43 +79,12 @@ def _sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
     '''
     proxies = [0, 0, 0]
     for index, proxy_flavor in enumerate(list(channels)):
-        print(proxy_flavor)
+        # print(proxy_flavor)
         # proxy_flavor has type [str]
         if len(proxy_flavor) > 0:
             sum = 0
             for c in proxy_flavor:
                 sum = sum + np.sum(data[c])
-            proxies[index] = sum
-
-    return proxies
-
-def _column_sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
-    '''
-    Like _sum_proxy, but does a column sum instead
-
-    Parameters
-    ----------
-    data
-    channels
-
-    Returns
-    -------
-    A 3xN (N corresponding to number of time bins) array of the energy-dependent counts
-
-    '''
-    proxies = [
-        np.zeros_like(data['Energy']),
-        np.zeros_like(data['Energy']),
-        np.zeros_like(data['Energy'])
-    ]
-    for index, proxy_flavor in enumerate(list(channels)):
-        print(proxy_flavor)
-        # proxy_flavor has type [str]
-        if len(proxy_flavor) > 0:
-            sum = np.zeros_like(data['Energy'])
-
-            for c in proxy_flavor:
-                sum = np.add(sum,data[c])
             proxies[index] = sum
 
     return proxies
@@ -252,8 +221,7 @@ def create_detector_event_scatter(
     showing_columns = True
 
     # now we have to make a 3d plot of what's going on here
-    # spt_fig = plt.figure()
-    # spt_ax = spt_fig.add_subplot(projection='3d')
+    spectra_in_time = []
 
     for t_bin_no, file in enumerate(data_files): # which effectively goes through each time bin
         # we want to only have the ones that end in 'unweighted' for now
@@ -293,17 +261,6 @@ def create_detector_event_scatter(
                 
                 total = a+b+c
                 plotting_data.append((100*a/total,100*b/total,100*c/total))
-
-                # append to spt plot
-                spt_content = _column_sum_proxy(dict_data, data_calc)
-                # k is the time bin
-                # spt_ax.bar(dict_data['Energy'], spt_content, zs=t_bin_no, zir='y')
-                #TODO: can't have this new figure here since we're already trying to create one in meta_analysis.
-                # going to have to export the spt_content and show it later on meta_analysis
-                plt.figure()
-                plt.hist(dict_data['Energy'], spt_content)
-                plt.show()
-                print("Completed")
                 
     # now retrieve header files
     #header_info = tables.get(data_files[1]).get("header").split(" ")
@@ -315,7 +272,7 @@ def create_detector_event_scatter(
 
     # spt_fig.show()
             
-    return plotting_data, processed_raw,labeled_data_by_energy
+    return plotting_data, processed_raw, labeled_data_by_energy
 
 def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heatmap=None,color='red',save=True):
     '''

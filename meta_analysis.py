@@ -59,6 +59,37 @@ NT_NUX = 1.004E35
 NT_NUE = 6.04E34
 NT_ANUE = 6.691E35
 
+def _column_sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
+    '''
+    Like _sum_proxy, but does a column sum instead
+
+    Parameters
+    ----------
+    data
+    channels
+
+    Returns
+    -------
+    A 3xN (N corresponding to number of time bins) array of the energy-dependent counts
+
+    '''
+    proxies = [
+        np.zeros_like(data['Energy']),
+        np.zeros_like(data['Energy']),
+        np.zeros_like(data['Energy'])
+    ]
+    for index, proxy_flavor in enumerate(list(channels)):
+        # print(proxy_flavor)
+        # proxy_flavor has type [str]
+        if len(proxy_flavor) > 0:
+            sum = np.zeros_like(data['Energy'])
+
+            for c in proxy_flavor:
+                sum = np.add(sum,data[c])
+            proxies[index] = sum
+
+    return proxies
+
 def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -> None:
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
         config.model_file_paths[set_no],
@@ -72,6 +103,26 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         log_bins=use_log,
         presn=use_presn
     )
+
+    # 3d spectra in time plot (https://matplotlib.org/stable/gallery/mplot3d/bars3d.html#sphx-glr-gallery-mplot3d-bars3d-py)
+    # going to calculate here now
+    spt_fig = plt.figure()
+    spt_ax = spt_fig.add_subplot(projection='3d')
+
+    # now go through the l_data, which has rows containing dict_data
+    for time_bin_no, dict_data in enumerate(l_data):
+        spt_content = _column_sum_proxy(
+                dict_data,
+                config.proxyconfig.build_detector_profiles()[detector]['chans_to_add']
+        )
+
+        spt_ax.bar(
+            dict_data['Energy'],
+            spt_content[1],
+            zs=time_bin_no, zdir='y'
+        )
+
+    plt.show()
 
     # also create heatmap using Rishi's code
     # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
