@@ -107,8 +107,16 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     # 3d spectra in time plot (https://matplotlib.org/stable/gallery/mplot3d/bars3d.html#sphx-glr-gallery-mplot3d-bars3d-py)
     # going to calculate here now
-    spt_fig = plt.figure()
-    spt_ax = spt_fig.add_subplot(projection='3d')
+    spt_nux_fig = plt.figure()
+    spt_nux_ax = spt_nux_fig.add_subplot(projection='3d')
+
+    spt_nue_fig = plt.figure()
+    spt_nue_ax = spt_nux_fig.add_subplot(projection='3d')
+
+    spt_anue_fig = plt.figure()
+    spt_anue_ax = spt_nux_fig.add_subplot(projection='3d')
+
+    spt_title = f'{config.model_type} {detector} {str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins Spectra{" PreSN" if use_presn else ""}'
 
     # now go through the l_data, which has rows containing dict_data
     for time_bin_no, dict_data in enumerate(l_data):
@@ -117,14 +125,31 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                 config.proxyconfig.build_detector_profiles()[detector]['chans_to_add']
         )
 
-        spt_ax.bar(
+        spt_nux_ax.bar(
+            dict_data['Energy'],
+            spt_content[0],
+            zs=time_bin_no, zdir='y'
+        )
+
+        spt_nue_ax.bar(
             dict_data['Energy'],
             spt_content[1],
             zs=time_bin_no, zdir='y'
         )
-    pl.dump(spt_fig, open('./test.pickle', 'wb'))
 
-    plt.show()
+        spt_anue_ax.bar(
+            dict_data['Energy'],
+            spt_content[2],
+            zs=time_bin_no, zdir='y'
+        )
+
+    pl.dump(spt_nux_fig, open(f'./spectra/{spt_title} nux.fig.pickle', 'wb'))
+    pl.dump(spt_nue_fig, open(f'./spectra/{spt_title} nue.fig.pickle', 'wb'))
+    pl.dump(spt_anue_fig, open(f'./spectra/{spt_title} anue.fig.pickle', 'wb'))
+
+    spt_nux_fig.show()
+    spt_nue_fig.show()
+    spt_anue_fig.show()
 
     # also create heatmap using Rishi's code
     # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
