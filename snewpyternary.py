@@ -102,8 +102,7 @@ def create_detector_event_scatter(
         weighting="weighted",
         use_cache=False,
         log_bins=False,
-        presn=False,
-        visualze_spectra=False
+        presn=False
         ):
     '''
     Creates normalized scatter data for use in a ternary diagram. Using SNOwGLoBES,
@@ -148,9 +147,6 @@ def create_detector_event_scatter(
         Use log bins or not
     presn : bool
         Calculate only on time window for t<0
-    visualze_spectra : bool
-        Should we create a 3d plot of the column-sum event rate as a function of energy and time?. A 3d plot of selected
-        spectra to be summed in time.
 
     Returns
     -------

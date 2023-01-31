@@ -26,6 +26,7 @@ import data_handlers as handlers
 import multiprocessing as mp
 import caching as cache
 import sys
+import pickle as pl
 
 import snowglobes_wrapper
 
@@ -121,6 +122,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
             spt_content[1],
             zs=time_bin_no, zdir='y'
         )
+    pl.dump(spt_fig, open('./test.pickle', 'wb'))
 
     plt.show()
 
