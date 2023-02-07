@@ -135,7 +135,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         }
     }
 
-    spt_title = f'{config.model_type} {detector} {str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins {sptc_index[detector]["proxy"]} Spectra{" PreSN" if use_presn else ""}'
+    spt_title = f'{config.model_type} {detector}\n {str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins {sptc_index[detector]["proxy"]} Spectra{" PreSN" if use_presn else ""}'
     spt_full_content = []
     # now go through the l_data, which has rows containing dict_data
     with tqdm(total = len(l_data)) as pbar:
@@ -149,31 +149,6 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                 spt_full_content = spt_content[sptc_index[detector]['index']]
             else:
                 spt_full_content = np.column_stack((spt_full_content, spt_content[sptc_index[detector]['index']]))
-
-            # spt_ax.bar(
-            #     dict_data['Energy'],
-            #     spt_content[sptc_index[detector]['index']],
-            #     zs=time_bin_no, zdir='y'
-            # )
-
-
-            # spt_nux_ax.bar(
-            #     dict_data['Energy'],
-            #     spt_content[0],
-            #     zs=time_bin_no, zdir='y'
-            # )
-            #
-            # spt_nue_ax.bar(
-            #     dict_data['Energy'],
-            #     spt_content[1],
-            #     zs=time_bin_no, zdir='y'
-            # )
-            #
-            # spt_anue_ax.bar(
-            #     dict_data['Energy'],
-            #     spt_content[2],
-            #     zs=time_bin_no, zdir='y'
-            # )
             pbar.update(1)
     spt_ax.set_ylabel('Energy (units)')
     spt_ax.set_xlabel('Time (s)')
@@ -183,12 +158,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     __X, __Y = np.meshgrid(time_bins_x_axis/u.s, l_data[0]['Energy'])
 
     pc = spt_ax.pcolormesh(__X, __Y, spt_full_content)
-    # pl.dump(spt_fig, open(f'./spectra/{spt_title}.fig.pickle', 'wb'))
-
-    # pl.dump(spt_nux_fig, open(f'./spectra/{spt_title} nux.fig.pickle', 'wb'))
-    # pl.dump(spt_nue_fig, open(f'./spectra/{spt_title} nue.fig.pickle', 'wb'))
-    # pl.dump(spt_anue_fig, open(f'./spectra/{spt_title} anue.fig.pickle', 'wb'))
-    plt.savefig(f'./spectra/{spt_title}.png')
+    plt.colorbar(pc, shrink=0.75, location='right', label='Event Rate', format='%.0e')
+    plt.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
 
     plt.show()
 
@@ -201,7 +172,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                                                   save=True)
 
     # we also want a TD representation
-    t.create_regular_plot(plot_data,
+    t.create_regular_plot(raw_data,
                           config.proxyconfig.build_detector_profiles()[detector]['axes'](),
                           f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins TD {" PreSN" if use_presn else ""}',
                           ylab="Event rate",
