@@ -130,7 +130,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
             'proxy': 'anue'
         },
         'scint20kt': {
-            'index': 0,
+            'index': 0, # 0 for nux as usual
             'proxy': 'nux'
         }
     }
@@ -150,15 +150,16 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
             else:
                 spt_full_content = np.column_stack((spt_full_content, spt_content[sptc_index[detector]['index']]))
             pbar.update(1)
-    spt_ax.set_ylabel('Energy (units)')
+    spt_ax.set_ylabel('Energy (GeV)')
     spt_ax.set_xlabel('Time (s)')
     # spt_ax.set_zlabel('Event rate')
     spt_ax.set_title(spt_title)
     # x dim should be energy bins, y should be time?
-    __X, __Y = np.meshgrid(time_bins_x_axis/u.s, l_data[0]['Energy'])
+    __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy'])
 
     pc = spt_ax.pcolormesh(__X, __Y, spt_full_content)
     plt.colorbar(pc, shrink=0.75, location='right', label='Event Rate', format='%.0e')
+    # plt.xscale('log')
     plt.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
 
     plt.show()
@@ -179,7 +180,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                           xlab="Time (s)",
                           x_axis=time_bins_x_axis,
                           show=show_charts,
-                          save=True
+                          save=True,
+                          use_x_log=True
                           )
 
     return plot_data, raw_data, l_data
