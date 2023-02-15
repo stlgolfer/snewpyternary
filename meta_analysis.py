@@ -347,6 +347,10 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           show=show_charts
                           )
 
+    nux_time = []
+    nue_time = []
+    anue_time = []
+
     #region do simple unfolding
     # all plot data has the raw counts across each detector for each flavor grouping
     # in the order of nux, nue, and anue
@@ -370,6 +374,11 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         phi_tot_anue += flux_raw[i][1]
         phi_tot_nue += flux_raw[i][2]
 
+        # append to each time bin too for later
+        nux_time.append(all_plot_data[i][0])
+        nue_time.append(all_plot_data[i][1])
+        anue_time.append(all_plot_data[i][2])
+
     # now compute flux average xscn constant
     sigma_nux = Ndet_tot_nux/(phi_tot_nux*NT_NUX)
     sigma_nue = Ndet_tot_nue / (phi_tot_nue * NT_NUE)
@@ -384,10 +393,6 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
             temp[1]/(sigma_nue*NT_NUE),
             temp[2]/(sigma_anue*NT_ANUE)
         )
-    #endregion
-
-    # do the unfolding
-
 
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
@@ -396,6 +401,33 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           ylab='Event rate',
                           show=show_charts
                           )
+    # endregion
+
+    # region also create a cumulative plot
+    # first need to calculate the cumsum. all_plot_data is in time. then each time bin has a tuple for each flavor
+
+    nux_proxy_cumsum = np.cumsum(nux_time)
+    nue_proxy_cumsum = np.cumsum(nue_time)
+    anue_proxy_cumsum = np.cumsum(anue_time)
+
+    # create a new ternary diagram for the cumsum
+    cumsum_normalized = []
+    for ci in range(len(nux_time)):
+        ci_total = nux_proxy_cumsum[ci] + nue_proxy_cumsum[ci] + anue_proxy_cumsum[ci]
+        cumsum_normalized.append(
+            (100*nux_proxy_cumsum[ci]/ci_total, 100*nue_proxy_cumsum[ci]/ci_total, 100*anue_proxy_cumsum[ci]/ci_total))
+    # now draw the new chart
+    cumsum_figure, cum_sum_tax = ternary.figure(scale=100)
+    cum_sum_tax.boundary(linewidth=2.0)
+    cum_sum_tax.gridlines(color="blue", multiple=100 / 10)
+    cumsum_title = f'{config.model_type} *Detectors Cumsum {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}'
+    cum_sum_tax.set_title(cumsum_title)
+    # data is organized in top, right, left
+
+    cum_sum_tax.bottom_axis_label('nux')
+    cum_sum_tax.right_axis_label('nuebar')
+    cum_sum_tax.left_axis_label('nue')
+    # endregion
 
     # now renormalize and convert all points back to tuples
     normalized = []
@@ -415,7 +447,19 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         if (p + 1 >= len(normalized)):
             break
         tax.line(normalized[p], normalized[p + 1], color=(widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1), linestyle=':', linewidth=3)
+        cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
+        widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1),
+                 linestyle=':', linewidth=3)
 
+    # region show cum sum ternary
+    cum_sum_tax.ticks(axis='lbr', linewidth=1, multiple=100 / 10)
+    cum_sum_tax.clear_matplotlib_ticks()
+    cum_sum_tax.get_axes().axis('off')  # disables regular matlab plot axes
+    cum_sum_tax.savefig(f'./all_detector_plots/{t.clean_newline(cumsum_title)}')
+
+    if show_charts == True:
+        cum_sum_tax.show()
+    # endregion
 
 def process_transformation(config: t.MetaAnalysisConfig):
     print(f'Now processing {config.model_type}')
