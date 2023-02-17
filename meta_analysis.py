@@ -52,6 +52,7 @@ show_charts: bool = True
 use_log: bool = True
 use_cache: bool = True
 use_presn: bool = False
+use_all_submodules: bool = False
 d: int = 10 # in pc, distance to SN
 
 _colors = ['RED', 'GREEN', 'BLUE']
@@ -245,6 +246,7 @@ def remap_dict(dictionary,newval):
 
 def unfold(config, detector, l_data, r_data, flux, bins):
     '''
+    NOT RECOMMENDED TO USE--UNTESTED
     Returns a simple unfolding given the cross-section, phi kernel, and dt
     Parameters
     ----------
@@ -315,7 +317,7 @@ def unfold(config, detector, l_data, r_data, flux, bins):
         phi_est.append((phi_est_nux, phi_est_nue, phi_est_anue))
     return phi_est
 
-def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot) -> None:
+def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot, cum_sum_tax: TernaryAxesSubplot) -> None:
     flux_scatter, flux_raw, flux_l_data = process_flux(config, number)
 
     # print out information of the set
@@ -341,7 +343,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     )
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event rate',
                           show=show_charts
@@ -374,11 +376,6 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         phi_tot_anue += flux_raw[i][1]
         phi_tot_nue += flux_raw[i][2]
 
-        # append to each time bin too for later
-        nux_time.append(all_plot_data[i][0])
-        nue_time.append(all_plot_data[i][1])
-        anue_time.append(all_plot_data[i][2])
-
     # now compute flux average xscn constant
     sigma_nux = Ndet_tot_nux/(phi_tot_nux*NT_NUX)
     sigma_nue = Ndet_tot_nue / (phi_tot_nue * NT_NUE)
@@ -396,7 +393,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
 
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[number]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event rate',
                           show=show_charts
@@ -404,6 +401,12 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # endregion
 
     # region also create a cumulative plot
+
+    # append to each time bin too for later
+    for i in range(len(all_plot_data)):
+        nux_time.append(all_plot_data[i][0])
+        nue_time.append(all_plot_data[i][1])
+        anue_time.append(all_plot_data[i][2])
     # first need to calculate the cumsum. all_plot_data is in time. then each time bin has a tuple for each flavor
 
     nux_proxy_cumsum = np.cumsum(nux_time)
@@ -416,17 +419,6 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         ci_total = nux_proxy_cumsum[ci] + nue_proxy_cumsum[ci] + anue_proxy_cumsum[ci]
         cumsum_normalized.append(
             (100*nux_proxy_cumsum[ci]/ci_total, 100*nue_proxy_cumsum[ci]/ci_total, 100*anue_proxy_cumsum[ci]/ci_total))
-    # now draw the new chart
-    cumsum_figure, cum_sum_tax = ternary.figure(scale=100)
-    cum_sum_tax.boundary(linewidth=2.0)
-    cum_sum_tax.gridlines(color="blue", multiple=100 / 10)
-    cumsum_title = f'{config.model_type} *Detectors Cumsum {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}'
-    cum_sum_tax.set_title(cumsum_title)
-    # data is organized in top, right, left
-
-    cum_sum_tax.bottom_axis_label('nux')
-    cum_sum_tax.right_axis_label('nuebar')
-    cum_sum_tax.left_axis_label('nue')
     # endregion
 
     # now renormalize and convert all points back to tuples
@@ -451,29 +443,31 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1),
                  linestyle=':', linewidth=3)
 
-    # region show cum sum ternary
-    cum_sum_tax.ticks(axis='lbr', linewidth=1, multiple=100 / 10)
-    cum_sum_tax.clear_matplotlib_ticks()
-    cum_sum_tax.get_axes().axis('off')  # disables regular matlab plot axes
-    cum_sum_tax.savefig(f'./all_detector_plots/{t.clean_newline(cumsum_title)}')
-
-    if show_charts == True:
-        cum_sum_tax.show()
-    # endregion
-
 def process_transformation(config: t.MetaAnalysisConfig):
     print(f'Now processing {config.model_type}')
     scale=100
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=f'{config.model_type} *Detectors Unfolded {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}'
+    title=t.clean_newline(f'{config.model_type} *Detectors Unfolded {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""}')
     tax.set_title(title)
     # data is organized in top, right, left
 
     tax.bottom_axis_label('nux')
     tax.right_axis_label('nuebar')
     tax.left_axis_label('nue')
+
+    # now draw the cumsum chart
+    cumsum_figure, cum_sum_tax = ternary.figure(scale=100)
+    cum_sum_tax.boundary(linewidth=2.0)
+    cum_sum_tax.gridlines(color="blue", multiple=100 / 10)
+    cumsum_title = f'{config.model_type} *Detectors Cumsum {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""}'
+    cum_sum_tax.set_title(cumsum_title)
+    # data is organized in top, right, left
+
+    cum_sum_tax.bottom_axis_label('nux')
+    cum_sum_tax.right_axis_label('nuebar')
+    cum_sum_tax.left_axis_label('nue')
 
     # heatmap line goes here
     #timemap = {}
@@ -492,28 +486,41 @@ def process_transformation(config: t.MetaAnalysisConfig):
     #if show_time_heatmap == True:
     #    tax.heatmap(timemap)
 
-    # need to create different colors
-    colorid: int = 0
-    title_cleaned = title.replace("\n", "")
-    f = open(f'./all_detector_plots/{title_cleaned}.txt', 'w')
-    for set_number in config.set_numbers:
-        # write model metadata as well
-        f.write(f'{_colors[colorid]}\n==========\n')
-        f.write(repr(config.model(config.model_file_paths[set_number])))
-        f.write('\n\n')
-        aggregate_detector(config,set_number, colorid, tax)
-        colorid+=1
-    f.close()
+    # need to create different colors if not using all submodels
+    if use_all_submodules:
+        for set_number in config.set_numbers:
+            aggregate_detector(config, set_number, 0, tax, cum_sum_tax)
+    else:
+        colorid: int = 0
+        f = open(f'./all_detector_plots/{title}.txt', 'w')
+        for set_number in config.set_numbers:
+            # write model metadata as well
+            f.write(f'{_colors[colorid]}\n==========\n')
+            f.write(repr(config.model(config.model_file_paths[set_number])))
+            f.write('\n\n')
+            aggregate_detector(config, set_number, colorid, tax, cum_sum_tax)
+            colorid += 1
+        f.close()
 
     #tax.scatter(points=normalized)
     
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
-    tax.savefig(f'./all_detector_plots/{title_cleaned}')
+    tax.savefig(f'./all_detector_plots/{title}')
     
     if show_charts == True:
         tax.show()
+
+    # region show cum sum ternary
+    cum_sum_tax.ticks(axis='lbr', linewidth=1, multiple=100 / 10)
+    cum_sum_tax.clear_matplotlib_ticks()
+    cum_sum_tax.get_axes().axis('off')  # disables regular matlab plot axes
+    cum_sum_tax.savefig(f'./all_detector_plots/{t.clean_newline(cumsum_title)}')
+
+    if show_charts == True:
+        cum_sum_tax.show()
+    # endregion
 
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
 @click.command()
@@ -523,11 +530,12 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--distance',default=10,type=int,help='The distance (in kPc) to the progenitor source')
 @click.option('--uselog',default=True,type=bool, help='Use logarithmically spaced (and shifted) time bins')
 @click.option('--setno', required=False, default=[0],type=int,multiple=True, help='Model set index. See model_wrappers.py')
+@click.option('--allsubmodels', required=False, type=bool, help="Cannot specify setno and this at the same time. Runs setnos available submodules")
 @click.option('--cache', required=False, default=True, type=bool, help='If true, use cache')
 @click.option('--presn', required=False, default=False, type=bool, help='If true, compute time bins from t<=0')
 @click.option('--tflux', required=False, default=False, type=bool, help='If true, only calculate the truth flux. set numbers are not superimposed')
 @click.option('--detproxy', required=False, type=str, default='AgDet', help='Detector proxy configuration. Options: AgDet or BstChnl')
-def start(showc,models,distance,uselog,p, setno, cache, presn, tflux, detproxy):
+def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tflux, detproxy):
     global show_charts
     show_charts = showc
     
@@ -542,6 +550,9 @@ def start(showc,models,distance,uselog,p, setno, cache, presn, tflux, detproxy):
 
     global use_presn
     use_presn = presn
+
+    global use_all_submodules
+    use_all_submodules = allsubmodels
 
     # check set numbers
     if len(setno) > 3:
@@ -562,9 +573,11 @@ def start(showc,models,distance,uselog,p, setno, cache, presn, tflux, detproxy):
 
             # remove multithreading for now. run sequentially
             proxy = data_handlers.ConfigAggregateDetectors() if detproxy == 'AgDet' else data_handlers.ConfigBestChannel()
-            config = t.MetaAnalysisConfig(snewpy_models[model], setno, prescription,proxy_config=proxy)
+            # setno is a collection of indexes in the model_wrapper lookups. if all models are selected then linspace
+            selected_setnos = [x for x in range(len(snewpy_models[model].file_paths))] if allsubmodels else setno
+            config = t.MetaAnalysisConfig(snewpy_models[model], selected_setnos, prescription,proxy_config=proxy)
             if tflux:
-                for num in setno:
+                for num in selected_setnos:
                     process_flux(config, num)
             else:
                 process_transformation(config)
