@@ -317,6 +317,23 @@ def unfold(config, detector, l_data, r_data, flux, bins):
         phi_est.append((phi_est_nux, phi_est_nue, phi_est_anue))
     return phi_est
 
+def ternary_distance(p1: tuple, p2: tuple):
+    '''
+    Calculate the distance between two TERNARY distances
+    Parameters
+    ----------
+    p1 a normalized t-space point
+    p2 a normalized t-space point
+
+    Returns
+    -------
+
+    '''
+    dx = p2[0] - p1[0]
+    dy = p2[1] - p1[1]
+    dz = p2[2] - p1[2]
+    return math.sqrt(dx**2 + dy**2 + dz**2)
+
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot, cum_sum_tax: TernaryAxesSubplot) -> None:
     flux_scatter, flux_raw, flux_l_data = process_flux(config, number)
 
@@ -443,6 +460,17 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
         cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
                  linestyle=':', linewidth=3)
+
+    # here we also want to calculate the cave parameter
+    # first need the cs track length, which is a ternary-space line integral. yikes
+    line_integral = 0
+    for bin_no, p in enumerate(cumsum_normalized[0:-1]):
+        # skip last element since we're doing a delta
+        line_integral = line_integral + ternary_distance(p, cumsum_normalized[bin_no+1])
+    # now measure the cave parameter
+    print(f'Cave parameter is {ternary_distance(cumsum_normalized[0], cumsum_normalized[-1])/line_integral}')
+
+
 
 def process_transformation(config: t.MetaAnalysisConfig):
     print(f'Now processing {config.model_type}')
