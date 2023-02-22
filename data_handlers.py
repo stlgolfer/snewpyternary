@@ -15,6 +15,8 @@ supported_detectors = [
     'wc100kt30prct'
     ]
 
+__NA__: float = 6.0221E23
+
 class __DetectorProxyConfiguration__(ABC):
     '''
     This is an abstract class that can be used to describe which channels should be used as proxies for neutrino
@@ -23,7 +25,7 @@ class __DetectorProxyConfiguration__(ABC):
 
 
     @abstractmethod
-    def h_scint20kt(self, data: dict) -> int:
+    def h_scint20kt(self) -> ([str], [str], [str]):
         '''
         This is the abstract handler for the scint20kt
         Parameters
@@ -37,7 +39,7 @@ class __DetectorProxyConfiguration__(ABC):
         pass
 
     @abstractmethod
-    def h_ar40kt(self, data: dict) -> int:
+    def h_ar40kt(self) -> ([str], [str], [str]):
         '''
                 This is the abstract handler for the scint20kt
                 Parameters
@@ -51,18 +53,45 @@ class __DetectorProxyConfiguration__(ABC):
         pass
 
     @abstractmethod
-    def h_wc100kt30prct(self, data: dict) -> int:
+    def h_wc100kt30prct(self) -> ([str], [str], [str]):
         '''
-                This is the abstract handler for the scint20kt
-                Parameters
-                ----------
-                data: a dictionary with channels as keys
 
-                Returns
-                -------
-                The summed event rates for the time bin
-                '''
+        Returns
+        -------
+        For each proxy, there is a list of channels that are to be summed for calculating the proxy
+        '''
         pass
+
+    def Nt_scint20kt(self) -> [float]:
+        '''
+        Nt (number of targets calculation used in a simple unfolding)
+
+        Returns
+        -------
+        arr: array of Nt values in order of nux, nue, a_nue
+        '''
+        return [1.0, 1.0, 1.0]
+
+    def Nt_ar40kt(self) -> [float]:
+        '''
+        Nt (number of targets calculation used in a simple unfolding)
+
+        Returns
+        -------
+        arr: array of Nt values in order of nux, nue, a_nue
+        '''
+        return [1.0, 1.0, 1.0]
+
+    def Nt_wc100kt30prct(self):
+        '''
+        Nt (number of targets calculation used in a simple unfolding)
+
+        Returns
+        -------
+        arr: array of Nt values in order of nux, nue, a_nue
+        '''
+
+        return [1.0, 1.0, 1.0]
 
     @abstractmethod
     def __str__(self):
@@ -105,10 +134,17 @@ class __DetectorProxyConfiguration__(ABC):
 
         detector_defs = {}
         module_scope = self # __import__(__name__)
+        # unfortunately, now the handler code just got more complicated, because now we have to generically sum
+        # channels based on the names
         for detector in supported_detectors:
+            # print(f'h_{detector}')
+            h_channels = getattr(module_scope, f'h_{detector}')()
+            # print(h_channels)
+
             detector_defs[detector] = {
-                'handler': getattr(module_scope, f'h_{detector}'),
-                'axes': getattr(module_scope, f'axes_{detector}')
+                'chans_to_add': h_channels,
+                'axes': getattr(module_scope, f'axes_{detector}'),
+                'N_t': getattr(module_scope, f'Nt_{detector}')
             }
         return detector_defs
 
@@ -123,40 +159,51 @@ class ConfigAggregateDetectors(__DetectorProxyConfiguration__):
         Each function here should return nux, nue, and anue, respectively if using the same_axes label
         '''
 
-    def h_scint20kt(self,data):
+    def h_scint20kt(self):
         # must return a list of a, b, c
-        nue_plus_es=np.sum(data['nue_C12'])+np.sum(data['nue_C13']+data['e']) # nue
-        ibd = np.sum(data['ibd'])
-        nc = np.sum(data['nc'])
-        return [nc,nue_plus_es,ibd]
+        # nue_plus_es=np.sum(data['nue_C12'])+np.sum(data['nue_C13']+data['e']) # nue
+        # ibd = np.sum(data['ibd'])
+        # nc = np.sum(data['nc'])
+        return (['nc'], ['nue_C12', 'nue_C13', 'e'], ['ibd'])
 
-    def h_ar40kt(self,data):
-        nue_plus_es = np.sum(data['nue_Ar40'])+np.sum(data['e'])
-        nc = np.sum(data['nc'])
-        nue_bar = np.sum(data['nuebar_Ar40'])
-        return [nc,nue_plus_es,nue_bar]
+    def h_ar40kt(self):
+        # nue_plus_es = np.sum(data['nue_Ar40'])+np.sum(data['e'])
+        # nc = np.sum(data['nc'])
+        # nue_bar = np.sum(data['nuebar_Ar40'])
+        return (['nc'], ['nue_Ar40', 'e'], ['nuebar_Ar40'])
 
-    def h_wc100kt30prct(self,data):
-        ibd = np.sum(data['ibd'])
-        nue_plus_es=np.sum(data['nue_O16'])+np.sum(data['e'])
-        nc = np.sum(data['nc'])
-        return [nc,nue_plus_es,ibd]
+    def h_wc100kt30prct(self):
+        # ibd = np.sum(data['ibd'])
+        # nue_plus_es=np.sum(data['nue_O16'])+np.sum(data['e'])
+        # nc = np.sum(data['nc'])
+        return (['nc'], ['nue_O16', 'e'], ['ibd'])
 
     def __str__(self):
         return "AgDet"
 
 class ConfigBestChannel(__DetectorProxyConfiguration__):
 
-    def h_scint20kt(self, data):
-        ibd = np.sum(data['ibd'])
-        nc = np.sum(data['nc'])
-        return [nc, 0, ibd]
+    def h_scint20kt(self):
+        # ibd = np.sum(data['ibd'])
+        # nc = np.sum(data['nc'])
+        # return [nc, 0, ibd]
+        return (['nc'], [], ['ibd'])
 
-    def h_ar40kt(self, data):
-        return [0, np.sum(data['nue_Ar40']) + np.sum(data['e']), 0]
+    def h_ar40kt(self):
+        return ([], ['nue_Ar40', 'e'], [])
 
-    def h_wc100kt30prct(self,data):
-        return [0, 0, np.sum(data['ibd'])]
+    def h_wc100kt30prct(self):
+        return ([], [], ['ibd'])
 
     def __str__(self):
         return "BstChnl"
+
+    def Nt_scint20kt(self) -> [float]:
+        calc = 50*(100E9)*__NA__/12
+        return [calc, 1, 1]
+
+    def Nt_argon40kt(self) -> [float]:
+        return [1, 40*(100E9)*__NA__/39.9, 1]
+
+    def Nt_wc100kt30prct(self):
+        return [1, 1, (100)*(100E9)*2*__NA__/18]

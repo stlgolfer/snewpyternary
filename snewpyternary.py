@@ -48,6 +48,47 @@ def sort_data_file_names(f):
             return int(s[4:])
     return 0
 
+def clean_newline(raw_title):
+
+    '''
+    Small routine to clean the newline character from strings
+    Parameters
+    ----------
+    raw_title the title in question
+
+    Returns
+    -------
+    the cleaned title
+    '''
+
+    return raw_title.replace("\n", "")
+
+def _sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
+    '''
+    Used internally to take the channels for a given proxy and sum them from the data
+    Parameters
+    ----------
+    data : dic
+        the dictionary from snewpyternary
+    channels : ([str], [str], [str])
+        the channels
+
+    Returns
+    -------
+    the total count
+    '''
+    proxies = [0, 0, 0]
+    for index, proxy_flavor in enumerate(list(channels)):
+        # print(proxy_flavor)
+        # proxy_flavor has type [str]
+        if len(proxy_flavor) > 0:
+            sum = 0
+            for c in proxy_flavor:
+                sum = sum + np.sum(data[c])
+            proxies[index] = sum
+
+    return proxies
+
 def create_detector_event_scatter(
         modelFilePath,
         model_type,
@@ -96,10 +137,9 @@ def create_detector_event_scatter(
         Use detector smearing matrix. Either 'smeared' or 'unsmeared'. The default is 'smeared'.
     weighting : str "weighted" or "unweighted", optional
         Use detector data weights. The default is "weighted".
-    data_calc : def
-        Data calculation algorithm, since not all detector channel data is
-        uniform. Passes a dictionary of available detector channels with their
-        event rates in a given time bin organized by energy bin
+    data_calc : tuple of arrays
+        Tuple of arrays. In each array is a list of channels that are to summed from snowglobes to produce the correct
+        proxy calculation. See data_handlers for more information
     use_cache : bool
         Use the internal cache system. If false, data will always be regenerated.
         And stored in the cache just in case
@@ -175,7 +215,11 @@ def create_detector_event_scatter(
     '''
     print("\nNote that the data columns are as follows: a0, a1, a2, a2, ...")
     showing_columns = True
-    for file in data_files: # which effectively goes through each time bin
+
+    # now we have to make a 3d plot of what's going on here
+    spectra_in_time = []
+
+    for t_bin_no, file in enumerate(data_files): # which effectively goes through each time bin
         # we want to only have the ones that end in 'unweighted' for now
         # need to process the filename. though 'weighted' and 'unweighted' will
         # both have the word 'weighted' in them, so we have to split on '_'
@@ -204,11 +248,11 @@ def create_detector_event_scatter(
                 # build dictionary of available channels
                 for i in range(len(header)):
                     dict_data[header[i]]=data[i]
-                results = data_calc(dict_data)
+                results = _sum_proxy(dict_data, data_calc) # data_calc(dict_data)
                 labeled_data_by_energy.append(dict_data)
-                a= results[0]
-                b=results[1]
-                c=results[2]
+                a = results[0]
+                b = results[1]
+                c = results[2]
                 processed_raw.append((results[0],results[1],results[2]))
                 
                 total = a+b+c
@@ -221,8 +265,10 @@ def create_detector_event_scatter(
     ca.cache(f'{cache_base}_plot_data', plotting_data)
     ca.cache(f'{cache_base}_raw_data', processed_raw),
     ca.cache(f'{cache_base}_l_data',labeled_data_by_energy)
+
+    # spt_fig.show()
             
-    return plotting_data, processed_raw,labeled_data_by_energy
+    return plotting_data, processed_raw, labeled_data_by_energy
 
 def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heatmap=None,color='red',save=True):
     '''
@@ -279,7 +325,7 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heat
         print('Show is false')
         
     if save == True:
-        tax.savefig(f'./plots/{plot_title}.png')
+        tax.savefig(f'./plots/{clean_newline(plot_title)}.png')
     return figure, tax
 
 def create_regular_plot(plot_data,
@@ -327,13 +373,13 @@ def create_regular_plot(plot_data,
         c.append(list(time_bin)[2])
     time_axis = np.arange(1,len(a)+1,step=1)
     if x_axis == None:
-        plt.plot(time_axis,a,label=axes_titles[0])
-        plt.plot(time_axis,b,label=axes_titles[1])
-        plt.plot(time_axis,c,label=axes_titles[2])
+        plt.plot(time_axis,a,label=axes_titles[0], linestyle='None', marker='.')
+        plt.plot(time_axis,b,label=axes_titles[1], linestyle='None', marker='.')
+        plt.plot(time_axis,c,label=axes_titles[2], linestyle='None', marker='.')
     else:
-        plt.plot(x_axis,a,label=axes_titles[0])
-        plt.plot(x_axis,b,label=axes_titles[1])
-        plt.plot(x_axis,c,label=axes_titles[2])
+        plt.plot(x_axis,a,label=axes_titles[0], linestyle='None', marker='.')
+        plt.plot(x_axis,b,label=axes_titles[1], linestyle='None', marker='.')
+        plt.plot(x_axis,c,label=axes_titles[2], linestyle='None', marker='.')
     plt.title(label=plot_title)
     plt.xlabel(xlab)
     plt.ylabel(ylab)
@@ -344,7 +390,7 @@ def create_regular_plot(plot_data,
         plt.yscale('log')
     plt.legend()
     if save:
-        plt.savefig(f'./plots/{plot_title}')
+        plt.savefig(f'./plots/{clean_newline(plot_title)}')
     if show:
         plt.show()
     return
@@ -398,7 +444,9 @@ def create_flux_scatter(modelFilePath,
         print(f'{cache_base} located in cache')
         plot_data = ca.load_cache(f'{cache_base}_plot_data')
         raw_data = ca.load_cache(f'{cache_base}_raw_data')
-        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data]
+        l_data = ca.load_cache(f'{cache_base}_l_data')
+        l_data
+        return [tuple(point) for point in plot_data], [tuple(point) for point in raw_data], l_data
         #return ca.load_cache(f'{cache_base}_plot_data'), ca.load_cache(f'{cache_base}_raw_data')
     
     print("NEW SNOwGLoBES FLUENCE TIME SERIES GENERATION\n=============================")
@@ -452,7 +500,8 @@ def create_flux_scatter(modelFilePath,
         
     ca.cache(f'{cache_base}_plot_data', plotting_data)
     ca.cache(f'{cache_base}_raw_data', raw)
-    return plotting_data, raw
+    ca.cache(f'{cache_base}_l_data', fluence_data)
+    return plotting_data, raw, fluence_data
 
 def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     '''
@@ -500,7 +549,7 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
         tax.show()
         
     if save:
-        tax.savefig(f'./fluxes/{plot_title}')
+        tax.savefig(f'./fluxes/{clean_newline(plot_title)}')
     return figure, tax
 
 # make an abstraction for analysis config

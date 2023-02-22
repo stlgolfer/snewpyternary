@@ -1,6 +1,6 @@
-python meta_analysis.py Tamborra_2014 Walk_2018 Walk_2019 -p AdiabaticMSW_NMO -p AdiabaticMSW_IMO --setno=0 --detproxy=BstChnl --cache=True
+#python meta_analysis.py Tamborra_2014 Walk_2018 Walk_2019 -p AdiabaticMSW_NMO -p AdiabaticMSW_IMO --setno=0 --detproxy=BstChnl --cache=True
 
-# Kuroda_2020 Nakazato_2013 Sukhbold_2015 Warren_2020 Zha_2021 Bollig_2016
+python meta_analysis.py Kuroda_2020 Nakazato_2013 Sukhbold_2015 Warren_2020 Zha_2021 Bollig_2016 -p AdiabaticMSW_NMO -p AdiabaticMSW_IMO --setno=0 --setno=1 --setno=2 --detproxy=BstChnl --cache=True
 #Bollig_2016
 #Tamborra_2014
 #Walk_2018
