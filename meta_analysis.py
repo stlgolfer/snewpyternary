@@ -435,12 +435,13 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
 
     # going to try dynamically sized points between lines?
     widths = np.linspace(0.01, 1, num=len(normalized))
+    cs_widths = np.linspace(0.01,1,num=len(cumsum_normalized))
     for p in range(len(normalized) - 1):
         if (p + 1 >= len(normalized)):
             break
         tax.line(normalized[p], normalized[p + 1], color=(widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1), linestyle=':', linewidth=3)
         cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
-        widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1),
+        cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
                  linestyle=':', linewidth=3)
 
 def process_transformation(config: t.MetaAnalysisConfig):
@@ -510,7 +511,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     tax.savefig(f'./all_detector_plots/{title}')
     
     if show_charts == True:
-        tax.show()
+        figure.show()
 
     # region show cum sum ternary
     cum_sum_tax.ticks(axis='lbr', linewidth=1, multiple=100 / 10)
@@ -519,7 +520,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     cum_sum_tax.savefig(f'./all_detector_plots/{t.clean_newline(cumsum_title)}')
 
     if show_charts == True:
-        cum_sum_tax.show()
+        cumsum_figure.show()
     # endregion
 
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
