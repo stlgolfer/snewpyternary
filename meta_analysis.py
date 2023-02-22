@@ -468,8 +468,12 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         # skip last element since we're doing a delta
         line_integral = line_integral + ternary_distance(p, cumsum_normalized[bin_no+1])
     # now measure the cave parameter
-    print(f'Cave parameter is {ternary_distance(cumsum_normalized[0], cumsum_normalized[-1])/line_integral}')
-
+    cave_param = ternary_distance(cumsum_normalized[0], cumsum_normalized[-1])/line_integral
+    print(f'Cave parameter is {cave_param}')
+    cp_title = cumsum_title = f'{config.model_type} *Detectors Cumsum Cave Parameter {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else config.model_file_paths[number].split("/")[-1]}'
+    f = open(f'./cave_parameters/{cp_title}.txt', 'w')
+    f.write(str(cave_param))
+    f.close()
 
 
 def process_transformation(config: t.MetaAnalysisConfig):
