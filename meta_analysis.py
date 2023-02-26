@@ -56,6 +56,7 @@ use_all_submodules: bool = False
 d: int = 10 # in pc, distance to SN
 
 _colors = ['RED', 'GREEN', 'BLUE']
+_run_cave_parameters: [(str, float)] = []
 
 # Nt constants
 NT_NUX = 1.004E35
@@ -469,12 +470,8 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         line_integral = line_integral + ternary_distance(p, cumsum_normalized[bin_no+1])
     # now measure the cave parameter
     cave_param = ternary_distance(cumsum_normalized[0], cumsum_normalized[-1])/line_integral
-    print(f'Cave parameter is {cave_param}')
-    cp_title = cumsum_title = t.clean_newline(f'{config.model_type} *Detectors Cumsum Cave Parameter {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else config.model_file_paths[number].split("/")[-1]}')
-    f = open(f'./cave_parameters/{cp_title}.txt', 'w')
-    f.write(str(cave_param))
-    f.close()
-
+    global _run_cave_parameters
+    _run_cave_parameters.append((config.model_file_paths[number].split("/")[-1], cave_param))
 
 def process_transformation(config: t.MetaAnalysisConfig):
     print(f'Now processing {config.model_type}')
@@ -553,6 +550,17 @@ def process_transformation(config: t.MetaAnalysisConfig):
 
     if show_charts == True:
         cumsum_figure.show()
+
+    global _run_cave_parameters
+    # now write cave params to file
+    cp_title = t.clean_newline(
+        f'{config.model_type} *Detectors Cave Parameter {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}')
+    cp_f = open(f'./cave_parameters/{cp_title}.txt', 'w')
+    for cp_run in _run_cave_parameters:
+        cp_f.write(f'{cp_run[0]},{cp_run[1]}\n')
+    cp_f.close()
+    # reset run cave parameters for next transformation
+    _run_cave_parameters = []
     # endregion
 
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
@@ -609,6 +617,7 @@ def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tfl
             # setno is a collection of indexes in the model_wrapper lookups. if all models are selected then linspace
             selected_setnos = [x for x in range(len(snewpy_models[model].file_paths))] if allsubmodels else setno
             config = t.MetaAnalysisConfig(snewpy_models[model], selected_setnos, prescription,proxy_config=proxy)
+
             if tflux:
                 for num in selected_setnos:
                     process_flux(config, num)
