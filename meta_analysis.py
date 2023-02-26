@@ -54,6 +54,7 @@ use_cache: bool = True
 use_presn: bool = False
 use_all_submodules: bool = False
 d: int = 10 # in pc, distance to SN
+use_heatmap: bool = False
 
 _colors = ['RED', 'GREEN', 'BLUE']
 _run_cave_parameters: [(str, float)] = []
@@ -166,13 +167,14 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     plt.show()
 
-    # also create heatmap using Rishi's code
-    # heatmap_dict = generate_heatmap_dict(raw_data, plot_data)
-    figure, tax = t.create_default_detector_plot(raw_data,
-                                                  config.proxyconfig.build_detector_profiles()[detector]['axes'](),
-                                                  f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins Ternary{" PreSN" if use_presn else ""}',
-                                                  show=show_charts,
-                                                  save=True)
+    figure, tax = t.create_default_detector_plot(
+        raw_data,
+        config.proxyconfig.build_detector_profiles()[detector]['axes'](),
+        f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins Ternary{" PreSN" if use_presn else ""}',
+        show=show_charts,
+        save=True
+    )
+
 
     # we also want a TD representation
     t.create_regular_plot(raw_data,
@@ -462,6 +464,9 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
                  linestyle=':', linewidth=3)
 
+    if use_heatmap:
+        tax.heatmap(generate_heatmap_dict(all_plot_data,normalized))
+
     # here we also want to calculate the cave parameter
     # first need the cs track length, which is a ternary-space line integral. yikes
     line_integral = 0
@@ -576,7 +581,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--presn', required=False, default=False, type=bool, help='If true, compute time bins from t<=0')
 @click.option('--tflux', required=False, default=False, type=bool, help='If true, only calculate the truth flux. set numbers are not superimposed')
 @click.option('--detproxy', required=False, type=str, default='AgDet', help='Detector proxy configuration. Options: AgDet or BstChnl')
-def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tflux, detproxy):
+@click.option('--heatmap', required=False, type=bool, default=False, help='Include heatmaps. Can only process one submodel at a time')
+def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tflux, detproxy, heatmap):
     global show_charts
     show_charts = showc
     
@@ -594,6 +600,12 @@ def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tfl
 
     global use_all_submodules
     use_all_submodules = allsubmodels
+
+    global use_heatmap
+    use_heatmap = heatmap
+
+    if use_heatmap and len(setno) > 1:
+        raise ValueError('Can only process heatmap for one submodel at a time')
 
     # check set numbers
     if len(setno) > 3:
