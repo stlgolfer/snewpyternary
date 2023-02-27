@@ -22,6 +22,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from model_wrappers import SNEWPYModel
 from data_handlers import __DetectorProxyConfiguration__, ConfigAggregateDetectors
+import pickle
 
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
@@ -363,7 +364,7 @@ def create_regular_plot(plot_data,
     -------
 
     '''
-    plt.figure()
+    fig = plt.figure()
     a = []
     b = []
     c = []
@@ -391,6 +392,7 @@ def create_regular_plot(plot_data,
     plt.legend()
     if save:
         plt.savefig(f'./plots/{clean_newline(plot_title)}')
+        pickle.dump(fig, open(f'./plots/{clean_newline(plot_title)}.pickle', 'wb'))
     if show:
         plt.show()
     return

@@ -26,7 +26,7 @@ import data_handlers as handlers
 import multiprocessing as mp
 import caching as cache
 import sys
-import pickle as pl
+import pickle
 from tqdm import tqdm
 
 import snowglobes_wrapper
@@ -161,9 +161,12 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy'])
 
     pc = spt_ax.pcolormesh(__X, __Y, spt_full_content)
-    plt.colorbar(pc, shrink=0.75, location='right', label='Event Rate', format='%.0e')
+    plt.colorbar(pc, shrink=0.75, location='right', label='Event Count', format='%.0e')
     # plt.xscale('log')
     plt.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
+
+    # dump the figure for later arrangement
+    pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
 
     plt.show()
 
@@ -180,7 +183,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     t.create_regular_plot(raw_data,
                           config.proxyconfig.build_detector_profiles()[detector]['axes'](),
                           f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins TD {" PreSN" if use_presn else ""}',
-                          ylab="Event rate",
+                          ylab="Event count",
                           xlab="Time (s)",
                           x_axis=time_bins_x_axis,
                           show=show_charts,
@@ -365,7 +368,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           config.proxyconfig.same_axes(),
                           f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
-                          ylab='Event rate',
+                          ylab='Event count',
                           show=show_charts
                           )
 
@@ -415,7 +418,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           config.proxyconfig.same_axes(),
                           f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
-                          ylab='Event rate',
+                          ylab='Event count',
                           show=show_charts
                           )
     # endregion
