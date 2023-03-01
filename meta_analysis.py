@@ -96,6 +96,8 @@ def _column_sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
     return proxies
 
 def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -> None:
+    global use_log
+
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
         config.model_file_paths[set_no],
         config.model_type,
@@ -323,6 +325,16 @@ def unfold(config, detector, l_data, r_data, flux, bins):
         phi_est.append((phi_est_nux, phi_est_nue, phi_est_anue))
     return phi_est
 
+def t_normalize(raw_data):
+    normalized = []
+    for point in raw_data:
+        a = point[0]
+        b = point[1]
+        c = point[2]
+        tot = a + b + c
+        normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
+    return normalized
+
 def ternary_distance(p1: tuple, p2: tuple):
     '''
     Calculate the distance between two TERNARY distances
@@ -371,6 +383,13 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           ylab='Event count',
                           show=show_charts
                           )
+    t.create_regular_plot(t_normalize(all_plot_data),
+                          config.proxyconfig.same_axes(),
+                          f'*Detectors Folded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          x_axis=time_bins_x_axis,
+                          ylab='Event count',
+                          show=show_charts
+                          )
 
     nux_time = []
     nue_time = []
@@ -405,14 +424,19 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     sigma_anue = Ndet_tot_anue / (phi_tot_anue * NT_ANUE)
 
     # now we can unfold all bins
+    # going to try and make a copy of the array so there aren't strange interactions in memory
+    all_plot_data_unfold_temp = []
     for i in range(len(all_plot_data)):
         # data will be a tuple in detector format
         temp = all_plot_data[i]
-        all_plot_data[i] = (
+        all_plot_data_unfold_temp.append(
+            (
             temp[0]/(sigma_nux*NT_NUX),
             temp[1]/(sigma_nue*NT_NUE),
             temp[2]/(sigma_anue*NT_ANUE)
+            )
         )
+    all_plot_data = all_plot_data_unfold_temp
 
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
@@ -421,6 +445,15 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           ylab='Event count',
                           show=show_charts
                           )
+
+    t.create_regular_plot(t_normalize(all_plot_data),
+                          config.proxyconfig.same_axes(),
+                          f'*Detectors Unfolded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          x_axis=time_bins_x_axis,
+                          ylab='Event count',
+                          show=show_charts
+                          )
+
     # endregion
 
     # region also create a cumulative plot
