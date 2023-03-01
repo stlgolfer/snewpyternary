@@ -151,6 +151,14 @@ def w_generate_time_series(model_path,
     tmax = snmodel.get_time()[-1] # TODO: really this should pull information from calculate_time_bins, but ok for now
 
     times, dt = calculate_time_bins(model_path,model_type,ntbins,deltat,log_bins,snmodel_dict,presn)
+    # after we get the times, we also need to calculate the individual dts since they may not be the same
+    # I feel like I shouldn't have to do this, but astropy and numpy is doing something strange
+    times_unitless = [m.value for m in times]
+    temp1 = np.array([times_unitless[0] - tmin.value])
+    temp2 = times_unitless[1:]
+    temp3 = times_unitless[0:-1]
+    temp4 = np.subtract(np.array(temp2), np.array(temp3))
+    dts = np.concatenate((np.array(temp1), temp4))*u.s
     print(f'Proceeding with {len(times)} bin(s)')
 
     # Generate output.
@@ -175,13 +183,13 @@ def w_generate_time_series(model_path,
             osc_fluence = {}
             table = []
 
-            table.append('# TBinMid={:g}sec TBinWidth={:g}s EBinWidth=0.2MeV Fluence at Earth for this timebin in neutrinos per cm^2'.format(t, dt))
+            table.append('# TBinMid={:g}sec TBinWidth={:g}s EBinWidth=0.2MeV Fluence at Earth for this timebin in neutrinos per cm^2'.format(t, dts[i])) # used to use dt
             table.append('# E(GeV)	NuE	NuMu	NuTau	aNuE	aNuMu	aNuTau')
 
             # Generate energy + number flux table.
             for j, E in enumerate(energy):
                 for flavor in Flavor:
-                    osc_fluence[flavor] = osc_spectra[flavor][j] * dt * 0.2 * MeV / (4.*np.pi*(d*1000*3.086e+18)**2)
+                    osc_fluence[flavor] = osc_spectra[flavor][j] * dts[i] * 0.2 * MeV / (4.*np.pi*(d*1000*3.086e+18)**2) # used to use dt
 
                 s = '{:17.8E}'.format(E/(1e3 * MeV))
                 s = '{}{:17.8E}'.format(s, osc_fluence[Flavor.NU_E])
