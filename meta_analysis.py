@@ -28,6 +28,7 @@ import caching as cache
 import sys
 import pickle
 from tqdm import tqdm
+from scipy.integrate import simpson
 
 import snowglobes_wrapper
 
@@ -383,6 +384,11 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           ylab='Event count',
                           show=show_charts
                           )
+    # print integral as well
+    # r'$\nu_x$ Proxy', r'$\nu_e$ Proxy', r'$\bar{\nu_e}$ Proxy'
+
+    # print(f'Complete AUC: {np.sum(np.transpose(all_plot_data)[2]) + np.sum(np.transpose(all_plot_data)[0]) + np.sum(np.transpose(all_plot_data)[1])}')
+    print(f'Complete AUC: {simpson(np.transpose(all_plot_data)[0], time_bins_x_axis) + simpson(np.transpose(all_plot_data)[1], time_bins_x_axis) + simpson(np.transpose(all_plot_data)[2], time_bins_x_axis)}')
     t.create_regular_plot(t_normalize(all_plot_data),
                           config.proxyconfig.same_axes(),
                           f'*Detectors Folded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',

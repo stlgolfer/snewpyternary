@@ -160,6 +160,7 @@ def w_generate_time_series(model_path,
     temp4 = np.subtract(np.array(temp2), np.array(temp3))
     dts = np.concatenate((np.array(temp1), temp4))*u.s
     print(f'Proceeding with {len(times)} bin(s)')
+    print(times)
 
     # Generate output.
     if output_filename is not None:
