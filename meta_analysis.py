@@ -442,11 +442,12 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
             temp[2]/(sigma_anue*NT_ANUE)
             )
         )
-    all_plot_data = all_plot_data_unfold_temp
+    # TODO: uncomment for unfolded data
+    # all_plot_data = all_plot_data_unfold_temp
 
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
@@ -454,7 +455,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
 
     t.create_regular_plot(t_normalize(all_plot_data),
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Unfolded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Folded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
@@ -526,7 +527,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=t.clean_newline(f'{config.model_type} *Detectors Unfolded {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""}')
+    title=t.clean_newline(f'{config.model_type} *Detectors Folded {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""}')
     tax.set_title(title)
     # data is organized in top, right, left
 
