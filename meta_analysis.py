@@ -471,6 +471,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         nue_time.append(all_plot_data[i][1])
         anue_time.append(all_plot_data[i][2])
     # first need to calculate the cumsum. all_plot_data is in time. then each time bin has a tuple for each flavor
+    # TODO: this is a tranpose--could make things easier
 
     nux_proxy_cumsum = np.cumsum(nux_time)
     nue_proxy_cumsum = np.cumsum(nue_time)
@@ -508,7 +509,9 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                  linestyle=':', linewidth=3)
 
     if use_heatmap:
-        tax.heatmap(generate_heatmap_dict(all_plot_data,normalized))
+        # more information on colormaps can be found here:
+        # https://matplotlib.org/stable/tutorials/colors/colormaps.html#diverging
+        tax.heatmap(generate_heatmap_dict(all_plot_data,normalized), cmap=plt.get_cmap('PiYG'))
 
     # here we also want to calculate the cave parameter
     # first need the cs track length, which is a ternary-space line integral. yikes

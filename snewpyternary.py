@@ -365,13 +365,17 @@ def create_regular_plot(plot_data,
 
     '''
     fig = plt.figure()
-    a = []
-    b = []
-    c = []
-    for time_bin in plot_data:
-        a.append(list(time_bin)[0])
-        b.append(list(time_bin)[1])
-        c.append(list(time_bin)[2])
+    # a = []
+    # b = []
+    # c = []
+    # for time_bin in plot_data:
+    #     a.append(list(time_bin)[0])
+    #     b.append(list(time_bin)[1])
+    #     c.append(list(time_bin)[2])
+    transposed_plot_data = np.transpose(plot_data)
+    a = transposed_plot_data[0]
+    b = transposed_plot_data[1]
+    c = transposed_plot_data[2]
     time_axis = np.arange(1,len(a)+1,step=1)
     if x_axis == None:
         plt.plot(time_axis,a,label=axes_titles[0], linestyle='None', marker='.')
