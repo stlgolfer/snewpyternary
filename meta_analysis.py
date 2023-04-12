@@ -191,7 +191,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                           x_axis=time_bins_x_axis,
                           show=show_charts,
                           save=True,
-                          use_x_log=True
+                          use_x_log=False
                           )
 
     return plot_data, raw_data, l_data
@@ -240,7 +240,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         xlab="Mid-Point Time in Coordinate (s)",
         x_axis=time_bins_x_axis,
         show=show_charts,
-        use_x_log=False,save=True)
+        use_x_log=True,save=True)
     return flux_scatter_data, raw_data, labeled
 
 def remap_dict(dictionary,newval):
@@ -394,7 +394,8 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           f'*Detectors Folded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
-                          show=show_charts
+                          show=show_charts,
+                          use_x_log=True
                           )
 
     nux_time = []
