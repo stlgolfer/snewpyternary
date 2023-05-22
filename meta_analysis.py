@@ -195,6 +195,26 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                           use_x_log=False
                           )
 
+    # yeah, we're going to reprocess the flux because inefficient code is the best code for the unfolding
+    # N_det is contained in the raw_data points
+    # so, we should just be able to do a nice numpy element-wise operation?
+    # but remember that the flux (1,2,3) has a different ordering, so we'll need to reshuffle
+    # so just do it for water for now
+    if detector == 'wc100kt30prct':
+        flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)
+        ibd_channel = np.transpose(np.array(raw_data))[2]
+        flux_anue = np.transpose(np.array(flux_raw))[1]
+        flux_averaged_xscn_for_slice = np.divide(ibd_channel,flux_anue)/config.proxyconfig.Nt_wc100kt30prct()[2]
+        fx_plot, fx_axes = plt.subplots(1,1)
+        fx_axes.plot(time_bins_x_axis, flux_averaged_xscn_for_slice, linestyle='None', marker='.')
+        fx_axes.set_xlabel('Time (s)')
+        fx_axes.set_ylabel(r'$<\sigma>$')
+        fx_axes.set_title(f'IBD Unfolding in water for \n{config.model_file_paths[set_no].split("/")[-1]}')
+        fx_axes.set_xscale('log')
+        fx_plot.savefig('./ibd_unfold.png')
+        print("Unfolding...")
+
+
     return plot_data, raw_data, l_data
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int):
