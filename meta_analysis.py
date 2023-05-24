@@ -203,13 +203,18 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     if detector == 'wc100kt30prct':
         flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)
         ibd_channel = np.transpose(np.array(raw_data))[2]
+        # get the energy spectra for multiplication purposes
+        sigma_energy = l_data[0]['Energy'] * 1000 # need the 1000 so that way we go from GeV to MeV
         flux_anue = np.transpose(np.array(flux_raw))[1]
         n_targets_water = config.proxyconfig.Nt_wc100kt30prct()[2]
         # ok now I see the problem: the flux and the actual detector data are binned differently
         # the flux data has smaller energy bin width so the dE_v isn't the same
         # this is even worse since both of them are in log scale, actually ig not since this should already get taken care of
         # when the data is made in the wrapper
-        flux_averaged_xscn_for_slice = np.sum(np.multiply(ibd_channel,flux_anue))
+        MeV = 1.60218e-6 * u.erg
+        flux_energy_spectra = np.linspace(0, 100, 501) * MeV  # 1MeV
+
+        flux_averaged_xscn_for_slice = np.sum()
         fx_plot, fx_axes = plt.subplots(1,1)
         fx_axes.plot(time_bins_x_axis, flux_averaged_xscn_for_slice, linestyle='None', marker='.')
         fx_axes.set_xlabel('Time (s)')
