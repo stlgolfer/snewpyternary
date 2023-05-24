@@ -29,6 +29,7 @@ import sys
 import pickle
 from tqdm import tqdm
 from scipy.integrate import simpson
+import Rebinning
 
 import snowglobes_wrapper
 
@@ -202,21 +203,36 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # so just do it for water for now
     if detector == 'wc100kt30prct':
         flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)
-        ibd_channel = np.transpose(np.array(raw_data))[2]
-        # get the energy spectra for multiplication purposes
-        sigma_energy = l_data[0]['Energy'] * 1000 # need the 1000 so that way we go from GeV to MeV
+        ibd_channel = np.transpose(np.array(raw_data))[2] # this is the summed values for each time slice
         flux_anue = np.transpose(np.array(flux_raw))[1]
         n_targets_water = config.proxyconfig.Nt_wc100kt30prct()[2]
         # ok now I see the problem: the flux and the actual detector data are binned differently
         # the flux data has smaller energy bin width so the dE_v isn't the same
-        # this is even worse since both of them are in log scale, actually ig not since this should already get taken care of
-        # when the data is made in the wrapper
         MeV = 1.60218e-6 * u.erg
         flux_energy_spectra = np.linspace(0, 100, 501) * MeV  # 1MeV
 
-        flux_averaged_xscn_for_slice = np.sum()
+        # now we'll have to go through each time bin and find flux-avg-cxn
+        phi_est = np.zeros_like(np.transpose(ibd_channel))
+        for t_bin_no in range(len(ibd_channel)):
+            # mult_plot, mult_axes = plt.subplots(1,1)
+            # mult_axes.set_xlabel('Energy (MeV)')
+            # mult_axes.set_ylabel('Event Count')
+            # mult_axes.bar(mult_time_bins[-1], mult, align='center')
+            # mult_plot.savefig('./ibd_unfold_one_tbin_mult.png')
+
+            flux_averaged_xscn_for_slice = np.sum(
+                Rebinning.histogram_mult(
+                    l_data[t_bin_no]['ibd'],
+                    l_data[t_bin_no]['Energy'], # need the 1000 so that way we go from GeV to MeV
+                    flux_l_data[t_bin_no][4], # 4 should be aNuE
+                    flux_energy_spectra.value, # is constant across time
+                    show=True
+                )[0]
+            )/flux_anue[t_bin_no]
+            phi_est[t_bin_no] = ibd_channel[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
+
         fx_plot, fx_axes = plt.subplots(1,1)
-        fx_axes.plot(time_bins_x_axis, flux_averaged_xscn_for_slice, linestyle='None', marker='.')
+        fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
         fx_axes.set_xlabel('Time (s)')
         fx_axes.set_ylabel(r'$<\sigma>$')
         fx_axes.set_title(f'IBD Unfolding in water for \n{config.model_file_paths[set_no].split("/")[-1]}')

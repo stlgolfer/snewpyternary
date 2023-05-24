@@ -13,9 +13,15 @@ from scipy.stats import gaussian_kde
 def order_histograms(hist1, bins1, hist2, bins2):
     width1 = (bins1[-1]-bins1[0])/len(bins1)
     width2 = (bins2[-1] - bins2[0]) / len(bins2)
-    return hist1, bins1, hist2, bins2 if width1 > width2 else hist2, bins2, hist1, bins1
+    return (hist1, bins1, hist2, bins2) if width1 > width2 else (hist2, bins2, hist1, bins1)
 
-def histogram_mult(hist1, bins1, hist2, bins2):
+def find_num_in_range(edges, graph, num) -> float:
+    for i, e in enumerate(edges):
+        if num <= e:
+            return graph[i-1]
+    return 0
+
+def histogram_mult(hist1, bins1, hist2, bins2, show=False):
     '''
     Histogram multiplication interpolation. Must first determine which has the 'finer' bins and plug in accordingly.
     Note that bounds might not be preserved
@@ -30,11 +36,6 @@ def histogram_mult(hist1, bins1, hist2, bins2):
     -------
     mult, mult_edges
     '''
-    # plt.figure()
-    # plt.bar(bin_edges[:-1], hist, width=2, label='Regular', align='center')
-    # plt.bar(bin_edges_fine[:-1], hist_fine, label='Fine', align='center')
-    # plt.legend()
-    # plt.show()
 
     # ok so start with bigger bin and go piece by piece
     # now we just need the range to be the same, which will just be a pre-processing thing
@@ -43,20 +44,25 @@ def histogram_mult(hist1, bins1, hist2, bins2):
 
     hist, bin_edges, hist_fine, bin_edges_fine = order_histograms(hist1, bins1, hist2, bins2)
 
-    mult_bin_edges = bin_edges_fine # also for now assume they have the same range, but we would take the smaller one
-    def find_num_in_range(edges, graph, num) -> float:
-        for i, e in enumerate(edges):
-            if num <= e:
-                return graph[i-1]
-        return 0
+    if show:
+        reg_vs_fine_plot, reg_vs_fine_axes = plt.subplots(1,1)
+        reg_vs_fine_axes.bar(bin_edges, hist, label='Regular', align='center')
+        reg_vs_fine_axes.bar(bin_edges_fine, hist_fine, label='Fine', align='center')
+        reg_vs_fine_axes.legend()
+        reg_vs_fine_plot.show()
 
-    plt.figure()
+    mult_bin_edges = bin_edges_fine # also for now assume they have the same range, but we would take the smaller one
+
     mult = np.zeros_like(hist_fine)
     for bin_index, small_bin in enumerate(bin_edges_fine):
         if bin_index < len(bin_edges_fine) - 1 and small_bin >= min(bin_edges) and small_bin <= max(bin_edges):
             small_val = hist_fine[bin_index]
             big_val = find_num_in_range(bin_edges, hist, small_bin)
             mult[bin_index] = big_val * small_val
+    if show:
+        print("showing mult plot")
+        mult_plot, mult_axes = plt.subplots(1,1)
+        mult_axes.bar(mult_bin_edges, mult, label="Multiply")
+        mult_plot.show()
+        # mult_plot.savefig('./mult_plot.png')
     return mult, bin_edges_fine
-    # plt.bar(mult_bin_edges[:-1], mult, label="Multiply")
-    # plt.show()
