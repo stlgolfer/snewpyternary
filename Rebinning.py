@@ -66,3 +66,25 @@ def histogram_mult(hist1, bins1, hist2, bins2, show=False):
         mult_plot.show()
         # mult_plot.savefig('./mult_plot.png')
     return mult, bin_edges_fine
+
+if __name__ == '__main__': # for multiprocessing
+    norm = np.random.normal(0,1,1000)
+
+    finer_values, finer_edges = np.histogram(norm, bins=60)
+    wider_values, wider_edges = np.histogram(norm, bins=30)
+
+    fig, (comp_axes, mult_axes) = plt.subplots(1,2, figsize=(16,8))
+    comp_axes.bar(wider_edges[:-1], wider_values, align='center', label='Wider')
+    comp_axes.bar(finer_edges[:-1], finer_values, alpha=0.3, align='center', label='Finer')
+    comp_axes.set_xlabel('Domain')
+    comp_axes.set_ylabel('Count')
+    comp_axes.legend()
+    comp_axes.set_title('Original')
+
+    mult, mult_edges = histogram_mult(finer_values, finer_edges, wider_values, wider_edges)
+    mult_axes.bar(mult_edges[:-1], mult, align='center')
+    mult_axes.set_xlabel('Domain')
+    mult_axes.set_ylabel('Count')
+    mult_axes.set_title('Multplied')
+    fig.savefig('../rebinning_gaussian.png')
+    fig.show()
