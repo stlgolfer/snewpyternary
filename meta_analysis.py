@@ -209,7 +209,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         # ok now I see the problem: the flux and the actual detector data are binned differently
         # the flux data has smaller energy bin width so the dE_v isn't the same
         MeV = 1.60218e-6 * u.erg
-        flux_energy_spectra = np.linspace(0, 100, 501) * MeV  # 1MeV
+        flux_energy_spectra = np.linspace(0, 100, 501) #* MeV  # 1MeV
 
         # now we'll have to go through each time bin and find flux-avg-cxn
         phi_est = np.zeros_like(np.transpose(ibd_channel))
@@ -225,8 +225,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                     l_data[t_bin_no]['ibd'],
                     l_data[t_bin_no]['Energy'], # need the 1000 so that way we go from GeV to MeV
                     flux_l_data[t_bin_no][4], # 4 should be aNuE
-                    flux_energy_spectra.value, # is constant across time
-                    show=True
+                    flux_energy_spectra, # is constant across time
+                    show=False
                 )[0]
             )/flux_anue[t_bin_no]
             phi_est[t_bin_no] = ibd_channel[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
@@ -234,7 +234,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         fx_plot, fx_axes = plt.subplots(1,1)
         fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
         fx_axes.set_xlabel('Time (s)')
-        fx_axes.set_ylabel(r'$<\sigma>$')
+        fx_axes.set_ylabel(r'$count/cm^2$')
         fx_axes.set_title(f'IBD Unfolding in water for \n{config.model_file_paths[set_no].split("/")[-1]}')
         fx_axes.set_xscale('log')
         fx_plot.savefig('./ibd_unfold.png')
