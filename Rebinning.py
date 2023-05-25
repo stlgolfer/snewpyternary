@@ -67,7 +67,7 @@ def histogram_mult(hist1, bins1, hist2, bins2, show=False):
         # mult_plot.savefig('./mult_plot.png')
     return mult, bin_edges_fine
 
-if __name__ == '__main__': # for multiprocessing
+if __name__ == '__main__':
     norm = np.random.normal(0,1,1000)
 
     finer_values, finer_edges = np.histogram(norm, bins=60)
