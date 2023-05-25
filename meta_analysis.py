@@ -211,6 +211,23 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         MeV = 1.60218e-6 * u.erg
         flux_energy_spectra = np.linspace(0, 100, 501) #* MeV  # 1MeV
 
+        # make a spectrogram of the flux for just anue
+        flux_spect_fig, flux_spect_ax = plt.subplots(1, 1)
+        flux_spectrogram = flux_l_data[0][4]
+        for flux_spect_anue_bin in flux_l_data[1:]:
+            flux_spectrogram = np.column_stack((flux_spectrogram, flux_spect_anue_bin[4]))
+
+        flux_spect_ax.set_ylabel('Energy (MeV?)')
+        flux_spect_ax.set_xlabel('Time (s)')
+        flux_spect_ax.set_title(r'$\bar{\nu_e}$ Flux Spectrogram')
+        # x dim should be energy bins, y should be time?
+        __X, __Y = np.meshgrid((time_bins_x_axis / u.s), flux_energy_spectra)
+
+        flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram)
+        flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label='Flux?', format='%.0e')
+        flux_spect_fig.show()
+        flux_spect_fig.savefig('./anue flux spectrogram.png')
+
         # now we'll have to go through each time bin and find flux-avg-cxn
         phi_est = np.zeros_like(np.transpose(ibd_channel))
         for t_bin_no in range(len(ibd_channel)):
