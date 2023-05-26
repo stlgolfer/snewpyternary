@@ -71,10 +71,8 @@ def histogram_mult(hist1, bins1, hist2, bins2, show=False):
     return mult, bin_edges_fine
 
 if __name__ == '__main__':
-    norm = np.random.normal(0,1,1000)
-
-    finer_values, finer_edges = np.histogram(norm, bins=60)
-    wider_values, wider_edges = np.histogram(norm, bins=30)
+    finer_values, finer_edges = np.histogram(np.random.normal(0,2,1000), bins=60)
+    wider_values, wider_edges = np.histogram(np.random.normal(0,1,1000), bins=30)
 
     fig, (comp_axes, mult_axes) = plt.subplots(1,2, figsize=(16,8))
     comp_axes.bar(wider_edges[:-1], wider_values, align='center', label='Wider')
