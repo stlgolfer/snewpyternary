@@ -45,10 +45,12 @@ def histogram_mult(hist1, bins1, hist2, bins2, show=False):
     hist, bin_edges, hist_fine, bin_edges_fine = order_histograms(hist1, bins1, hist2, bins2)
 
     if show:
-        reg_vs_fine_plot, reg_vs_fine_axes = plt.subplots(1,1)
-        reg_vs_fine_axes.bar(bin_edges, hist, label='Regular', align='center')
-        reg_vs_fine_axes.bar(bin_edges_fine, hist_fine, label='Fine', align='center')
-        reg_vs_fine_axes.legend()
+        print("Showing original histograms")
+        reg_vs_fine_plot, (reg_axes, fine_axes) = plt.subplots(1,2)
+        reg_axes.bar(bin_edges, hist, label='Regular', align='center')
+        fine_axes.bar(bin_edges_fine, hist_fine, label='Fine', align='center')
+        reg_axes.legend()
+        fine_axes.legend()
         reg_vs_fine_plot.show()
 
     mult_bin_edges = bin_edges_fine # also for now assume they have the same range, but we would take the smaller one
@@ -62,6 +64,7 @@ def histogram_mult(hist1, bins1, hist2, bins2, show=False):
     if show:
         print("showing mult plot")
         mult_plot, mult_axes = plt.subplots(1,1)
+        mult_axes.set_title('Multiplied')
         mult_axes.bar(mult_bin_edges, mult, label="Multiply")
         mult_plot.show()
         # mult_plot.savefig('./mult_plot.png')
