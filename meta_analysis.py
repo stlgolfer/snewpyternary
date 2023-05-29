@@ -399,7 +399,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     )
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
@@ -411,7 +411,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     print(f'Complete AUC: {simpson(np.transpose(all_plot_data)[0], time_bins_x_axis) + simpson(np.transpose(all_plot_data)[1], time_bins_x_axis) + simpson(np.transpose(all_plot_data)[2], time_bins_x_axis)}')
     t.create_regular_plot(t_normalize(all_plot_data),
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Folded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Folded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts,
@@ -471,15 +471,14 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
 
     t.create_regular_plot(phi_est_raw,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
-                          x_axis=time_bins_x_axis,
+                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',                          x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
                           )
 
     t.create_regular_plot(t_normalize(phi_est_raw),
                           config.proxyconfig.same_axes(),
-                          f'*Detectors Unfolded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Unfolded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
@@ -490,10 +489,10 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # region also create a cumulative plot
 
     # append to each time bin too for later
-    for i in range(len(all_plot_data)):
-        nux_time.append(all_plot_data[i][0])
-        nue_time.append(all_plot_data[i][1])
-        anue_time.append(all_plot_data[i][2])
+    for i in range(len(phi_est_raw)):
+        nux_time.append(phi_est_raw[i][0])
+        nue_time.append(phi_est_raw[i][1])
+        anue_time.append(phi_est_raw[i][2])
     # first need to calculate the cumsum. all_plot_data is in time. then each time bin has a tuple for each flavor
     # TODO: this is a tranpose--could make things easier
 
@@ -510,13 +509,13 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # endregion
 
     # now renormalize and convert all points back to tuples
-    normalized = []
-    for point in all_plot_data:
-        a = point[0]
-        b = point[1]
-        c = point[2]
-        tot = a + b + c
-        normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
+    normalized = t_normalize(phi_est_raw)
+    # for point in all_plot_data:
+    #     a = point[0]
+    #     b = point[1]
+    #     c = point[2]
+    #     tot = a + b + c
+    #     normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
     # all_plot_data = [tuple(point[0]) for point in all_plot_data]
     # t.create_regular_plot(normalized, config.proxyconfig.same_axes(), f'{config.model_type} Super Normalized Ternary Points', 'Event Rate',
     #                       show=show_charts)
@@ -533,9 +532,11 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                  linestyle=':', linewidth=3)
 
     if use_heatmap:
+        print('Calculating errorbar heatmap...')
         # more information on colormaps can be found here:
         # https://matplotlib.org/stable/tutorials/colors/colormaps.html#diverging
-        tax.heatmap(generate_heatmap_dict(all_plot_data,normalized), cmap=plt.get_cmap('PiYG'))
+        tax.heatmap(generate_heatmap_dict(phi_est_raw,t_normalize(phi_est_raw)), cmap=plt.get_cmap('PiYG'))
+        print('...Done')
 
     # here we also want to calculate the cave parameter
     # first need the cs track length, which is a ternary-space line integral. yikes
@@ -554,7 +555,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=t.clean_newline(f'{config.model_type} *Detectors {"Unfolded" if do_unfold else "Folded"} {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""}')
+    title=t.clean_newline(f'{config.model_type} *Detectors {"Unfolded" if do_unfold else "Folded"} {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary')
     tax.set_title(title)
     # data is organized in top, right, left
 
@@ -566,7 +567,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     cumsum_figure, cum_sum_tax = ternary.figure(scale=100)
     cum_sum_tax.boundary(linewidth=2.0)
     cum_sum_tax.gridlines(color="blue", multiple=100 / 10)
-    cumsum_title = f'{config.model_type} *Detectors {"Unfolded" if do_unfold else "Folded"} Cumsum {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""}'
+    cumsum_title = f'{config.model_type} *Detectors {"Unfolded" if do_unfold else "Folded"} Cumsum {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary'
     cum_sum_tax.set_title(cumsum_title)
     # data is organized in top, right, left
 
