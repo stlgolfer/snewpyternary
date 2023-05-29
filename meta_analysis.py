@@ -230,22 +230,26 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
         # now we'll have to go through each time bin and find flux-avg-cxn
         phi_est = np.zeros_like(np.transpose(ibd_channel))
+        # for t_bin_no in range(len(ibd_channel)):
+        # t_bin_no=195
+        # # mult_plot, mult_axes = plt.subplots(1,1)
+        # # mult_axes.set_xlabel('Energy (MeV)')
+        # # mult_axes.set_ylabel('Event Count')
+        # # mult_axes.bar(mult_time_bins[-1], mult, align='center')
+        # # mult_plot.savefig('./ibd_unfold_one_tbin_mult.png')
+        # flux_averaged_xscn_for_slice = np.sum(
+        #     Rebinning.histogram_mult(
+        #         l_data[t_bin_no]['ibd'],
+        #         l_data[t_bin_no]['Energy'], # need the 1000 so that way we go from GeV to MeV
+        #         flux_l_data[t_bin_no][4], # 4 should be aNuE
+        #         flux_energy_spectra, # is constant across time
+        #         show = True if t_bin_no == 195 else False # TODO: remove when done with t=15
+        #     )[0]
+        # )/flux_anue[t_bin_no]
+        # phi_est[t_bin_no] = ibd_channel[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
         for t_bin_no in range(len(ibd_channel)):
-            # mult_plot, mult_axes = plt.subplots(1,1)
-            # mult_axes.set_xlabel('Energy (MeV)')
-            # mult_axes.set_ylabel('Event Count')
-            # mult_axes.bar(mult_time_bins[-1], mult, align='center')
-            # mult_plot.savefig('./ibd_unfold_one_tbin_mult.png')
-            flux_averaged_xscn_for_slice = np.sum(
-                Rebinning.histogram_mult(
-                    l_data[t_bin_no]['ibd'],
-                    l_data[t_bin_no]['Energy'], # need the 1000 so that way we go from GeV to MeV
-                    flux_l_data[t_bin_no][4], # 4 should be aNuE
-                    flux_energy_spectra, # is constant across time
-                    show = True if t_bin_no == 195 else False # TODO: remove when done with t=15
-                )[0]
-            )/flux_anue[t_bin_no]
-            phi_est[t_bin_no] = ibd_channel[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
+            sigma_average_t = ibd_channel[t_bin_no]/(n_targets_water*flux_anue[t_bin_no])
+            phi_est[t_bin_no] = ibd_channel[t_bin_no]/(n_targets_water*sigma_average_t)
 
         fx_plot, fx_axes = plt.subplots(1,1)
         fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
