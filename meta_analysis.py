@@ -202,67 +202,86 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # but remember that the flux (1,2,3) has a different ordering, so we'll need to reshuffle
     # so just do it for water for now
 
-    if detector == 'wc100kt30prct':
-        flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)
-        ibd_channel = np.transpose(np.array(raw_data))[2] # this is the summed values for each time slice
-        flux_anue = np.transpose(np.array(flux_raw))[1]
-        n_targets_water = config.proxyconfig.Nt_wc100kt30prct()[2]
-        # ok now I see the problem: the flux and the actual detector data are binned differently
-        # the flux data has smaller energy bin width so the dE_v isn't the same
-        MeV = 1.60218e-6 * u.erg
-        flux_energy_spectra = np.linspace(0, 100, 501) #* MeV  # 1MeV
+    detector_to_index = {
+        'wc100kt30prct': {
+            'Ndet': 2,
+            'phi_t': 1,
+            'Nt': 2,
+            'proxy_name': 'IBD'
+        },
+        'scint20kt':{
+            'Ndet': 0,
+            'phi_t':0,
+            'Nt':0,
+            'proxy_name': 'NC'
+        },
+        'ar40kt': {
+            'Ndet': 1,
+            'phi_t':2,
+            'Nt':1,
+            'proxy_name': 'Ar40 + e'
+        }
+    }
+    flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)
+    N_det = np.transpose(np.array(raw_data))[detector_to_index[detector]['Ndet']] # this is the summed values for each time slice
+    flux_anue = np.transpose(np.array(flux_raw))[detector_to_index[detector]['phi_t']]
+    n_targets_water = config.proxyconfig.Nt_wc100kt30prct()[detector_to_index[detector]['Nt']]
+    # ok now I see the problem: the flux and the actual detector data are binned differently
+    # the flux data has smaller energy bin width so the dE_v isn't the same
+    flux_energy_spectra = np.linspace(0, 100, 501) #* MeV  # 1MeV
 
-        # make a spectrogram of the flux for just anue
-        flux_spect_fig, flux_spect_ax = plt.subplots(1, 1)
-        flux_spectrogram = flux_l_data[0][4]
-        for flux_spect_anue_bin in flux_l_data[1:]:
-            flux_spectrogram = np.column_stack((flux_spectrogram, flux_spect_anue_bin[4]))
+    # make a spectrogram of the flux for just anue
+    flux_spect_fig, flux_spect_ax = plt.subplots(1, 1)
+    flux_spectrogram = flux_l_data[0][4]
+    for flux_spect_anue_bin in flux_l_data[1:]:
+        flux_spectrogram = np.column_stack((flux_spectrogram, flux_spect_anue_bin[4]))
 
-        flux_spect_ax.set_ylabel('Energy (MeV)')
-        flux_spect_ax.set_xlabel('Time (s)')
-        flux_spect_ax.set_title(r'$\bar{\nu_e}$ Flux Spectrogram')
-        # x dim should be energy bins, y should be time?
-        __X, __Y = np.meshgrid((time_bins_x_axis / u.s), flux_energy_spectra)
+    flux_spect_ax.set_ylabel('Energy (MeV)')
+    flux_spect_ax.set_xlabel('Time (s)')
+    flux_spect_ax.set_title(r'$\bar{\nu_e}$ Flux Spectrogram')
+    # x dim should be energy bins, y should be time?
+    __X, __Y = np.meshgrid((time_bins_x_axis / u.s), flux_energy_spectra)
 
-        flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram)
-        flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/${cm}^2$', format='%.0e')
-        flux_spect_fig.show()
-        flux_spect_fig.savefig('./anue flux spectrogram.png')
+    flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram)
+    flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/${cm}^2$', format='%.0e')
+    flux_spect_fig.show()
+    flux_spect_fig.savefig('./anue flux spectrogram.png')
 
-        # now we'll have to go through each time bin and find flux-avg-cxn
-        phi_est = np.zeros_like(np.transpose(ibd_channel))
-        # for t_bin_no in range(len(ibd_channel)):
-        # t_bin_no=195
-        # # mult_plot, mult_axes = plt.subplots(1,1)
-        # # mult_axes.set_xlabel('Energy (MeV)')
-        # # mult_axes.set_ylabel('Event Count')
-        # # mult_axes.bar(mult_time_bins[-1], mult, align='center')
-        # # mult_plot.savefig('./ibd_unfold_one_tbin_mult.png')
-        # flux_averaged_xscn_for_slice = np.sum(
-        #     Rebinning.histogram_mult(
-        #         l_data[t_bin_no]['ibd'],
-        #         l_data[t_bin_no]['Energy'], # need the 1000 so that way we go from GeV to MeV
-        #         flux_l_data[t_bin_no][4], # 4 should be aNuE
-        #         flux_energy_spectra, # is constant across time
-        #         show = True if t_bin_no == 195 else False # TODO: remove when done with t=15
-        #     )[0]
-        # )/flux_anue[t_bin_no]
-        # phi_est[t_bin_no] = ibd_channel[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
-        for t_bin_no in range(len(ibd_channel)):
-            sigma_average_t = ibd_channel[t_bin_no]/(n_targets_water*flux_anue[t_bin_no])
-            phi_est[t_bin_no] = ibd_channel[t_bin_no]/(n_targets_water*sigma_average_t)
+    # now we'll have to go through each time bin and find flux-avg-cxn
+    phi_est = np.zeros_like(np.transpose(N_det))
+    # for t_bin_no in range(len(N_det)):
+    # t_bin_no=195
+    # # mult_plot, mult_axes = plt.subplots(1,1)
+    # # mult_axes.set_xlabel('Energy (MeV)')
+    # # mult_axes.set_ylabel('Event Count')
+    # # mult_axes.bar(mult_time_bins[-1], mult, align='center')
+    # # mult_plot.savefig('./ibd_unfold_one_tbin_mult.png')
+    # flux_averaged_xscn_for_slice = np.sum(
+    #     Rebinning.histogram_mult(
+    #         l_data[t_bin_no]['ibd'],
+    #         l_data[t_bin_no]['Energy'], # need the 1000 so that way we go from GeV to MeV
+    #         flux_l_data[t_bin_no][4], # 4 should be aNuE
+    #         flux_energy_spectra, # is constant across time
+    #         show = True if t_bin_no == 195 else False # TODO: remove when done with t=15
+    #     )[0]
+    # )/flux_anue[t_bin_no]
+    # phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
+    for t_bin_no in range(len(N_det)):
+        sigma_average_t = N_det[t_bin_no]/(n_targets_water*flux_anue[t_bin_no])
+        phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*sigma_average_t)
 
-        fx_plot, fx_axes = plt.subplots(1,1)
-        fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
-        fx_axes.set_xlabel('Time (s)')
-        fx_axes.set_ylabel(r'$neutrinos/cm^2$')
-        fx_axes.set_title(f'IBD Unfolding in water for \n{config.model_file_paths[set_no].split("/")[-1]}')
-        fx_axes.set_xscale('log')
-        fx_plot.savefig('./ibd_unfold.png')
-        print("Unfolding...")
+    fx_plot, fx_axes = plt.subplots(1,1)
+    fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
+    fx_axes.set_xlabel('Time (s)')
+    fx_axes.set_ylabel(r'$neutrinos/cm^2$')
+    fx_title = f'{detector_to_index[detector]["proxy_name"]} Unfolding in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
+    fx_axes.set_title(fx_title)
+    fx_axes.set_xscale('log')
+    fx_plot.savefig(f'./plots/unfolded/{t.clean_newline(fx_title)}.png')
+    print("Unfolding...")
 
 
-    return plot_data, raw_data, l_data
+    return plot_data, raw_data, l_data, phi_est
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int):
 
@@ -354,13 +373,19 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # print out information of the set
     print(config.model(config.model_file_paths[number]))
 
-    p_data, r_data, l_data = process_detector(config, number, 'ar40kt')
+    p_data, r_data, l_data, phi_est = process_detector(config, number, 'ar40kt')
     # need to convert data to an array
     all_plot_data = [list(key) for key in r_data]  # going to take each detector and add them up
+    all_phi_est = {
+        'ar40kt': phi_est,
+        'wc100kt30prct': [],
+        'scint20kt': []
+    }
 
     for detector in ['wc100kt30prct', 'scint20kt']:
-        p_data, r_data, l_data = process_detector(config, number, detector)
+        p_data, r_data, l_data, phi_est = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
+        all_phi_est[detector] = phi_est
 
     # want the folded/convolved event rates as well
 
@@ -374,7 +399,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     )
     t.create_regular_plot(all_plot_data,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors {"Unfolded" if do_unfold else "Folded"} {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
@@ -386,7 +411,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     print(f'Complete AUC: {simpson(np.transpose(all_plot_data)[0], time_bins_x_axis) + simpson(np.transpose(all_plot_data)[1], time_bins_x_axis) + simpson(np.transpose(all_plot_data)[2], time_bins_x_axis)}')
     t.create_regular_plot(t_normalize(all_plot_data),
                           config.proxyconfig.same_axes(),
-                          f'*Detectors {"Unfolded" if do_unfold else "Folded"} Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Folded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts,
@@ -439,20 +464,22 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
             )
         )
     # TODO: uncomment for unfolded data
-    if do_unfold:
-        all_plot_data = all_plot_data_unfold_temp
+    # if do_unfold:
+    #     all_plot_data = all_plot_data_unfold_temp
+    phi_est_raw = tuple(zip(all_phi_est['scint20kt'], all_phi_est['ar40kt'], all_phi_est['wc100kt30prct']))
+    print('Unfolded')
 
-    t.create_regular_plot(all_plot_data,
+    t.create_regular_plot(phi_est_raw,
                           config.proxyconfig.same_axes(),
-                          f'*Detectors {"Unfolded" if do_unfold else "Folded"} {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
                           )
 
-    t.create_regular_plot(t_normalize(all_plot_data),
+    t.create_regular_plot(t_normalize(phi_est_raw),
                           config.proxyconfig.same_axes(),
-                          f'*Detectors {"Unfolded" if do_unfold else "Folded"} Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
+                          f'*Detectors Unfolded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
