@@ -201,6 +201,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # so, we should just be able to do a nice numpy element-wise operation?
     # but remember that the flux (1,2,3) has a different ordering, so we'll need to reshuffle
     # so just do it for water for now
+
     if detector == 'wc100kt30prct':
         flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)
         ibd_channel = np.transpose(np.array(raw_data))[2] # this is the summed values for each time slice
@@ -319,79 +320,6 @@ def remap_dict(dictionary,newval):
         else:
             new_dict[k] = 0
     return new_dict
-
-def unfold(config, detector, l_data, r_data, flux, bins):
-    '''
-    NOT RECOMMENDED TO USE--UNTESTED
-    Returns a simple unfolding given the cross-section, phi kernel, and dt
-    Parameters
-    ----------
-    sigma the cross-section by time series
-    flux the model flux by time series
-    Nt number of targets
-    bins the time bins
-    kernel the flux kernel we're trying to approximate
-
-    Returns
-    -------
-
-
-    '''
-
-    # for each time bin, we need to find the sigma in each proxy
-    sigma: [([float], [float], [float])] = []
-    # sigma will contain an array of tuples
-    # each tuple will have the flavor proxy, but it will be an array of floats (E-Dependency event rate)
-    for bin_index, bin in enumerate(l_data):
-        # bin will be a dictionary of arrays with channels as keys
-        # get the channels we need to calculate
-        channels = config.proxyconfig.build_detector_profiles()['chans_to_add']
-
-        zeros_arr = np.zeros_like(bin['Energy']) # TODO: should be Energy key, but it might be E or something
-        proxies = [zeros_arr, zeros_arr, zeros_arr]
-        for index, proxy_flavor in enumerate(list(channels)):
-            # print(proxy_flavor)
-            # proxy_flavor has type [str]
-            if len(proxy_flavor) > 0:
-                for c in proxy_flavor:
-                    proxies[index] = np.add(proxies[index], bin[c])
-                # proxies[index] = sum
-
-    # in theory, we have the sigma array now, so now we need the flux's energy dependence
-    flux_E_dep: [([float], [float], [float])] = []
-    for flux_index, flux_bin in enumerate(flux):
-        nue = flux_bin[1]
-        nux = np.add(flux_bin[2], flux_bin[3])
-        anue = flux_bin[4]
-        anux = np.add(flux_bin[5], flux_bin[6])
-        # SWAPPING THE ORDER HERE TO CONFORM TO DETECTOR PROXY ORDER
-        flux_E_dep.append((np.add(nux, anux), nue, anue))
-
-    numerator: [(float, float, float)] = []
-    for sigma_bin_index, sigma_bin in enumerate(sigma):
-        # each sigma_bin is a tuple of arrays
-        nux_prox = np.sum(np.multiply(sigma_bin[0], flux_E_dep[sigma_bin_index][0]))
-        nue_prox = np.sum(np.multiply(sigma_bin[1], flux_E_dep[sigma_bin_index][1]))
-        anue_prox = np.sum(np.multiply(sigma_bin[2], flux_E_dep[sigma_bin_index][2]))
-
-        numerator.append((nux_prox, nue_prox, anue_prox))
-
-    # we'll ignore the kernel calculation for now
-    # TODO: add kernel calculation
-    # now find the phi_est for each time bin
-    phi_est: [(float, float, float)] = []
-    for phi_est_index, numerator_bin in enumerate(numerator):
-        phi_est_nux = r_data[phi_est_index][0] / (
-                numerator_bin[0]*config.proxyconfig.build_detector_profiles()['N_t'][detector][0])
-
-        phi_est_nue = r_data[phi_est_index][1] / (
-                    numerator_bin[1] * config.proxyconfig.build_detector_profiles()['N_t'][detector][1])
-
-        phi_est_anue = r_data[phi_est_index][2] / (
-                    numerator_bin[2] * config.proxyconfig.build_detector_profiles()['N_t'][detector][2])
-
-        phi_est.append((phi_est_nux, phi_est_nue, phi_est_anue))
-    return phi_est
 
 def t_normalize(raw_data):
     normalized = []
