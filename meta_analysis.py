@@ -217,14 +217,14 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         for flux_spect_anue_bin in flux_l_data[1:]:
             flux_spectrogram = np.column_stack((flux_spectrogram, flux_spect_anue_bin[4]))
 
-        flux_spect_ax.set_ylabel('Energy (MeV?)')
+        flux_spect_ax.set_ylabel('Energy (MeV)')
         flux_spect_ax.set_xlabel('Time (s)')
         flux_spect_ax.set_title(r'$\bar{\nu_e}$ Flux Spectrogram')
         # x dim should be energy bins, y should be time?
         __X, __Y = np.meshgrid((time_bins_x_axis / u.s), flux_energy_spectra)
 
         flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram)
-        flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label='Flux?', format='%.0e')
+        flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/${cm}^2$', format='%.0e')
         flux_spect_fig.show()
         flux_spect_fig.savefig('./anue flux spectrogram.png')
 
@@ -254,7 +254,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         fx_plot, fx_axes = plt.subplots(1,1)
         fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
         fx_axes.set_xlabel('Time (s)')
-        fx_axes.set_ylabel(r'$count/cm^2$')
+        fx_axes.set_ylabel(r'$neutrinos/cm^2$')
         fx_axes.set_title(f'IBD Unfolding in water for \n{config.model_file_paths[set_no].split("/")[-1]}')
         fx_axes.set_xscale('log')
         fx_plot.savefig('./ibd_unfold.png')
