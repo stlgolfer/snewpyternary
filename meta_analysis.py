@@ -270,13 +270,19 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         sigma_average_t = N_det[t_bin_no]/(n_targets_water*flux_anue[t_bin_no])
         phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*sigma_average_t)
 
-    fx_plot, fx_axes = plt.subplots(1,1)
+    fx_plot, (fx_axes, fx_truth_axes) = plt.subplots(1, 2, figsize=(16,8))
     fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
     fx_axes.set_xlabel('Time (s)')
     fx_axes.set_ylabel(r'$neutrinos/cm^2$')
     fx_title = f'{detector_to_index[detector]["proxy_name"]} Unfolding in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
     fx_axes.set_title(fx_title)
     fx_axes.set_xscale('log')
+
+    fx_truth_axes.plot(time_bins_x_axis, flux_anue, linestyle='None', marker='.')
+    fx_truth_axes.set_xlabel('Time (s)')
+    fx_truth_axes.set_ylabel(r'$neutrinos/cm^2$')
+    fx_truth_axes.set_title('Truth Flux')
+    fx_truth_axes.set_xscale('log')
     fx_plot.savefig(f'./plots/unfolded/{t.clean_newline(fx_title)}.png')
     print("Unfolding...")
 
@@ -328,6 +334,16 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         x_axis=time_bins_x_axis,
         show=show_charts,
         use_x_log=True,save=True)
+
+    t.create_regular_plot(
+        plot_data=t_normalize(raw_data),
+        axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
+        plot_title=f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux Fraction {"Logged" if use_log else "Linear"} Bins {config.transformation}{" PreSN" if use_presn else ""}.png',
+        ylab="Total Integrated Flux flavor/cm^2",
+        xlab="Mid-Point Time in Coordinate (s)",
+        x_axis=time_bins_x_axis,
+        show=show_charts,
+        use_x_log=True, save=True)
     return flux_scatter_data, raw_data, labeled
 
 def remap_dict(dictionary,newval):
