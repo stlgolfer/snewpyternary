@@ -482,18 +482,18 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # TODO: uncomment for unfolded data
     # if do_unfold:
     #     all_plot_data = all_plot_data_unfold_temp
-    phi_est_raw = tuple(zip(all_phi_est['scint20kt'], all_phi_est['ar40kt'], all_phi_est['wc100kt30prct']))
+    phi_est_raw = tuple(zip(all_phi_est['scint20kt'], all_phi_est['wc100kt30prct'], all_phi_est['ar40kt']))
     print('Unfolded')
 
     t.create_regular_plot(phi_est_raw,
-                          config.proxyconfig.same_axes(),
+                          config.proxyconfig.flux_axes(),
                           f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',                          x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
                           )
 
     t.create_regular_plot(t_normalize(phi_est_raw),
-                          config.proxyconfig.same_axes(),
+                          config.proxyconfig.flux_axes(),
                           f'*Detectors Unfolded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
                           x_axis=time_bins_x_axis,
                           ylab='Event count',
@@ -539,6 +539,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # going to try dynamically sized points between lines?
     widths = np.linspace(0.01, 1, num=len(normalized))
     cs_widths = np.linspace(0.01,1,num=len(cumsum_normalized))
+    flux_normalized = t_normalize(flux_scatter)
     for p in range(len(normalized) - 1):
         if (p + 1 >= len(normalized)):
             break
@@ -546,6 +547,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
         cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
                  linestyle=':', linewidth=3)
+    # tax.scatter(normalized, color='blue')
 
     if use_heatmap:
         print('Calculating errorbar heatmap...')
@@ -574,7 +576,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     title=t.clean_newline(f'{config.model_type} *Detectors {"Unfolded" if do_unfold else "Folded"} {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary')
     tax.set_title(title)
     # data is organized in top, right, left
-
+    # apparently this is in flux formatting
     tax.bottom_axis_label('nux')
     tax.right_axis_label('nuebar')
     tax.left_axis_label('nue')
@@ -588,8 +590,8 @@ def process_transformation(config: t.MetaAnalysisConfig):
     # data is organized in top, right, left
 
     cum_sum_tax.bottom_axis_label('nux')
-    cum_sum_tax.right_axis_label('nuebar')
-    cum_sum_tax.left_axis_label('nue')
+    cum_sum_tax.right_axis_label('nue')
+    cum_sum_tax.left_axis_label('nuebar')
 
     # heatmap line goes here
     #timemap = {}

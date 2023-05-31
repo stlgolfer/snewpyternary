@@ -537,8 +537,8 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
 
     # TODO: I think this might be incorrectly labeled...
     tax.bottom_axis_label(r'$\nu_x$')
-    tax.left_axis_label(r'$\bar{\nu_e}$')
-    tax.right_axis_label(r'$\nu_e$')
+    tax.right_axis_label(r'$\bar{\nu_e}$')
+    tax.left_axis_label(r'$\nu_e$')
 
     # tax.scatter(points=plotting_data, color="red")
     widths = np.linspace(0.01, 1, num=len(plotting_data))
