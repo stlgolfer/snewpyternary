@@ -535,7 +535,7 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     tax.set_title(plot_title)
     # data is organized in top, right, left
 
-    ### TODO: make sure that data_files[1] actually points to something that can get the header
+    # TODO: I think this might be incorrectly labeled...
     tax.bottom_axis_label(r'$\nu_x$')
     tax.right_axis_label(r'$\bar{\nu_e}$')
     tax.left_axis_label(r'$\nu_e$')

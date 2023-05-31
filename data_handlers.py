@@ -119,6 +119,9 @@ class __DetectorProxyConfiguration__(ABC):
     def axes_wc100kt30prct(self):
         return self.same_axes()
 
+    def flux_axes(self):
+        return [r'$\nu_x$ Proxy', r'$\bar{\nu_e}$ Proxy', r'$\nu_e$ Proxy']
+
     def build_detector_profiles(self):
         '''
         Builds a profile for a detector that includes a dictionary of data handlers
