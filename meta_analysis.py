@@ -301,6 +301,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         log_bins=use_log,
         presn=use_presn
     )
+    print("Got flux")
 
     t.create_default_flux_plot(
         flux_scatter_data,
@@ -547,7 +548,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
         cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
                  linestyle=':', linewidth=3)
-    # tax.scatter(normalized, color='blue')
+    tax.scatter(normalized, color='blue')
 
     if use_heatmap:
         print('Calculating errorbar heatmap...')
