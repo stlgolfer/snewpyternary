@@ -301,7 +301,6 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         log_bins=use_log,
         presn=use_presn
     )
-    print("Got flux")
 
     t.create_default_flux_plot(
         flux_scatter_data,
@@ -467,22 +466,6 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     sigma_nue = Ndet_tot_nue / (phi_tot_nue * NT_NUE)
     sigma_anue = Ndet_tot_anue / (phi_tot_anue * NT_ANUE)
 
-    # now we can unfold all bins
-    # going to try and make a copy of the array so there aren't strange interactions in memory
-    all_plot_data_unfold_temp = []
-    for i in range(len(all_plot_data)):
-        # data will be a tuple in detector format
-        temp = all_plot_data[i]
-        all_plot_data_unfold_temp.append(
-            (
-            temp[0]/(sigma_nux*NT_NUX),
-            temp[1]/(sigma_nue*NT_NUE),
-            temp[2]/(sigma_anue*NT_ANUE)
-            )
-        )
-    # TODO: uncomment for unfolded data
-    # if do_unfold:
-    #     all_plot_data = all_plot_data_unfold_temp
     phi_est_raw = tuple(zip(all_phi_est['scint20kt'], all_phi_est['wc100kt30prct'], all_phi_est['ar40kt']))
     print('Unfolded')
 
@@ -548,7 +531,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
         cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
                  linestyle=':', linewidth=3)
-    tax.scatter(normalized, color='blue')
+    # tax.scatter(normalized, color='blue')
 
     if use_heatmap:
         print('Calculating errorbar heatmap...')
@@ -754,7 +737,6 @@ if __name__ == '__main__': # for multiprocessing
 #     # data is organized in top, right, left
     
 #     axes_titles = profiles[d]['axes']()
-#     ### TODO: make sure that data_files[1] actually points to something that can get the header
 #     tax.bottom_axis_label(axes_titles[0])
 #     tax.right_axis_label(axes_titles[1])
 #     tax.left_axis_label(axes_titles[2])

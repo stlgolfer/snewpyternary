@@ -304,8 +304,7 @@ def create_default_detector_plot(plot_data,axes_titles,plot_title,show=True,heat
     tax.gridlines(color="black", multiple=10)
     tax.set_title(plot_title)
     # data is organized in top, right, left
-
-    ### TODO: make sure that data_files[1] actually points to something that can get the header
+    #TODO: may still need to check this
     tax.bottom_axis_label(axes_titles[0])
     tax.right_axis_label(axes_titles[1])
     tax.left_axis_label(axes_titles[2])
@@ -533,8 +532,6 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     tax.gridlines(color="blue", multiple=scale/10)
     tax.set_title(plot_title)
     # data is organized in top, right, left
-
-    # TODO: I think this might be incorrectly labeled...
     tax.bottom_axis_label(r'$\nu_x$')
     tax.right_axis_label(r'$\bar{\nu_e}$')
     tax.left_axis_label(r'$\nu_e$')
@@ -545,7 +542,7 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
         if (p + 1 >= len(plotting_data)):
             break
         tax.line(plotting_data[p], plotting_data[p + 1], color=(widths[p], 0, 0, 1), linestyle=':', linewidth=3)
-    tax.scatter(plotting_data, color='blue')
+    # tax.scatter(plotting_data, color='blue')
 
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
