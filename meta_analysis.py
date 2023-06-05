@@ -434,38 +434,6 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           use_x_log=True
                           )
 
-    nux_time = []
-    nue_time = []
-    anue_time = []
-
-    #region do simple unfolding
-    # all plot data has the raw counts across each detector for each flavor grouping
-    # in the order of nux, nue, and anue
-    # but recall that flux is in the order of NuX, aNuE, NuE
-    Ndet_tot_nux = 0
-    Ndet_tot_nue = 0
-    Ndet_tot_anue = 0
-
-    phi_tot_nux = 0
-    phi_tot_anue = 0
-    phi_tot_nue = 0
-
-
-    for i in range(len(all_plot_data)):
-        Ndet_tot_nux += all_plot_data[i][0]
-        Ndet_tot_nue += all_plot_data[i][1]
-        Ndet_tot_anue += all_plot_data[i][2]
-
-        # len(all_plot_data) should be same as len(flux)
-        phi_tot_nux += flux_raw[i][0]
-        phi_tot_anue += flux_raw[i][1]
-        phi_tot_nue += flux_raw[i][2]
-
-    # now compute flux average xscn constant
-    sigma_nux = Ndet_tot_nux/(phi_tot_nux*NT_NUX)
-    sigma_nue = Ndet_tot_nue / (phi_tot_nue * NT_NUE)
-    sigma_anue = Ndet_tot_anue / (phi_tot_anue * NT_ANUE)
-
     phi_est_raw = tuple(zip(all_phi_est['scint20kt'], all_phi_est['wc100kt30prct'], all_phi_est['ar40kt']))
     print('Unfolded')
 
@@ -484,46 +452,25 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           show=show_charts
                           )
 
-    # endregion
-
     # region also create a cumulative plot
-
-    # append to each time bin too for later
-    for i in range(len(phi_est_raw)):
-        nux_time.append(phi_est_raw[i][0])
-        nue_time.append(phi_est_raw[i][1])
-        anue_time.append(phi_est_raw[i][2])
-    # first need to calculate the cumsum. all_plot_data is in time. then each time bin has a tuple for each flavor
-    # TODO: this is a tranpose--could make things easier
-
-    nux_proxy_cumsum = np.cumsum(nux_time)
-    nue_proxy_cumsum = np.cumsum(nue_time)
-    anue_proxy_cumsum = np.cumsum(anue_time)
+    nux_proxy_cumsum = np.cumsum(list(list(zip(*phi_est_raw))[0]))
+    nue_proxy_cumsum = np.cumsum(list(list(zip(*phi_est_raw))[2]))
+    anue_proxy_cumsum = np.cumsum(list(list(zip(*phi_est_raw))[1]))
 
     # create a new ternary diagram for the cumsum
     cumsum_normalized = []
-    for ci in range(len(nux_time)):
+    for ci in range(len(nux_proxy_cumsum)):
         ci_total = nux_proxy_cumsum[ci] + nue_proxy_cumsum[ci] + anue_proxy_cumsum[ci]
         cumsum_normalized.append(
-            (100*nux_proxy_cumsum[ci]/ci_total, 100*nue_proxy_cumsum[ci]/ci_total, 100*anue_proxy_cumsum[ci]/ci_total))
+            (100*nux_proxy_cumsum[ci]/ci_total, 100*anue_proxy_cumsum[ci]/ci_total, 100*nue_proxy_cumsum[ci]/ci_total))
     # endregion
 
     # now renormalize and convert all points back to tuples
     normalized = t_normalize(phi_est_raw)
-    # for point in all_plot_data:
-    #     a = point[0]
-    #     b = point[1]
-    #     c = point[2]
-    #     tot = a + b + c
-    #     normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
-    # all_plot_data = [tuple(point[0]) for point in all_plot_data]
-    # t.create_regular_plot(normalized, config.proxyconfig.same_axes(), f'{config.model_type} Super Normalized Ternary Points', 'Event Rate',
-    #                       show=show_charts)
 
     # going to try dynamically sized points between lines?
     widths = np.linspace(0.01, 1, num=len(normalized))
     cs_widths = np.linspace(0.01,1,num=len(cumsum_normalized))
-    flux_normalized = t_normalize(flux_scatter)
     for p in range(len(normalized) - 1):
         if (p + 1 >= len(normalized)):
             break
