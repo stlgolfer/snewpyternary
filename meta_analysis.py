@@ -291,7 +291,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # plot the flux-averaged cross-section
     cxn_plot, cxn_axes = plt.subplots(1,1)
     cxn_axes.plot(time_bins_x_axis, sigma_average, linestyle='None', marker='.')
-    cxn_title = f'{detector_to_index[detector]["proxy_name"]} CXN in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
+    cxn_title = f'{config.model_type} {detector_to_index[detector]["proxy_name"]} CXN in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
     cxn_axes.set_xlabel('Time (s)')
     cxn_axes.set_ylabel(r'$cm^2$/?neutrinos')
     cxn_axes.set_title(cxn_title)
