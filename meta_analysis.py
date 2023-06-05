@@ -30,6 +30,7 @@ import pickle
 from tqdm import tqdm
 from scipy.integrate import simpson
 import Rebinning
+import pandas as pd
 
 import snowglobes_wrapper
 
@@ -483,6 +484,12 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           ylab='cm^2',
                           show=show_charts
                           )
+    # send the sigma_average out to a file with time
+    sigma_average_df = pd.DataFrame(sigma_average_complete, columns=config.proxyconfig.flux_axes())
+    # add the time bins to the datafram
+    sigma_average_df['time_bins'] = time_bins_x_axis.value
+    sigma_average_df.to_csv(t.clean_newline(f'./cxns/CXNs for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.csv'))
+
     #endregion
 
     # region also create a cumulative plot
