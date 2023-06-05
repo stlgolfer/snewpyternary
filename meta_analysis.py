@@ -224,7 +224,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     }
     flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)
     N_det = np.transpose(np.array(raw_data))[detector_to_index[detector]['Ndet']] # this is the summed values for each time slice
-    flux_anue = np.transpose(np.array(flux_raw))[detector_to_index[detector]['phi_t']]
+    phi_t = np.transpose(np.array(flux_raw))[detector_to_index[detector]['phi_t']]
     n_targets_water = config.proxyconfig.Nt_wc100kt30prct()[detector_to_index[detector]['Nt']]
     # ok now I see the problem: the flux and the actual detector data are binned differently
     # the flux data has smaller energy bin width so the dE_v isn't the same
@@ -247,8 +247,6 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     flux_spect_fig.show()
     flux_spect_fig.savefig('./anue flux spectrogram.png')
 
-    # now we'll have to go through each time bin and find flux-avg-cxn
-    phi_est = np.zeros_like(np.transpose(N_det))
     # for t_bin_no in range(len(N_det)):
     # t_bin_no=195
     # # mult_plot, mult_axes = plt.subplots(1,1)
@@ -264,11 +262,16 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     #         flux_energy_spectra, # is constant across time
     #         show = True if t_bin_no == 195 else False # TODO: remove when done with t=15
     #     )[0]
-    # )/flux_anue[t_bin_no]
+    # )/phi_t[t_bin_no]
     # phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
+    print("Unfolding...")
+    # now we'll have to go through each time bin and find flux-avg-cxn
+    phi_est = np.zeros_like(np.transpose(N_det))
+    sigma_average = np.zeros_like(phi_est)
     for t_bin_no in range(len(N_det)):
-        sigma_average_t = N_det[t_bin_no]/(n_targets_water*flux_anue[t_bin_no])
+        sigma_average_t = N_det[t_bin_no]/(n_targets_water*phi_t[t_bin_no])
         phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*sigma_average_t)
+        sigma_average[t_bin_no] = sigma_average_t
 
     fx_plot, (fx_axes, fx_truth_axes) = plt.subplots(1, 2, figsize=(16,8))
     fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
@@ -278,13 +281,22 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     fx_axes.set_title(fx_title)
     fx_axes.set_xscale('log')
 
-    fx_truth_axes.plot(time_bins_x_axis, flux_anue, linestyle='None', marker='.')
+    fx_truth_axes.plot(time_bins_x_axis, phi_t, linestyle='None', marker='.')
     fx_truth_axes.set_xlabel('Time (s)')
     fx_truth_axes.set_ylabel(r'$neutrinos/cm^2$')
     fx_truth_axes.set_title('Truth Flux')
     fx_truth_axes.set_xscale('log')
     fx_plot.savefig(f'./plots/unfolded/{t.clean_newline(fx_title)}.png')
-    print("Unfolding...")
+
+    # plot the flux-averaged cross-section
+    cxn_plot, cxn_axes = plt.subplots(1,1)
+    cxn_axes.plot(time_bins_x_axis, sigma_average, linestyle='None', marker='.')
+    cxn_title = f'{detector_to_index[detector]["proxy_name"]} CXN in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
+    cxn_axes.set_xlabel('Time (s)')
+    cxn_axes.set_ylabel(r'$cm^2$/?neutrinos')
+    cxn_axes.set_title(cxn_title)
+    cxn_axes.set_xscale('log')
+    cxn_plot.savefig(f'./plots/cxns/{t.clean_newline(cxn_title)}.png')
 
 
     return plot_data, raw_data, l_data, phi_est
@@ -384,7 +396,7 @@ def ternary_distance(p1: tuple, p2: tuple):
     return math.sqrt(dx**2 + dy**2 + dz**2)
 
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot, cum_sum_tax: TernaryAxesSubplot) -> None:
-    flux_scatter, flux_raw, flux_l_data = process_flux(config, number)
+    # flux_scatter, flux_raw, flux_l_data = process_flux(config, number)
 
     # print out information of the set
     print(config.model(config.model_file_paths[number]))
@@ -402,8 +414,6 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         p_data, r_data, l_data, phi_est = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
         all_phi_est[detector] = phi_est
-
-    # want the folded/convolved event rates as well
 
     # now get the time bins
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
