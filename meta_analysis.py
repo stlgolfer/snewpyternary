@@ -299,7 +299,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     cxn_plot.savefig(f'./plots/cxns/{t.clean_newline(cxn_title)}.png')
 
 
-    return plot_data, raw_data, l_data, phi_est
+    return plot_data, raw_data, l_data, phi_est, sigma_average
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int):
 
@@ -401,7 +401,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # print out information of the set
     print(config.model(config.model_file_paths[number]))
 
-    p_data, r_data, l_data, phi_est = process_detector(config, number, 'ar40kt')
+    p_data, r_data, l_data, phi_est, sigma_average_det = process_detector(config, number, 'ar40kt')
     # need to convert data to an array
     all_plot_data = [list(key) for key in r_data]  # going to take each detector and add them up
     all_phi_est = {
@@ -409,11 +409,17 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         'wc100kt30prct': [],
         'scint20kt': []
     }
+    sigma_average_tot = {
+        'ar40kt': sigma_average_det,
+        'wc100kt30prct': [],
+        'scint20kt': []
+    }
 
     for detector in ['wc100kt30prct', 'scint20kt']:
-        p_data, r_data, l_data, phi_est = process_detector(config, number, detector)
+        p_data, r_data, l_data, phi_est, sigma_average_det = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
         all_phi_est[detector] = phi_est
+        sigma_average_tot[detector] = sigma_average_det
 
     # now get the time bins
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
@@ -445,8 +451,14 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           )
 
     phi_est_raw = tuple(zip(all_phi_est['scint20kt'], all_phi_est['wc100kt30prct'], all_phi_est['ar40kt']))
+    sigma_average_complete = tuple(zip(
+        sigma_average_tot['scint20kt'],
+        sigma_average_tot['wc100kt30prct'],
+        sigma_average_tot['ar40kt'])
+    )
     print('Unfolded')
 
+    # region plot phi_est
     t.create_regular_plot(phi_est_raw,
                           config.proxyconfig.flux_axes(),
                           f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',                          x_axis=time_bins_x_axis,
@@ -461,6 +473,17 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           ylab='Event count',
                           show=show_charts
                           )
+    #endregion
+
+    #region plot sigma_average for all detectors
+    t.create_regular_plot(sigma_average_complete,
+                          config.proxyconfig.flux_axes(),
+                          f'CXNs for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
+                          x_axis=time_bins_x_axis,
+                          ylab='cm^2',
+                          show=show_charts
+                          )
+    #endregion
 
     # region also create a cumulative plot
     nux_proxy_cumsum = np.cumsum(list(list(zip(*phi_est_raw))[0]))
