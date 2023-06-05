@@ -173,7 +173,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # dump the figure for later arrangement
     pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
 
-    plt.show()
+    if show_charts:
+        plt.show()
 
     figure, tax = t.create_default_detector_plot(
         raw_data,
@@ -244,7 +245,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram)
     flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/${cm}^2$', format='%.0e')
-    flux_spect_fig.show()
+    if show_charts:
+        flux_spect_fig.show()
     flux_spect_fig.savefig('./anue flux spectrogram.png')
 
     # now we'll have to go through each time bin and find flux-avg-cxn
@@ -301,6 +303,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         log_bins=use_log,
         presn=use_presn
     )
+    
 
     t.create_default_flux_plot(
         flux_scatter_data,
