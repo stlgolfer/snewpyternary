@@ -166,15 +166,17 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy'])
 
     pc = spt_ax.pcolormesh(__X, __Y, spt_full_content)
-    plt.colorbar(pc, shrink=0.75, location='right', label='Event Count', format='%.0e')
+    spt_fig.colorbar(pc, shrink=0.75, location='right', label='Event Count', format='%.0e')
     # plt.xscale('log')
-    plt.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
+    spt_fig.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
 
     # dump the figure for later arrangement
     pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
+    spt_ax.set_xscale('log')
+    spt_ax.set_xlim(0, 20)
 
     if show_charts:
-        plt.show()
+        spt_fig.show()
 
     figure, tax = t.create_default_detector_plot(
         raw_data,
@@ -248,6 +250,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     if show_charts:
         flux_spect_fig.show()
     flux_spect_fig.savefig('./anue flux spectrogram.png')
+    pickle.dump(flux_spect_fig, open('./anue flux spectrogram.pickle', 'wb'))
 
     # for t_bin_no in range(len(N_det)):
     # t_bin_no=195

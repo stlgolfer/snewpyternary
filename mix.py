@@ -15,6 +15,18 @@ def process_mixture(cxn_filename, zeta_filename, show=True):
     cxn = pd.read_csv(cxn_filename)
     zeta = pd.read_csv(zeta_filename)
 
+    # plot the cxn in linear time
+    cxn_plot, (cxn_nux_ax, cxn_anue_ax, cxn_nue_ax) = plt.subplots(1,3)
+    cxn_nux_ax.plot(cxn['time_bins'], cxn[r'$\nu_x$ Proxy'])
+    cxn_nux_ax.set_title('nux Proxy')
+
+    cxn_anue_ax.plot(cxn['time_bins'], cxn[r'$\bar{\nu_e}$ Proxy'])
+    cxn_anue_ax.set_title('anue Proxy')
+
+    cxn_nue_ax.plot(cxn['time_bins'], cxn[r'$\nu_e$ Proxy'])
+    cxn_nue_ax.set_title('nue Proxy')
+    cxn_plot.show()
+
     # want to sample from the cxn as much as possible using the zeta bin number coordinates
     cxn_bin_numbers = [x for x in range(len(cxn['time_bins']))]
     zeta_bin_numbers = [x for x in range(len(zeta['time_bins']))]
