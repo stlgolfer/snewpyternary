@@ -58,7 +58,6 @@ use_presn: bool = False
 use_all_submodules: bool = False
 d: int = 10 # in pc, distance to SN
 use_heatmap: bool = False
-do_unfold: bool = False
 
 _colors = ['RED', 'GREEN', 'BLUE']
 _run_cave_parameters: [(str, float)] = []
@@ -174,7 +173,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # dump the figure for later arrangement
     pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
 
-    plt.show()
+    if show_charts:
+        plt.show()
 
     figure, tax = t.create_default_detector_plot(
         raw_data,
@@ -245,7 +245,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram)
     flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/${cm}^2$', format='%.0e')
-    flux_spect_fig.show()
+    if show_charts:
+        flux_spect_fig.show()
     flux_spect_fig.savefig('./anue flux spectrogram.png')
 
     # for t_bin_no in range(len(N_det)):
@@ -457,24 +458,6 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         sigma_average_tot['wc100kt30prct'],
         sigma_average_tot['ar40kt'])
     )
-    print('Unfolded')
-
-    # region plot phi_est
-    t.create_regular_plot(zeta_raw,
-                          config.proxyconfig.flux_axes(),
-                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',                          x_axis=time_bins_x_axis,
-                          ylab='Event count',
-                          show=show_charts
-                          )
-
-    t.create_regular_plot(t_normalize(zeta_raw),
-                          config.proxyconfig.flux_axes(),
-                          f'*Detectors Unfolded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
-                          x_axis=time_bins_x_axis,
-                          ylab='Event count',
-                          show=show_charts
-                          )
-    #endregion
 
     #region plot sigma_average for all detectors
     t.create_regular_plot(sigma_average_complete,
@@ -503,20 +486,20 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     zeta_df.to_csv(t.clean_newline(f'./zetas/zetas for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.csv'))
 
     # region also create a cumulative plot
-    nux_proxy_cumsum = np.cumsum(list(list(zip(*zeta_raw))[0]))
-    nue_proxy_cumsum = np.cumsum(list(list(zip(*zeta_raw))[2]))
-    anue_proxy_cumsum = np.cumsum(list(list(zip(*zeta_raw))[1]))
+    nux_proxy_cumsum = np.cumsum(list(list(zip(*all_plot_data))[0]))
+    nue_proxy_cumsum = np.cumsum(list(list(zip(*all_plot_data))[1]))
+    anue_proxy_cumsum = np.cumsum(list(list(zip(*all_plot_data))[2]))
 
     # create a new ternary diagram for the cumsum
     cumsum_normalized = []
     for ci in range(len(nux_proxy_cumsum)):
         ci_total = nux_proxy_cumsum[ci] + nue_proxy_cumsum[ci] + anue_proxy_cumsum[ci]
         cumsum_normalized.append(
-            (100*nux_proxy_cumsum[ci]/ci_total, 100*anue_proxy_cumsum[ci]/ci_total, 100*nue_proxy_cumsum[ci]/ci_total))
+            (100*nux_proxy_cumsum[ci]/ci_total, 100*nue_proxy_cumsum[ci]/ci_total, 100*anue_proxy_cumsum[ci]/ci_total))
     # endregion
 
     # now renormalize and convert all points back to tuples
-    normalized = t_normalize(zeta_raw)
+    normalized = t_normalize(all_plot_data)
 
     # going to try dynamically sized points between lines?
     widths = np.linspace(0.01, 1, num=len(normalized))
@@ -525,16 +508,17 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         if (p + 1 >= len(normalized)):
             break
         tax.line(normalized[p], normalized[p + 1], color=(widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1), linestyle=':', linewidth=3)
-        cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
-        cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
-                 linestyle=':', linewidth=3)
+        # TODO: fix cumsum
+        # cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
+        # cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
+        #          linestyle=':', linewidth=3)
     # tax.scatter(normalized, color='blue')
 
     if use_heatmap:
         print('Calculating errorbar heatmap...')
         # more information on colormaps can be found here:
         # https://matplotlib.org/stable/tutorials/colors/colormaps.html#diverging
-        tax.heatmap(generate_heatmap_dict(zeta_raw,t_normalize(zeta_raw)), cmap=plt.get_cmap('PiYG'))
+        tax.heatmap(generate_heatmap_dict(all_plot_data,t_normalize(all_plot_data)), cmap=plt.get_cmap('PiYG'))
         print('...Done')
 
     # here we also want to calculate the cave parameter
@@ -554,7 +538,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=t.clean_newline(f'{config.model_type} *Detectors {"Unfolded" if do_unfold else "Folded"} {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary')
+    title=t.clean_newline(f'{config.model_type} *Detectors Folded {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary')
     tax.set_title(title)
     # data is organized in top, right, left
     # apparently this is in flux formatting
@@ -566,7 +550,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     cumsum_figure, cum_sum_tax = ternary.figure(scale=100)
     cum_sum_tax.boundary(linewidth=2.0)
     cum_sum_tax.gridlines(color="blue", multiple=100 / 10)
-    cumsum_title = f'{config.model_type} *Detectors {"Unfolded" if do_unfold else "Folded"} Cumsum {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary'
+    cumsum_title = f'{config.model_type} *Detectors Folded Cumsum {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary'
     cum_sum_tax.set_title(cumsum_title)
     # data is organized in top, right, left
 
@@ -621,24 +605,24 @@ def process_transformation(config: t.MetaAnalysisConfig):
     cum_sum_tax.ticks(axis='lbr', linewidth=1, multiple=100 / 10)
     cum_sum_tax.clear_matplotlib_ticks()
     cum_sum_tax.get_axes().axis('off')  # disables regular matlab plot axes
-    cum_sum_tax.savefig(f'./all_detector_plots/{t.clean_newline(cumsum_title)}')
+    # cum_sum_tax.savefig(f'./all_detector_plots/{t.clean_newline(cumsum_title)}')
 
     if show_charts == True:
-        cumsum_figure.show()
+        # cumsum_figure.show()
     #endregion
 
     #region cave parameter output file
-    if do_unfold:
-        global _run_cave_parameters
-        # now write cave params to file only if we are doing unfolding. otherwise it doesn't make much sense
-        cp_title = t.clean_newline(
-            f'{config.model_type} *Detectors Cave Parameter {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}')
-        cp_f = open(f'./cave_parameters/{cp_title}.txt', 'w')
-        for cp_run in _run_cave_parameters:
-            cp_f.write(f'{cp_run[0]},{cp_run[1]}\n')
-        cp_f.close()
-        # reset run cave parameters for next transformation
-        _run_cave_parameters = []
+    # if do_unfold:
+    #     global _run_cave_parameters
+    #     # now write cave params to file only if we are doing unfolding. otherwise it doesn't make much sense
+    #     cp_title = t.clean_newline(
+    #         f'{config.model_type} *Detectors Cave Parameter {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}')
+    #     cp_f = open(f'./cave_parameters/{cp_title}.txt', 'w')
+    #     for cp_run in _run_cave_parameters:
+    #         cp_f.write(f'{cp_run[0]},{cp_run[1]}\n')
+    #     cp_f.close()
+    #     # reset run cave parameters for next transformation
+    #     _run_cave_parameters = []
     #endregion
 
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
@@ -655,8 +639,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--tflux', required=False, default=False, type=bool, help='If true, only calculate the truth flux. set numbers are not superimposed')
 @click.option('--detproxy', required=False, type=str, default='AgDet', help='Detector proxy configuration. Options: AgDet or BstChnl')
 @click.option('--heatmap', required=False, type=bool, default=False, help='Include heatmaps. Can only process one submodel at a time')
-@click.option('--unfold', required=False, type=bool, default=False, help='If true, unfold the event rates')
-def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tflux, detproxy, heatmap, unfold):
+def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tflux, detproxy, heatmap):
     global show_charts
     show_charts = showc
     
@@ -677,9 +660,6 @@ def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tfl
 
     global use_heatmap
     use_heatmap = heatmap
-
-    global do_unfold
-    do_unfold = unfold
 
     if use_heatmap and len(setno) > 1:
         raise ValueError('Can only process heatmap for one submodel at a time')

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from meta_analysis import t_normalize
 import ternary
 
-ALLOW_GUI = False
+ALLOW_GUI = True
 
 cxn_filename = "/home/acm123/snewpy-snowglobes-ternary/cxns/CXNs for Nakazato_2013 AdiabaticMSW_IMO BstChnlRED nakazato-shen-z0.004-t_rev100ms-s20.0.fits Logged Bins .csv"
 zeta_filename = "/home/acm123/snewpy-snowglobes-ternary/zetas/zetas for Nakazato_2013 AdiabaticMSW_IMO BstChnlRED nakazato-shen-z0.004-t_rev100ms-s20.0.fits Logged Bins .csv"
