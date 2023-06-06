@@ -266,7 +266,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     #     )[0]
     # )/phi_t[t_bin_no]
     # phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
-    print("Unfolding...")
+    # print("Unfolding...")
     # now we'll have to go through each time bin and find flux-avg-cxn
     zeta = np.zeros_like(np.transpose(N_det))
     sigma_average = np.zeros_like(zeta)
@@ -607,7 +607,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     cum_sum_tax.get_axes().axis('off')  # disables regular matlab plot axes
     # cum_sum_tax.savefig(f'./all_detector_plots/{t.clean_newline(cumsum_title)}')
 
-    if show_charts == True:
+    # if show_charts == True:
         # cumsum_figure.show()
     #endregion
 

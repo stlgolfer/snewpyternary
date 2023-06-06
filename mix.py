@@ -1,4 +1,5 @@
 from tkinter import filedialog as fd
+import tkinter as tk
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,6 +10,9 @@ ALLOW_GUI = True
 
 cxn_filename = "/home/acm123/snewpy-snowglobes-ternary/cxns/CXNs for Nakazato_2013 AdiabaticMSW_IMO BstChnlRED nakazato-shen-z0.004-t_rev100ms-s20.0.fits Logged Bins .csv"
 zeta_filename = "/home/acm123/snewpy-snowglobes-ternary/zetas/zetas for Nakazato_2013 AdiabaticMSW_IMO BstChnlRED nakazato-shen-z0.004-t_rev100ms-s20.0.fits Logged Bins .csv"
+
+root = tk.Tk()
+root.withdraw()
 
 if ALLOW_GUI:
     cxn_filename = fd.askopenfilename(title="Open Cross-Section File", initialdir='./cxns')
@@ -54,7 +58,16 @@ tax.gridlines(color="blue", multiple=scale/10)
 tax.bottom_axis_label('nux')
 tax.right_axis_label('nuebar')
 tax.left_axis_label('nue')
-tax.scatter(phi_t_normalized)
+
+widths = np.linspace(0.01, 1, num=len(phi_t_normalized))
+colorid=0
+for p in range(len(phi_t_normalized)-1):
+    if (p + 1 >= len(phi_t_normalized)):
+        break
+    tax.line(phi_t_normalized[p], phi_t_normalized[p + 1], color=(
+    widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1),
+             linestyle=':', linewidth=3)
+# tax.scatter(phi_t_normalized)
 
 tax.clear_matplotlib_ticks()
 tax.get_axes().axis('off') # disables regular matlab plot axes
