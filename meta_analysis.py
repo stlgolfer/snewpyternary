@@ -267,15 +267,15 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
     print("Unfolding...")
     # now we'll have to go through each time bin and find flux-avg-cxn
-    phi_est = np.zeros_like(np.transpose(N_det))
-    sigma_average = np.zeros_like(phi_est)
+    zeta = np.zeros_like(np.transpose(N_det))
+    sigma_average = np.zeros_like(zeta)
     for t_bin_no in range(len(N_det)):
         sigma_average_t = N_det[t_bin_no]/(n_targets_water*phi_t[t_bin_no])
-        phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*sigma_average_t)
+        zeta[t_bin_no] = N_det[t_bin_no]/(n_targets_water) # *sigma_average_t #TODO: now phi_est -> zetas. also fix cumsum
         sigma_average[t_bin_no] = sigma_average_t
 
     fx_plot, (fx_axes, fx_truth_axes) = plt.subplots(1, 2, figsize=(16,8))
-    fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
+    fx_axes.plot(time_bins_x_axis, zeta, linestyle='None', marker='.')
     fx_axes.set_xlabel('Time (s)')
     fx_axes.set_ylabel(r'$neutrinos/cm^2$')
     fx_title = f'{detector_to_index[detector]["proxy_name"]} Unfolding in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
@@ -300,7 +300,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     cxn_plot.savefig(f'./plots/cxns/{t.clean_newline(cxn_title)}.png')
 
 
-    return plot_data, raw_data, l_data, phi_est, sigma_average
+    return plot_data, raw_data, l_data, zeta, sigma_average
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int):
 
@@ -402,11 +402,11 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # print out information of the set
     print(config.model(config.model_file_paths[number]))
 
-    p_data, r_data, l_data, phi_est, sigma_average_det = process_detector(config, number, 'ar40kt')
+    p_data, r_data, l_data, zeta, sigma_average_det = process_detector(config, number, 'ar40kt')
     # need to convert data to an array
     all_plot_data = [list(key) for key in r_data]  # going to take each detector and add them up
-    all_phi_est = {
-        'ar40kt': phi_est,
+    all_zeta_est = {
+        'ar40kt': zeta,
         'wc100kt30prct': [],
         'scint20kt': []
     }
@@ -417,9 +417,9 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     }
 
     for detector in ['wc100kt30prct', 'scint20kt']:
-        p_data, r_data, l_data, phi_est, sigma_average_det = process_detector(config, number, detector)
+        p_data, r_data, l_data, zeta, sigma_average_det = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
-        all_phi_est[detector] = phi_est
+        all_zeta_est[detector] = zeta
         sigma_average_tot[detector] = sigma_average_det
 
     # now get the time bins
@@ -451,7 +451,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           use_x_log=True
                           )
 
-    phi_est_raw = tuple(zip(all_phi_est['scint20kt'], all_phi_est['wc100kt30prct'], all_phi_est['ar40kt']))
+    zeta_raw = tuple(zip(all_zeta_est['scint20kt'], all_zeta_est['wc100kt30prct'], all_zeta_est['ar40kt']))
     sigma_average_complete = tuple(zip(
         sigma_average_tot['scint20kt'],
         sigma_average_tot['wc100kt30prct'],
@@ -460,14 +460,14 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     print('Unfolded')
 
     # region plot phi_est
-    t.create_regular_plot(phi_est_raw,
+    t.create_regular_plot(zeta_raw,
                           config.proxyconfig.flux_axes(),
                           f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',                          x_axis=time_bins_x_axis,
                           ylab='Event count',
                           show=show_charts
                           )
 
-    t.create_regular_plot(t_normalize(phi_est_raw),
+    t.create_regular_plot(t_normalize(zeta_raw),
                           config.proxyconfig.flux_axes(),
                           f'*Detectors Unfolded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
                           x_axis=time_bins_x_axis,
@@ -495,14 +495,17 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     #TODO: put the Ndet into a pandas dataframe and export it. even better is to store the Ndet/Nt so that way the math is easier later
     # we'll call this the zeta parameter. zeta = Ndet/Nt
     print("Storing zetas...")
-    zeta_df = pd.DataFrame(all_plot_data, columns=config.proxyconfig.same_axes())
+    # divide by Nt
+    # zetas = np.divide(all_plot_data, np.tile([config.proxyconfig.Nt_scint20kt()[0], config.proxyconfig.Nt_ar40kt()[1],
+    #                                   config.proxyconfig.Nt_wc100kt30prct()[2]], [len(all_plot_data), 1]))
+    zeta_df = pd.DataFrame(zeta_raw, columns=config.proxyconfig.flux_axes())
     zeta_df['time_bins'] = time_bins_x_axis.value
     zeta_df.to_csv(t.clean_newline(f'./zetas/zetas for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.csv'))
 
     # region also create a cumulative plot
-    nux_proxy_cumsum = np.cumsum(list(list(zip(*phi_est_raw))[0]))
-    nue_proxy_cumsum = np.cumsum(list(list(zip(*phi_est_raw))[2]))
-    anue_proxy_cumsum = np.cumsum(list(list(zip(*phi_est_raw))[1]))
+    nux_proxy_cumsum = np.cumsum(list(list(zip(*zeta_raw))[0]))
+    nue_proxy_cumsum = np.cumsum(list(list(zip(*zeta_raw))[2]))
+    anue_proxy_cumsum = np.cumsum(list(list(zip(*zeta_raw))[1]))
 
     # create a new ternary diagram for the cumsum
     cumsum_normalized = []
@@ -513,7 +516,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # endregion
 
     # now renormalize and convert all points back to tuples
-    normalized = t_normalize(phi_est_raw)
+    normalized = t_normalize(zeta_raw)
 
     # going to try dynamically sized points between lines?
     widths = np.linspace(0.01, 1, num=len(normalized))
@@ -531,7 +534,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         print('Calculating errorbar heatmap...')
         # more information on colormaps can be found here:
         # https://matplotlib.org/stable/tutorials/colors/colormaps.html#diverging
-        tax.heatmap(generate_heatmap_dict(phi_est_raw,t_normalize(phi_est_raw)), cmap=plt.get_cmap('PiYG'))
+        tax.heatmap(generate_heatmap_dict(zeta_raw,t_normalize(zeta_raw)), cmap=plt.get_cmap('PiYG'))
         print('...Done')
 
     # here we also want to calculate the cave parameter
