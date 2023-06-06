@@ -492,6 +492,13 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
 
     #endregion
 
+    #TODO: put the Ndet into a pandas dataframe and export it. even better is to store the Ndet/Nt so that way the math is easier later
+    # we'll call this the zeta parameter. zeta = Ndet/Nt
+    print("Storing zetas...")
+    zeta_df = pd.DataFrame(all_plot_data, columns=config.proxyconfig.same_axes())
+    zeta_df['time_bins'] = time_bins_x_axis.value
+    zeta_df.to_csv(t.clean_newline(f'./zetas/zetas for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.csv'))
+
     # region also create a cumulative plot
     nux_proxy_cumsum = np.cumsum(list(list(zip(*phi_est_raw))[0]))
     nue_proxy_cumsum = np.cumsum(list(list(zip(*phi_est_raw))[2]))
