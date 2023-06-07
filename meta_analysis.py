@@ -167,13 +167,12 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     pc = spt_ax.pcolormesh(__X, __Y, spt_full_content)
     spt_fig.colorbar(pc, shrink=0.75, location='right', label='Event Count', format='%.0e')
-    # plt.xscale('log')
-    spt_fig.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
+    spt_ax.set_xlim(0.0001, 20)
+    spt_ax.set_xscale('log')
 
     # dump the figure for later arrangement
+    spt_fig.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
     pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
-    spt_ax.set_xscale('log')
-    spt_ax.set_xlim(0, 20)
 
     if show_charts:
         spt_fig.show()
@@ -247,11 +246,12 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram)
     flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/${cm}^2$', format='%.0e')
-    if show_charts:
-        flux_spect_fig.show()
+    flux_spect_ax.set_xlim(0.0001, 20)
+    flux_spect_ax.set_xscale('log')
     flux_spect_fig.savefig('./anue flux spectrogram.png')
     pickle.dump(flux_spect_fig, open('./anue flux spectrogram.pickle', 'wb'))
-
+    if show_charts:
+        flux_spect_fig.show()
     # for t_bin_no in range(len(N_det)):
     # t_bin_no=195
     # # mult_plot, mult_axes = plt.subplots(1,1)
