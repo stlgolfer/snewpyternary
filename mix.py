@@ -20,16 +20,21 @@ def process_mixture(cxn_filename, zeta_filename, show=True):
     cxn_nux_ax.plot(cxn['time_bins'], cxn[r'$\nu_x$ Proxy'])
     cxn_nux_ax.set_title('nux Proxy')
     cxn_nux_ax.set_xscale('log')
+    cxn_nux_ax.set_xlabel('Time (s)')
+    cxn_nux_ax.set_ylabel(r'$cm^-2$')
 
     cxn_anue_ax.plot(cxn['time_bins'], cxn[r'$\bar{\nu_e}$ Proxy'])
     cxn_anue_ax.set_title('anue Proxy')
     cxn_anue_ax.set_xscale('log')
+    cxn_anue_ax.set_xlabel('Time (s)')
 
     cxn_nue_ax.plot(cxn['time_bins'], cxn[r'$\nu_e$ Proxy'])
     cxn_nue_ax.set_title('nue Proxy')
     cxn_nue_ax.set_xscale('log')
+    cxn_nue_ax.set_xlabel('Time (s)')
 
-    cxn_plot.show()
+    if show:
+        cxn_plot.show()
 
     # want to sample from the cxn as much as possible using the zeta bin number coordinates
     cxn_bin_numbers = [x for x in range(len(cxn['time_bins']))]
