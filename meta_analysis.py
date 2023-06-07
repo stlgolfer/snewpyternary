@@ -209,26 +209,26 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         'wc100kt30prct': {
             'Ndet': 2,
             'phi_t': 1,
-            'Nt': 2,
+            'Nt': config.proxyconfig.Nt_wc100kt30prct()[2],#2,
             'proxy_name': 'IBD'
         },
         'scint20kt':{
             'Ndet': 0,
             'phi_t':0,
-            'Nt':0,
+            'Nt': config.proxyconfig.Nt_scint20kt()[0],# 0,
             'proxy_name': 'NC'
         },
         'ar40kt': {
             'Ndet': 1,
             'phi_t':2,
-            'Nt':1,
+            'Nt': config.proxyconfig.Nt_ar40kt()[1],#1,
             'proxy_name': 'Ar40 + e'
         }
     }
     flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)
     N_det = np.transpose(np.array(raw_data))[detector_to_index[detector]['Ndet']] # this is the summed values for each time slice
     phi_t = np.transpose(np.array(flux_raw))[detector_to_index[detector]['phi_t']]
-    n_targets_water = config.proxyconfig.Nt_wc100kt30prct()[detector_to_index[detector]['Nt']]
+    n_targets = detector_to_index[detector]['Nt']
     # ok now I see the problem: the flux and the actual detector data are binned differently
     # the flux data has smaller energy bin width so the dE_v isn't the same
     flux_energy_spectra = np.linspace(0, 100, 501) #* MeV  # 1MeV
@@ -268,14 +268,14 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     #         show = True if t_bin_no == 195 else False # TODO: remove when done with t=15
     #     )[0]
     # )/phi_t[t_bin_no]
-    # phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
+    # phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets*flux_averaged_xscn_for_slice)
     # print("Unfolding...")
     # now we'll have to go through each time bin and find flux-avg-cxn
     zeta = np.zeros_like(np.transpose(N_det))
     sigma_average = np.zeros_like(zeta)
     for t_bin_no in range(len(N_det)):
-        sigma_average_t = N_det[t_bin_no]/(n_targets_water*phi_t[t_bin_no])
-        zeta[t_bin_no] = N_det[t_bin_no]/(n_targets_water) # *sigma_average_t #TODO: now phi_est -> zetas. also fix cumsum
+        sigma_average_t = N_det[t_bin_no]/(n_targets*phi_t[t_bin_no])
+        zeta[t_bin_no] = N_det[t_bin_no]/(n_targets) # *sigma_average_t #TODO: now phi_est -> zetas. also fix cumsum
         sigma_average[t_bin_no] = sigma_average_t
 
     fx_plot, (fx_axes, fx_truth_axes) = plt.subplots(1, 2, figsize=(16,8))
