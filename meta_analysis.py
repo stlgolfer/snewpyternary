@@ -166,7 +166,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy'])
 
     pc = spt_ax.pcolormesh(__X, __Y, spt_full_content)
-    spt_fig.colorbar(pc, shrink=0.75, location='right', label='Event Count', format='%.0e')
+    spt_fig.colorbar(pc, shrink=0.75, location='right', label='Event Count/(GeV*s)', format='%.0e')
     spt_ax.set_xlim(0.0001, 20)
     spt_ax.set_xscale('log')
 
@@ -244,9 +244,11 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # x dim should be energy bins, y should be time?
     __X, __Y = np.meshgrid((time_bins_x_axis / u.s), flux_energy_spectra)
 
-    flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram)
-    flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/${cm}^2$', format='%.0e')
-    flux_spect_ax.set_xlim(0.0001, 20)
+    flux_spect_ax.set_xlim(0.0001, 1)
+    # flux_spect_ax.set_ylim(5, 100)
+    flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram, cmap=plt.cm.get_cmap('binary'))
+    flux_spect_pc.set_clim(vmin=0,vmax=2e5)
+    flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/(${cm}^2$*MeV*s)', format='%.0e')
     flux_spect_ax.set_xscale('log')
     flux_spect_fig.savefig('./anue flux spectrogram.png')
     pickle.dump(flux_spect_fig, open('./anue flux spectrogram.pickle', 'wb'))
