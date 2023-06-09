@@ -246,7 +246,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     flux_spect_ax.set_xlim(0.0001, 1)
     # flux_spect_ax.set_ylim(5, 100)
-    flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram, cmap=plt.cm.get_cmap('binary'))
+    flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram) # , cmap=plt.cm.get_cmap('binary')
     flux_spect_pc.set_clim(vmin=0,vmax=2e5)
     flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/(${cm}^2$*MeV*s)', format='%.0e')
     flux_spect_ax.set_xscale('log')
