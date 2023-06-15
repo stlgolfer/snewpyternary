@@ -33,11 +33,14 @@ import Rebinning
 import pandas as pd
 
 import snowglobes_wrapper
+from matplotlib.widgets import Slider, Button
+import matplotlib.animation as animation
 
 sys.path.insert(0,'./SURF2020fork')
 from SURF2020fork.ternary_helpers import shared_plotting_script,generate_heatmap_dict,consolidate_heatmap_data
 from model_wrappers import snewpy_models, sn_model_default_time_step
 import click
+from IPython import display
 
 #simulation details
 snowglobes_out_name="snowglobes-output"
@@ -111,7 +114,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         data_calc=config.proxyconfig.build_detector_profiles()[detector]['chans_to_add'],
         use_cache=use_cache,
         log_bins=use_log,
-        presn=use_presn
+        presn=use_presn,
+        smearing='unsmeared'
     )
 
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
@@ -232,28 +236,46 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # the flux data has smaller energy bin width so the dE_v isn't the same
     flux_energy_spectra = np.linspace(0, 100, 501) #* MeV  # 1MeV
 
-    # make a spectrogram of the flux for just anue
-    flux_spect_fig, flux_spect_ax = plt.subplots(1, 1)
-    flux_spectrogram = flux_l_data[0][4]
-    for flux_spect_anue_bin in flux_l_data[1:]:
-        flux_spectrogram = np.column_stack((flux_spectrogram, flux_spect_anue_bin[4]))
+    #region anue spectrogram
+    if detector == 'wc100kt30prct':
+        # make a spectrogram of the flux for just anue
+        flux_spect_fig, flux_spect_ax = plt.subplots(1, 1)
+        flux_spectrogram = flux_l_data[0][4]
+        for flux_spect_anue_bin in flux_l_data[1:]:
+            flux_spectrogram = np.column_stack((flux_spectrogram, flux_spect_anue_bin[4]))
 
-    flux_spect_ax.set_ylabel('Energy (MeV)')
-    flux_spect_ax.set_xlabel('Time (s)')
-    flux_spect_ax.set_title(r'$\bar{\nu_e}$ Flux Spectrogram')
-    # x dim should be energy bins, y should be time?
-    __X, __Y = np.meshgrid((time_bins_x_axis / u.s), flux_energy_spectra)
+        flux_spect_ax.set_ylabel('Energy (MeV)')
+        flux_spect_ax.set_xlabel('Time (s)')
+        flux_spect_ax.set_title(r'$\bar{\nu_e}$ Flux Spectrogram')
+        # x dim should be energy bins, y should be time?
+        __X, __Y = np.meshgrid((time_bins_x_axis / u.s), flux_energy_spectra)
 
-    flux_spect_ax.set_xlim(0.0001, 1)
-    # flux_spect_ax.set_ylim(5, 100)
-    flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram) # , cmap=plt.cm.get_cmap('binary')
-    flux_spect_pc.set_clim(vmin=0,vmax=2e5)
-    flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/(${cm}^2$*MeV*s)', format='%.0e')
-    flux_spect_ax.set_xscale('log')
-    flux_spect_fig.savefig('./anue flux spectrogram.png')
-    pickle.dump(flux_spect_fig, open('./anue flux spectrogram.pickle', 'wb'))
-    if show_charts:
-        flux_spect_fig.show()
+        flux_spect_ax.set_xlim(0.0001, 20)
+        # flux_spect_ax.set_ylim(5, 100)
+        flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram) # , cmap=plt.cm.get_cmap('binary')
+        # flux_spect_pc.set_clim(vmin=0,vmax=10000000.0)
+        # going to add a slider for the max value
+        # z_axes_max_slider = Slider(slider_axes, 'Blue', 0, 1e9)
+        def __update(frame_num):
+            flux_spect_pc.set_clim(vmin=0,vmax=frame_num)
+        # z_axes_max_slider.on_changed(__update)
+        flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/(${cm}^2$*MeV*s)', format='%.0e')
+        flux_spect_ax.set_xscale('log')
+
+        # going to try an animation
+        ani = animation.FuncAnimation(flux_spect_fig, __update,np.linspace(2e5,7e7,200), repeat=True)
+        # code courtesy of Josh Q.
+        print('Saving spectrogram video animation...')
+        writermp4 = animation.FFMpegWriter(fps=5)
+        ani.save('video.mp4', writer=writermp4)
+        print('...Done')
+
+        flux_spect_fig.savefig('./anue flux spectrogram.png')
+        pickle.dump(flux_spect_fig, open('./anue flux spectrogram.pickle', 'wb'))
+
+        if show_charts:
+            flux_spect_fig.show()
+    #endregion
     # for t_bin_no in range(len(N_det)):
     # t_bin_no=195
     # # mult_plot, mult_axes = plt.subplots(1,1)
