@@ -6,7 +6,6 @@ from meta_analysis import process_flux, process_detector
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 if __name__ == '__main__':
     config = t.MetaAnalysisConfig(
         snewpy_models['Nakazato_2013'],

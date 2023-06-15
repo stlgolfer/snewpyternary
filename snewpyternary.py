@@ -249,6 +249,9 @@ def create_detector_event_scatter(
                 # build dictionary of available channels
                 for i in range(len(header)):
                     dict_data[header[i]]=data[i]
+
+
+
                 results = _sum_proxy(dict_data, data_calc) # data_calc(dict_data)
                 labeled_data_by_energy.append(dict_data)
                 a = results[0]
