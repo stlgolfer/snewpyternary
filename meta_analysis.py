@@ -115,7 +115,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         use_cache=use_cache,
         log_bins=use_log,
         presn=use_presn,
-        smearing='unsmeared'
+        smearing='smeared'
     )
 
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
@@ -169,7 +169,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # x dim should be energy bins, y should be time?
     __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy'])
 
-    pc = spt_ax.pcolormesh(__X, __Y, spt_full_content)
+    pc = spt_ax.contourf(__X, __Y, spt_full_content,10)
     spt_fig.colorbar(pc, shrink=0.75, location='right', label='Event Count/(GeV*s)', format='%.0e')
     spt_ax.set_xlim(0.0001, 20)
     spt_ax.set_xscale('log')
@@ -252,7 +252,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
         flux_spect_ax.set_xlim(0.0001, 20)
         # flux_spect_ax.set_ylim(5, 100)
-        flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram) # , cmap=plt.cm.get_cmap('binary')
+        # pcolormesh
+        flux_spect_pc = flux_spect_ax.contourf(__X, __Y, flux_spectrogram,50) # , cmap=plt.cm.get_cmap('binary')
         # flux_spect_pc.set_clim(vmin=0,vmax=10000000.0)
         # going to add a slider for the max value
         # z_axes_max_slider = Slider(slider_axes, 'Blue', 0, 1e9)
@@ -266,8 +267,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         ani = animation.FuncAnimation(flux_spect_fig, __update,np.linspace(2e5,7e7,200), repeat=True)
         # code courtesy of Josh Q.
         print('Saving spectrogram video animation...')
-        writermp4 = animation.FFMpegWriter(fps=5)
-        ani.save('video.mp4', writer=writermp4)
+        # writermp4 = animation.FFMpegWriter(fps=5)
+        # ani.save('video.mp4', writer=writermp4)
         print('...Done')
 
         flux_spect_fig.savefig('./anue flux spectrogram.png')

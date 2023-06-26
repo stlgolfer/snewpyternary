@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # want 0.05s, 0.07s, 0.1s, 0.3s, 0.5s, 1, 3, 5, 7, 10
     time_cut_indexes = [114,117,121,135,142,153,170,178,184,190]
     for time in time_cut_indexes:
-        fig, (flux_axes, ndet_axes) = plt.subplots(1,2,figsize=(16,8))
+        fig, (flux_axes, ndet_axes, ratio_axes) = plt.subplots(1,3,figsize=(24,8))
         # want to superimpose flux and Ndet, so make sure GeV
         flux_energy_spectra = np.linspace(0, 100, 501)  # * MeV  # 1MeV
         flux_axes.scatter(flux_energy_spectra,labeled[time][4],label='Flux')
@@ -40,6 +40,19 @@ if __name__ == '__main__':
         ndet_axes.set_title('Ndet')
         ndet_axes.set_xlabel('Energy (MeV)')
         ndet_axes.set_ylabel('Event count / MeV')
+
+        # ndet_interpolated = np.interp(flux_energy_spectra,l_data[time]['Energy']*100,l_data[time]['ibd'])
+        flux_interpolated = np.interp(l_data[time]['Energy']*1000, flux_energy_spectra, labeled[time][4])
+
+        ratio_axes.scatter(
+            l_data[time]['Energy']*1000,
+            np.divide(l_data[time]['ibd'], flux_interpolated)*(config.proxyconfig.Nt_wc100kt30prct()[2])
+        )
+        ratio_axes.set_xscale('log')
+
+        ratio_axes.set_title('Nt * Ndet/Flux')
+        ratio_axes.set_xlabel('Energy (MeV)')
+        ratio_axes.set_ylabel('Nt * Ndet/Flux')
 
         fig.suptitle(rf'Flux vs Ndet Spect. $t\approx{time_bins_x_axis[time]}$')
 
