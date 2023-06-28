@@ -103,6 +103,25 @@ if __name__ == '__main__':
     cxn_comp_fig.savefig('./time_cuts/cxn reconstruction comparison.png')
     cxn_comp_fig.show()
 
+    one_slice_cxn_comp_fig, (one_slice_cxn_truth, one_slice_cxn_actual) = plt.subplots(1, 2, figsize=(16,8))
+    one_slice_cxn_truth.scatter(10**np.array(ibd_cxn_actual['energy']), np.transpose(cxn_truth_spectrogram)[100])
+    one_slice_cxn_actual.scatter(l_data[0]['Energy'], np.transpose(cxn_actual_spectrogram)[100])
+    one_slice_cxn_actual.set_xscale('log')
+    one_slice_cxn_truth.set_xscale('log')
+
+    # set titles
+    one_slice_cxn_actual.set_title('Reconstructed CXN in wc100kt30prct')
+    one_slice_cxn_truth.set_title('Truth CXN for IBD')
+
+    # set axes titles
+    one_slice_cxn_actual.set_xlabel('Energy (GeV)')
+    one_slice_cxn_truth.set_xlabel('Energy (GeV)')
+
+    one_slice_cxn_actual.set_ylabel(r'${cm}^{-2}$')
+    one_slice_cxn_truth.set_ylabel(r'${cm}^{-2}$')
+    one_slice_cxn_comp_fig.savefig('./time_cuts/cxn reconstruction comparison 1D.png')
+    one_slice_cxn_comp_fig.show()
+
     # test_fig, test_axes = plt.subplots(1,1)
     # test_axes.scatter(10**np.array(ibd_cxn_actual['energy']), np.multiply(ibd_cxn_actual['nu_e_bar'],1e-38))
     # test_fig.show()
