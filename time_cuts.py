@@ -77,9 +77,9 @@ if __name__ == '__main__':
     cxn_actual_axes.set_ylabel("Energy (GeV)")
     cxn_actual_axes.set_xlabel('Time (s)')
     cxn_actual_axes.set_title("CXN Reconstructed")
-    __X_cxn, __Y_cxn = np.meshgrid(time_bins_x_axis/u.s, np.log(l_data[0]['Energy']))
+    __X_cxn, __Y_cxn = np.meshgrid(time_bins_x_axis/u.s, l_data[0]['Energy'])
     cxn_actual_axes.set_xlim(0.0001,20)
-    cxn_actual_axes.set_ylim(-4,-1)
+    cxn_actual_axes.set_ylim(0,0.1)
     cxn_actual_pc = cxn_actual_axes.contourf(__X_cxn, __Y_cxn, cxn_actual_spectrogram)
     cxn_comp_fig.colorbar(cxn_actual_pc, ax=cxn_actual_axes, shrink=0.75, label=r'${cm}^{-2}$',
                             format='%.0e')
@@ -91,8 +91,8 @@ if __name__ == '__main__':
     cxn_truth_axes.set_xlabel('Time (s)')
     cxn_truth_axes.set_title('CXN Truth (SNOwGLoBES)')
     cxn_truth_axes.set_xlim(0.0001,20)
-    cxn_truth_axes.set_ylim(-4,-1)
-    __X_truth, __Y_truth = np.meshgrid(time_bins_x_axis/u.s, np.array(ibd_cxn_actual['energy']))
+    cxn_truth_axes.set_ylim(0,0.1)
+    __X_truth, __Y_truth = np.meshgrid(time_bins_x_axis/u.s, 10**np.array(ibd_cxn_actual['energy']))
     cxn_truth_pc = cxn_truth_axes.contourf(__X_truth, __Y_truth, cxn_truth_spectrogram)
     cxn_comp_fig.colorbar(cxn_truth_pc, ax=cxn_truth_axes, shrink=0.75, label=r'${cm}^{-2}$',
                           format='%.0e')
