@@ -33,7 +33,10 @@ if __name__ == '__main__':
     cxn_actual_spectrogram = None
     cxn_truth_spectrogram = None
 
-    truth_calculation = np.array(ibd_cxn_actual['nu_e_bar'])*1e-38
+    truth_calculation = np.multiply(
+        10**np.array(ibd_cxn_actual['energy']),
+        np.array(ibd_cxn_actual['nu_e_bar'])*1e-38
+    )
 
     # want 0.05s, 0.07s, 0.1s, 0.3s, 0.5s, 1, 3, 5, 7, 10
     # time_cut_indexes = [114,117,121,135,142,153,170,178,184,190]
@@ -72,7 +75,9 @@ if __name__ == '__main__':
             cxn_truth_spectrogram = truth_calculation
         else:
             cxn_actual_spectrogram = np.column_stack((cxn_actual_spectrogram, cxn_reconstructed))
-            cxn_truth_spectrogram = np.column_stack((cxn_truth_spectrogram, truth_calculation))
+            cxn_truth_spectrogram = np.column_stack(
+                (cxn_truth_spectrogram, truth_calculation)
+            )
 
     cxn_actual_axes.set_ylabel("Energy (GeV)")
     cxn_actual_axes.set_xlabel('Time (s)')
