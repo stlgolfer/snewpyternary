@@ -56,7 +56,6 @@ if __name__ == '__main__':
 
         # ndet_interpolated = np.interp(flux_energy_spectra,l_data[time]['Energy']*100,l_data[time]['ibd'])
         flux_interpolated = np.interp(l_data[time]['Energy']*1000, flux_energy_spectra, labeled[time][4])
-        print(config.proxyconfig.Nt_wc100kt30prct()[2])
         cxn_reconstructed = np.divide(
             l_data[time]['ibd'],
             flux_interpolated
@@ -108,58 +107,37 @@ if __name__ == '__main__':
                           format='%.0e')
     # cxn_truth_pc.set_clim(vmin=0, vmax=0.1)
     cxn_truth_axes.set_xscale('log')
-    # cxn_truth_axes.set_yscale('log')
-    # cxn_comp_fig.sup_title('nakazato ibd water channel no smearing')
     cxn_comp_fig.savefig('./time_cuts/cxn reconstruction comparison.png')
     cxn_comp_fig.show()
 
-    one_slice_cxn_comp_fig, one_slice_cxn_truth = plt.subplots(1, 1, figsize=(8,8))
-    # make a reconstructed/truth ratio plot
-    # recon_over_truth = np.divide(
-    #     np.transpose(cxn_actual_spectrogram)[10],
-    #     np.interp(
-    #         l_data[0]['Energy'],
-    #         10**np.array(ibd_cxn_actual['energy']),
-    #         np.transpose(cxn_truth_spectrogram)[10]
-    #     )
-    # )
+    one_slice_cxn_comp_fig, one_slice_cxn_truth_vs_recon = plt.subplots(1, 1, figsize=(8, 8))
+    slice_index = 100
 
-    # one_slice_cxn_truth.scatter(l_data[0]['Energy'],recon_over_truth)
-    one_slice_cxn_truth.scatter(
+    one_slice_cxn_truth_vs_recon.scatter(
         l_data[0]['Energy'],
-        np.transpose(cxn_actual_spectrogram)[100],
+        np.transpose(cxn_actual_spectrogram)[slice_index],
         label="Reconstructed"
     )
 
-    one_slice_cxn_truth.scatter(
+    one_slice_cxn_truth_vs_recon.scatter(
         l_data[0]['Energy'],
         np.interp(
             l_data[0]['Energy'],
             10**np.array(ibd_cxn_actual['energy']),
-            np.transpose(cxn_truth_spectrogram)[100]),
+            np.transpose(cxn_truth_spectrogram)[slice_index]),
         label="Truth"
     )
 
-    # one_slice_cxn_actual.set_xscale('log')
-    one_slice_cxn_truth.set_xscale('log')
-    one_slice_cxn_truth.set_yscale('log')
+    one_slice_cxn_truth_vs_recon.set_xscale('log')
+    one_slice_cxn_truth_vs_recon.set_yscale('log')
 
     # set titles
-    # one_slice_cxn_actual.set_title('Reconstructed CXN in wc100kt30prct')
-    # one_slice_cxn_truth.set_title('Reconstructed / Truth CXN for IBD')
+    one_slice_cxn_truth_vs_recon.set_title('Reconstructed vs Truth CXN in wc100kt30prct')
 
     # set axes titles
-    # one_slice_cxn_actual.set_xlabel('Energy (GeV)')
-    one_slice_cxn_truth.set_xlabel('Energy (GeV)')
+    one_slice_cxn_truth_vs_recon.set_xlabel('Energy (GeV)')
 
-    # one_slice_cxn_truth.set_ylim(0,1.5)
-
-    # one_slice_cxn_actual.set_ylabel(r'${cm}^{-2}$')
-    one_slice_cxn_truth.set_ylabel(r'${cm}^{2}$')
+    one_slice_cxn_truth_vs_recon.set_ylabel(r'${cm}^{2}$')
     one_slice_cxn_comp_fig.legend()
     one_slice_cxn_comp_fig.savefig('./time_cuts/reconstruction over truth flux.png')
     one_slice_cxn_comp_fig.show()
-
-    # test_fig, test_axes = plt.subplots(1,1)
-    # test_axes.scatter(10**np.array(ibd_cxn_actual['energy']), np.multiply(ibd_cxn_actual['nu_e_bar'],1e-38))
-    # test_fig.show()

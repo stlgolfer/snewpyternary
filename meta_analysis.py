@@ -191,16 +191,16 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
 
     # we also want a TD representation
-    t.create_regular_plot(raw_data,
-                          config.proxyconfig.build_detector_profiles()[detector]['axes'](),
-                          f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins TD {" PreSN" if use_presn else ""}',
-                          ylab="Event count",
-                          xlab="Time (s)",
-                          x_axis=time_bins_x_axis,
-                          show=show_charts,
-                          save=True,
-                          use_x_log=False
-                          )
+    # t.create_regular_plot(raw_data,
+    #                       config.proxyconfig.build_detector_profiles()[detector]['axes'](),
+    #                       f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins TD {" PreSN" if use_presn else ""}',
+    #                       ylab="Event count",
+    #                       xlab="Time (s)",
+    #                       x_axis=time_bins_x_axis,
+    #                       show=show_charts,
+    #                       save=True,
+    #                       use_x_log=False
+    #                       )
 
     # yeah, we're going to reprocess the flux because inefficient code is the best code for the unfolding
     # N_det is contained in the raw_data points
