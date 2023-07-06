@@ -498,12 +498,13 @@ def create_flux_scatter(modelFilePath,
         NuX = np.sum(time_bin[2])+np.sum(time_bin[3])
         aNuE = np.sum(time_bin[4])
         aNuX = np.sum(time_bin[5])+np.sum(time_bin[6])
-        a = NuX + aNuX
-        b = aNuE
-        c = NuE
+        # also need to multiply by 0.2 MeV for correct sum
+        a = (NuX + aNuX)*0.2
+        b = (aNuE)*0.2
+        c = (NuE)*0.2
         total = a+b+c
         plotting_data.append((scale*a/total,scale*b/total,scale*c/total))
-        raw.append((NuX+aNuX,aNuE,NuE))
+        raw.append((a,b,c))
     # data is organized into nux,aNuE,NuE
         
     ca.cache(f'{cache_base}_plot_data', plotting_data)
