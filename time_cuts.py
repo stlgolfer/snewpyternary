@@ -75,6 +75,7 @@ if __name__ == '__main__':
         #
         # fig.savefig(f'./time_cuts/{time_bins_x_axis[time]}.png')
         if time == 0:
+
             cxn_actual_spectrogram = cxn_reconstructed
             cxn_truth_spectrogram = truth_calculation
         else:
