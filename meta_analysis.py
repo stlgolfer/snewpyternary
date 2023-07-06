@@ -29,7 +29,6 @@ import sys
 import pickle
 from tqdm import tqdm
 from scipy.integrate import simpson
-import Rebinning
 import pandas as pd
 
 import snowglobes_wrapper
