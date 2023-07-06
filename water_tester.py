@@ -34,7 +34,7 @@ if __name__ == '__main__':
         fig, (flux_axes, ndet_axes) = plt.subplots(1,2,figsize=(16,8))
         # want to superimpose flux and Ndet, so make sure GeV
         flux_energy_spectra = np.linspace(0, 100, 501)  # * MeV  # 1MeV
-        flux_axes.scatter(flux_energy_spectra,labeled[time][4],label='Flux')
+        # flux_axes.scatter(flux_energy_spectra,labeled[time][4],label='Flux')
         flux_axes.set_title('Flux')
         flux_axes.set_xlabel('Energy (MeV)')
         flux_axes.set_ylabel('neutrinos/(cm^2 * MeV)')
