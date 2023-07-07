@@ -342,6 +342,7 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         log_bins=use_log,
         presn=use_presn
     )
+    
 
     t.create_default_flux_plot(
         flux_scatter_data,
