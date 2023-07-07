@@ -205,8 +205,8 @@ class ConfigBestChannel(__DetectorProxyConfiguration__):
         calc = 50*(100E9)*__NA__/12
         return [calc, 1, 1]
 
-    def Nt_argon40kt(self) -> [float]:
+    def Nt_ar40kt(self) -> [float]:
         return [1, 40*(100E9)*__NA__/39.9, 1]
 
     def Nt_wc100kt30prct(self):
-        return [1, 1, (100)*(100E9)*2*__NA__/9]
+        return [1, 1, (100)*(1E9)*__NA__/9] #240

@@ -11,3 +11,8 @@ last_chart.png
 /fluxes
 /spectra
 /cave_parameters
+/cxns
+/zetas
+/mixtures
+./anue flux spectrogram.pickle
+./anue flux spectrogram.png

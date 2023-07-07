@@ -29,14 +29,17 @@ import sys
 import pickle
 from tqdm import tqdm
 from scipy.integrate import simpson
-import Rebinning
+import pandas as pd
 
 import snowglobes_wrapper
+from matplotlib.widgets import Slider, Button
+import matplotlib.animation as animation
 
 sys.path.insert(0,'./SURF2020fork')
 from SURF2020fork.ternary_helpers import shared_plotting_script,generate_heatmap_dict,consolidate_heatmap_data
 from model_wrappers import snewpy_models, sn_model_default_time_step
 import click
+from IPython import display
 
 #simulation details
 snowglobes_out_name="snowglobes-output"
@@ -57,7 +60,6 @@ use_presn: bool = False
 use_all_submodules: bool = False
 d: int = 10 # in pc, distance to SN
 use_heatmap: bool = False
-do_unfold: bool = False
 
 _colors = ['RED', 'GREEN', 'BLUE']
 _run_cave_parameters: [(str, float)] = []
@@ -111,7 +113,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         data_calc=config.proxyconfig.build_detector_profiles()[detector]['chans_to_add'],
         use_cache=use_cache,
         log_bins=use_log,
-        presn=use_presn
+        presn=use_presn,
+        smearing='smeared'
     )
 
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
@@ -165,16 +168,17 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     # x dim should be energy bins, y should be time?
     __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy'])
 
-    pc = spt_ax.pcolormesh(__X, __Y, spt_full_content)
-    plt.colorbar(pc, shrink=0.75, location='right', label='Event Count', format='%.0e')
-    # plt.xscale('log')
-    plt.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
+    pc = spt_ax.contourf(__X, __Y, spt_full_content,10)
+    spt_fig.colorbar(pc, shrink=0.75, location='right', label='Event Count/(GeV*s)', format='%.0e')
+    spt_ax.set_xlim(0.0001, 20)
+    spt_ax.set_xscale('log')
 
     # dump the figure for later arrangement
+    spt_fig.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
     pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
 
     if show_charts:
-        plt.show()
+        spt_fig.show()
 
     figure, tax = t.create_default_detector_plot(
         raw_data,
@@ -186,16 +190,16 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
 
     # we also want a TD representation
-    t.create_regular_plot(raw_data,
-                          config.proxyconfig.build_detector_profiles()[detector]['axes'](),
-                          f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins TD {" PreSN" if use_presn else ""}',
-                          ylab="Event count",
-                          xlab="Time (s)",
-                          x_axis=time_bins_x_axis,
-                          show=show_charts,
-                          save=True,
-                          use_x_log=False
-                          )
+    # t.create_regular_plot(raw_data,
+    #                       config.proxyconfig.build_detector_profiles()[detector]['axes'](),
+    #                       f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins TD {" PreSN" if use_presn else ""}',
+    #                       ylab="Event count",
+    #                       xlab="Time (s)",
+    #                       x_axis=time_bins_x_axis,
+    #                       show=show_charts,
+    #                       save=True,
+    #                       use_x_log=False
+    #                       )
 
     # yeah, we're going to reprocess the flux because inefficient code is the best code for the unfolding
     # N_det is contained in the raw_data points
@@ -207,50 +211,71 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         'wc100kt30prct': {
             'Ndet': 2,
             'phi_t': 1,
-            'Nt': 2,
+            'Nt': config.proxyconfig.Nt_wc100kt30prct()[2],#2,
             'proxy_name': 'IBD'
         },
         'scint20kt':{
             'Ndet': 0,
             'phi_t':0,
-            'Nt':0,
+            'Nt': config.proxyconfig.Nt_scint20kt()[0],# 0,
             'proxy_name': 'NC'
         },
         'ar40kt': {
             'Ndet': 1,
             'phi_t':2,
-            'Nt':1,
+            'Nt': config.proxyconfig.Nt_ar40kt()[1],#1,
             'proxy_name': 'Ar40 + e'
         }
     }
     flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)
     N_det = np.transpose(np.array(raw_data))[detector_to_index[detector]['Ndet']] # this is the summed values for each time slice
-    flux_anue = np.transpose(np.array(flux_raw))[detector_to_index[detector]['phi_t']]
-    n_targets_water = config.proxyconfig.Nt_wc100kt30prct()[detector_to_index[detector]['Nt']]
+    phi_t = np.transpose(np.array(flux_raw))[detector_to_index[detector]['phi_t']]
+    n_targets = detector_to_index[detector]['Nt']
     # ok now I see the problem: the flux and the actual detector data are binned differently
     # the flux data has smaller energy bin width so the dE_v isn't the same
     flux_energy_spectra = np.linspace(0, 100, 501) #* MeV  # 1MeV
 
-    # make a spectrogram of the flux for just anue
-    flux_spect_fig, flux_spect_ax = plt.subplots(1, 1)
-    flux_spectrogram = flux_l_data[0][4]
-    for flux_spect_anue_bin in flux_l_data[1:]:
-        flux_spectrogram = np.column_stack((flux_spectrogram, flux_spect_anue_bin[4]))
+    #region anue spectrogram
+    if detector == 'wc100kt30prct':
+        # make a spectrogram of the flux for just anue
+        flux_spect_fig, flux_spect_ax = plt.subplots(1, 1)
+        flux_spectrogram = flux_l_data[0][4]
+        for flux_spect_anue_bin in flux_l_data[1:]:
+            flux_spectrogram = np.column_stack((flux_spectrogram, flux_spect_anue_bin[4]))
 
-    flux_spect_ax.set_ylabel('Energy (MeV)')
-    flux_spect_ax.set_xlabel('Time (s)')
-    flux_spect_ax.set_title(r'$\bar{\nu_e}$ Flux Spectrogram')
-    # x dim should be energy bins, y should be time?
-    __X, __Y = np.meshgrid((time_bins_x_axis / u.s), flux_energy_spectra)
+        flux_spect_ax.set_ylabel('Energy (MeV)')
+        flux_spect_ax.set_xlabel('Time (s)')
+        flux_spect_ax.set_title(r'$\bar{\nu_e}$ Flux Spectrogram')
+        # x dim should be energy bins, y should be time?
+        __X, __Y = np.meshgrid((time_bins_x_axis / u.s), flux_energy_spectra)
 
-    flux_spect_pc = flux_spect_ax.pcolormesh(__X, __Y, flux_spectrogram)
-    flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/${cm}^2$', format='%.0e')
-    if show_charts:
-        flux_spect_fig.show()
-    flux_spect_fig.savefig('./anue flux spectrogram.png')
+        flux_spect_ax.set_xlim(0.0001, 20)
+        # flux_spect_ax.set_ylim(5, 100)
+        # pcolormesh
+        flux_spect_pc = flux_spect_ax.contourf(__X, __Y, flux_spectrogram,50) # , cmap=plt.cm.get_cmap('binary')
+        # flux_spect_pc.set_clim(vmin=0,vmax=10000000.0)
+        # going to add a slider for the max value
+        # z_axes_max_slider = Slider(slider_axes, 'Blue', 0, 1e9)
+        def __update(frame_num):
+            flux_spect_pc.set_clim(vmin=0,vmax=frame_num)
+        # z_axes_max_slider.on_changed(__update)
+        flux_spect_fig.colorbar(flux_spect_pc, shrink=0.75, location='right', label=r'Neutrinos/(${cm}^2$*MeV*s)', format='%.0e')
+        flux_spect_ax.set_xscale('log')
 
-    # now we'll have to go through each time bin and find flux-avg-cxn
-    phi_est = np.zeros_like(np.transpose(N_det))
+        # going to try an animation
+        ani = animation.FuncAnimation(flux_spect_fig, __update,np.linspace(2e5,7e7,200), repeat=True)
+        # code courtesy of Josh Q.
+        print('Saving spectrogram video animation...')
+        # writermp4 = animation.FFMpegWriter(fps=5)
+        # ani.save('video.mp4', writer=writermp4)
+        print('...Done')
+
+        flux_spect_fig.savefig('./anue flux spectrogram.png')
+        pickle.dump(flux_spect_fig, open('./anue flux spectrogram.pickle', 'wb'))
+
+        if show_charts:
+            flux_spect_fig.show()
+    #endregion
     # for t_bin_no in range(len(N_det)):
     # t_bin_no=195
     # # mult_plot, mult_axes = plt.subplots(1,1)
@@ -266,30 +291,44 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     #         flux_energy_spectra, # is constant across time
     #         show = True if t_bin_no == 195 else False # TODO: remove when done with t=15
     #     )[0]
-    # )/flux_anue[t_bin_no]
-    # phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*flux_averaged_xscn_for_slice)
+    # )/phi_t[t_bin_no]
+    # phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets*flux_averaged_xscn_for_slice)
+    # print("Unfolding...")
+    # now we'll have to go through each time bin and find flux-avg-cxn
+    zeta = np.zeros_like(np.transpose(N_det))
+    sigma_average = np.zeros_like(zeta)
     for t_bin_no in range(len(N_det)):
-        sigma_average_t = N_det[t_bin_no]/(n_targets_water*flux_anue[t_bin_no])
-        phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets_water*sigma_average_t)
+        sigma_average_t = N_det[t_bin_no]/(n_targets*phi_t[t_bin_no])
+        zeta[t_bin_no] = N_det[t_bin_no]/(n_targets) # *sigma_average_t #TODO: now phi_est -> zetas. also fix cumsum
+        sigma_average[t_bin_no] = sigma_average_t
 
     fx_plot, (fx_axes, fx_truth_axes) = plt.subplots(1, 2, figsize=(16,8))
-    fx_axes.plot(time_bins_x_axis, phi_est, linestyle='None', marker='.')
+    fx_axes.plot(time_bins_x_axis, zeta, linestyle='None', marker='.')
     fx_axes.set_xlabel('Time (s)')
     fx_axes.set_ylabel(r'$neutrinos/cm^2$')
     fx_title = f'{detector_to_index[detector]["proxy_name"]} Unfolding in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
     fx_axes.set_title(fx_title)
     fx_axes.set_xscale('log')
 
-    fx_truth_axes.plot(time_bins_x_axis, flux_anue, linestyle='None', marker='.')
+    fx_truth_axes.plot(time_bins_x_axis, phi_t, linestyle='None', marker='.')
     fx_truth_axes.set_xlabel('Time (s)')
     fx_truth_axes.set_ylabel(r'$neutrinos/cm^2$')
     fx_truth_axes.set_title('Truth Flux')
     fx_truth_axes.set_xscale('log')
     fx_plot.savefig(f'./plots/unfolded/{t.clean_newline(fx_title)}.png')
-    print("Unfolding...")
+
+    # plot the flux-averaged cross-section
+    cxn_plot, cxn_axes = plt.subplots(1,1)
+    cxn_axes.plot(time_bins_x_axis, sigma_average, linestyle='None', marker='.')
+    cxn_title = f'{config.model_type} {detector_to_index[detector]["proxy_name"]} CXN in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
+    cxn_axes.set_xlabel('Time (s)')
+    cxn_axes.set_ylabel(r'$cm^2$/?neutrinos')
+    cxn_axes.set_title(cxn_title)
+    cxn_axes.set_xscale('log')
+    cxn_plot.savefig(f'./plots/cxns/{t.clean_newline(cxn_title)}.png')
 
 
-    return plot_data, raw_data, l_data, phi_est
+    return plot_data, raw_data, l_data, zeta, sigma_average
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int):
 
@@ -387,26 +426,30 @@ def ternary_distance(p1: tuple, p2: tuple):
     return math.sqrt(dx**2 + dy**2 + dz**2)
 
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot, cum_sum_tax: TernaryAxesSubplot) -> None:
-    flux_scatter, flux_raw, flux_l_data = process_flux(config, number)
+    # flux_scatter, flux_raw, flux_l_data = process_flux(config, number)
 
     # print out information of the set
     print(config.model(config.model_file_paths[number]))
 
-    p_data, r_data, l_data, phi_est = process_detector(config, number, 'ar40kt')
+    p_data, r_data, l_data, zeta, sigma_average_det = process_detector(config, number, 'ar40kt')
     # need to convert data to an array
     all_plot_data = [list(key) for key in r_data]  # going to take each detector and add them up
-    all_phi_est = {
-        'ar40kt': phi_est,
+    all_zeta_est = {
+        'ar40kt': zeta,
+        'wc100kt30prct': [],
+        'scint20kt': []
+    }
+    sigma_average_tot = {
+        'ar40kt': sigma_average_det,
         'wc100kt30prct': [],
         'scint20kt': []
     }
 
     for detector in ['wc100kt30prct', 'scint20kt']:
-        p_data, r_data, l_data, phi_est = process_detector(config, number, detector)
+        p_data, r_data, l_data, zeta, sigma_average_det = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
-        all_phi_est[detector] = phi_est
-
-    # want the folded/convolved event rates as well
+        all_zeta_est[detector] = zeta
+        sigma_average_tot[detector] = sigma_average_det
 
     # now get the time bins
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
@@ -437,110 +480,73 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
                           use_x_log=True
                           )
 
-    nux_time = []
-    nue_time = []
-    anue_time = []
+    zeta_raw = tuple(zip(all_zeta_est['scint20kt'], all_zeta_est['wc100kt30prct'], all_zeta_est['ar40kt']))
+    sigma_average_complete = tuple(zip(
+        sigma_average_tot['scint20kt'],
+        sigma_average_tot['wc100kt30prct'],
+        sigma_average_tot['ar40kt'])
+    )
 
-    #region do simple unfolding
-    # all plot data has the raw counts across each detector for each flavor grouping
-    # in the order of nux, nue, and anue
-    # but recall that flux is in the order of NuX, aNuE, NuE
-    Ndet_tot_nux = 0
-    Ndet_tot_nue = 0
-    Ndet_tot_anue = 0
-
-    phi_tot_nux = 0
-    phi_tot_anue = 0
-    phi_tot_nue = 0
-
-
-    for i in range(len(all_plot_data)):
-        Ndet_tot_nux += all_plot_data[i][0]
-        Ndet_tot_nue += all_plot_data[i][1]
-        Ndet_tot_anue += all_plot_data[i][2]
-
-        # len(all_plot_data) should be same as len(flux)
-        phi_tot_nux += flux_raw[i][0]
-        phi_tot_anue += flux_raw[i][1]
-        phi_tot_nue += flux_raw[i][2]
-
-    # now compute flux average xscn constant
-    sigma_nux = Ndet_tot_nux/(phi_tot_nux*NT_NUX)
-    sigma_nue = Ndet_tot_nue / (phi_tot_nue * NT_NUE)
-    sigma_anue = Ndet_tot_anue / (phi_tot_anue * NT_ANUE)
-
-    phi_est_raw = tuple(zip(all_phi_est['scint20kt'], all_phi_est['wc100kt30prct'], all_phi_est['ar40kt']))
-    print('Unfolded')
-
-    t.create_regular_plot(phi_est_raw,
+    #region plot sigma_average for all detectors
+    t.create_regular_plot(sigma_average_complete,
                           config.proxyconfig.flux_axes(),
-                          f'*Detectors Unfolded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',                          x_axis=time_bins_x_axis,
-                          ylab='Event count',
-                          show=show_charts
-                          )
-
-    t.create_regular_plot(t_normalize(phi_est_raw),
-                          config.proxyconfig.flux_axes(),
-                          f'*Detectors Unfolded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
+                          f'CXNs for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
                           x_axis=time_bins_x_axis,
-                          ylab='Event count',
+                          ylab='cm^2',
                           show=show_charts
                           )
+    # send the sigma_average out to a file with time
+    sigma_average_df = pd.DataFrame(sigma_average_complete, columns=config.proxyconfig.flux_axes())
+    # add the time bins to the datafram
+    sigma_average_df['time_bins'] = time_bins_x_axis.value
+    sigma_average_df.to_csv(t.clean_newline(f'./cxns/CXNs for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.csv'))
 
-    # endregion
+    #endregion
+
+    #TODO: put the Ndet into a pandas dataframe and export it. even better is to store the Ndet/Nt so that way the math is easier later
+    # we'll call this the zeta parameter. zeta = Ndet/Nt
+    print("Storing zetas...")
+    # divide by Nt
+    # zetas = np.divide(all_plot_data, np.tile([config.proxyconfig.Nt_scint20kt()[0], config.proxyconfig.Nt_ar40kt()[1],
+    #                                   config.proxyconfig.Nt_wc100kt30prct()[2]], [len(all_plot_data), 1]))
+    zeta_df = pd.DataFrame(zeta_raw, columns=config.proxyconfig.flux_axes())
+    zeta_df['time_bins'] = time_bins_x_axis.value
+    zeta_df.to_csv(t.clean_newline(f'./zetas/zetas for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.csv'))
 
     # region also create a cumulative plot
-
-    # append to each time bin too for later
-    for i in range(len(phi_est_raw)):
-        nux_time.append(phi_est_raw[i][0])
-        nue_time.append(phi_est_raw[i][1])
-        anue_time.append(phi_est_raw[i][2])
-    # first need to calculate the cumsum. all_plot_data is in time. then each time bin has a tuple for each flavor
-    # TODO: this is a tranpose--could make things easier
-
-    nux_proxy_cumsum = np.cumsum(nux_time)
-    nue_proxy_cumsum = np.cumsum(nue_time)
-    anue_proxy_cumsum = np.cumsum(anue_time)
+    nux_proxy_cumsum = np.cumsum(list(list(zip(*all_plot_data))[0]))
+    nue_proxy_cumsum = np.cumsum(list(list(zip(*all_plot_data))[1]))
+    anue_proxy_cumsum = np.cumsum(list(list(zip(*all_plot_data))[2]))
 
     # create a new ternary diagram for the cumsum
     cumsum_normalized = []
-    for ci in range(len(nux_time)):
+    for ci in range(len(nux_proxy_cumsum)):
         ci_total = nux_proxy_cumsum[ci] + nue_proxy_cumsum[ci] + anue_proxy_cumsum[ci]
         cumsum_normalized.append(
             (100*nux_proxy_cumsum[ci]/ci_total, 100*nue_proxy_cumsum[ci]/ci_total, 100*anue_proxy_cumsum[ci]/ci_total))
     # endregion
 
     # now renormalize and convert all points back to tuples
-    normalized = t_normalize(phi_est_raw)
-    # for point in all_plot_data:
-    #     a = point[0]
-    #     b = point[1]
-    #     c = point[2]
-    #     tot = a + b + c
-    #     normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
-    # all_plot_data = [tuple(point[0]) for point in all_plot_data]
-    # t.create_regular_plot(normalized, config.proxyconfig.same_axes(), f'{config.model_type} Super Normalized Ternary Points', 'Event Rate',
-    #                       show=show_charts)
+    normalized = t_normalize(all_plot_data)
 
     # going to try dynamically sized points between lines?
     widths = np.linspace(0.01, 1, num=len(normalized))
     cs_widths = np.linspace(0.01,1,num=len(cumsum_normalized))
-    flux_normalized = t_normalize(flux_scatter)
     for p in range(len(normalized) - 1):
         if (p + 1 >= len(normalized)):
             break
         tax.line(normalized[p], normalized[p + 1], color=(widths[p] if colorid == 0 else 0, widths[p] if colorid == 1 else 0, widths[p] if colorid == 2 else 0, 1), linestyle=':', linewidth=3)
-        cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
-        cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
-                 linestyle=':', linewidth=3)
+        # TODO: fix cumsum
+        # cum_sum_tax.line(cumsum_normalized[p], cumsum_normalized[p + 1], color=(
+        # cs_widths[p] if colorid == 0 else 0, cs_widths[p] if colorid == 1 else 0, cs_widths[p] if colorid == 2 else 0, 1),
+        #          linestyle=':', linewidth=3)
     # tax.scatter(normalized, color='blue')
 
     if use_heatmap:
         print('Calculating errorbar heatmap...')
         # more information on colormaps can be found here:
         # https://matplotlib.org/stable/tutorials/colors/colormaps.html#diverging
-        tax.heatmap(generate_heatmap_dict(phi_est_raw,t_normalize(phi_est_raw)), cmap=plt.get_cmap('PiYG'))
+        tax.heatmap(generate_heatmap_dict(all_plot_data,t_normalize(all_plot_data)), cmap=plt.get_cmap('PiYG'))
         print('...Done')
 
     # here we also want to calculate the cave parameter
@@ -560,7 +566,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
     tax.gridlines(color="blue", multiple=scale/10)
-    title=t.clean_newline(f'{config.model_type} *Detectors {"Unfolded" if do_unfold else "Folded"} {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary')
+    title=t.clean_newline(f'{config.model_type} *Detectors Folded {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary')
     tax.set_title(title)
     # data is organized in top, right, left
     # apparently this is in flux formatting
@@ -572,7 +578,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
     cumsum_figure, cum_sum_tax = ternary.figure(scale=100)
     cum_sum_tax.boundary(linewidth=2.0)
     cum_sum_tax.gridlines(color="blue", multiple=100 / 10)
-    cumsum_title = f'{config.model_type} *Detectors {"Unfolded" if do_unfold else "Folded"} Cumsum {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary'
+    cumsum_title = f'{config.model_type} *Detectors Folded Cumsum {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}{" AS" if use_all_submodules else ""} Ternary'
     cum_sum_tax.set_title(cumsum_title)
     # data is organized in top, right, left
 
@@ -627,24 +633,24 @@ def process_transformation(config: t.MetaAnalysisConfig):
     cum_sum_tax.ticks(axis='lbr', linewidth=1, multiple=100 / 10)
     cum_sum_tax.clear_matplotlib_ticks()
     cum_sum_tax.get_axes().axis('off')  # disables regular matlab plot axes
-    cum_sum_tax.savefig(f'./all_detector_plots/{t.clean_newline(cumsum_title)}')
+    # cum_sum_tax.savefig(f'./all_detector_plots/{t.clean_newline(cumsum_title)}')
 
-    if show_charts == True:
-        cumsum_figure.show()
+    # if show_charts == True:
+        # cumsum_figure.show()
     #endregion
 
     #region cave parameter output file
-    if do_unfold:
-        global _run_cave_parameters
-        # now write cave params to file only if we are doing unfolding. otherwise it doesn't make much sense
-        cp_title = t.clean_newline(
-            f'{config.model_type} *Detectors Cave Parameter {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}')
-        cp_f = open(f'./cave_parameters/{cp_title}.txt', 'w')
-        for cp_run in _run_cave_parameters:
-            cp_f.write(f'{cp_run[0]},{cp_run[1]}\n')
-        cp_f.close()
-        # reset run cave parameters for next transformation
-        _run_cave_parameters = []
+    # if do_unfold:
+    #     global _run_cave_parameters
+    #     # now write cave params to file only if we are doing unfolding. otherwise it doesn't make much sense
+    #     cp_title = t.clean_newline(
+    #         f'{config.model_type} *Detectors Cave Parameter {config.transformation} {str(config.proxyconfig)}\n {"Logged" if use_log else "Linear"} Bins{" PreSN" if use_presn else ""}')
+    #     cp_f = open(f'./cave_parameters/{cp_title}.txt', 'w')
+    #     for cp_run in _run_cave_parameters:
+    #         cp_f.write(f'{cp_run[0]},{cp_run[1]}\n')
+    #     cp_f.close()
+    #     # reset run cave parameters for next transformation
+    #     _run_cave_parameters = []
     #endregion
 
 # process_transformation(t.MetaAnalysisConfig(snewpy_models['Bollig_2016'], 'NoTransformation'))
@@ -661,8 +667,7 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--tflux', required=False, default=False, type=bool, help='If true, only calculate the truth flux. set numbers are not superimposed')
 @click.option('--detproxy', required=False, type=str, default='AgDet', help='Detector proxy configuration. Options: AgDet or BstChnl')
 @click.option('--heatmap', required=False, type=bool, default=False, help='Include heatmaps. Can only process one submodel at a time')
-@click.option('--unfold', required=False, type=bool, default=False, help='If true, unfold the event rates')
-def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tflux, detproxy, heatmap, unfold):
+def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tflux, detproxy, heatmap):
     global show_charts
     show_charts = showc
     
@@ -683,9 +688,6 @@ def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tfl
 
     global use_heatmap
     use_heatmap = heatmap
-
-    global do_unfold
-    do_unfold = unfold
 
     if use_heatmap and len(setno) > 1:
         raise ValueError('Can only process heatmap for one submodel at a time')
