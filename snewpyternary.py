@@ -258,6 +258,7 @@ def create_detector_event_scatter(
                 a = results[0] * energy_bin_width
                 b = results[1] * energy_bin_width
                 c = results[2] * energy_bin_width
+
                 processed_raw.append((results[0],results[1],results[2]))
                 
                 total = a+b+c
