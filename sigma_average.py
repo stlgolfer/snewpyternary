@@ -31,6 +31,7 @@ if __name__ == '__main__':
     ibd_cxn_truth = pd.read_csv('./time_cuts/xs_ibd.csv')  # only want the 'nu_e_bar' channel
     # now we'll also need to downsample the cross since the cross section has far more bins (around double) than flux
     # this is also time-invariant so only need to compute once
+
     nu_e_bar_cxn_truth = np.array(ibd_cxn_truth['nu_e_bar'])*10**np.array(ibd_cxn_truth['energy'])*1e-38
     ibd_cxn_truth_downsampled = np.interp(
         labeled[0][0],
