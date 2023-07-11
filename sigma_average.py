@@ -24,12 +24,58 @@ if __name__ == '__main__':
         presn=False
     )
 
+    times_unitless = [m.value for m in time_bins_x_axis]
+    temp1 = np.array([times_unitless[0] + 0.5])
+    temp2 = times_unitless[1:]
+    temp3 = times_unitless[0:-1]
+    temp4 = np.subtract(np.array(temp2), np.array(temp3))
+    dts = np.concatenate((np.array(temp1), temp4))
+
     flux_scatter_data, raw_data, labeled = process_flux(config,0)
     # in a time bin, the truth flux is binned in GeV
+    labeled_transposed = np.transpose(labeled)
     plot_data, raw_data_det, l_data, zeta, sigma_average = process_detector(config,0,'wc100kt30prct')
 
-    #TODO: I suspect that when the multiplication between the cross-section and the truth flux happens
-    # the energy units are not the same
+    #region let's just try to plot phi_t over time, flux vs time, and flux vs energy
+    phi_t_fig, phi_t_ax = plt.subplots(1,1)
+
+    phi_t_over_time = np.zeros_like(times_unitless)
+    flux_vs_time = np.zeros_like(times_unitless)
+    for l in range(len(labeled)):
+        phi_t_over_time[l] = np.sum(labeled[l][4])*0.2e-3 * dts[l]
+        flux_vs_time[l] = np.sum(labeled[l][4])*0.2e-3
+    phi_t_ax.scatter(times_unitless, phi_t_over_time)
+    phi_t_ax.set_title(r'$\phi_t$ for Nakazato 0 Fluence')
+    phi_t_ax.set_xlabel("Time (s)")
+    phi_t_ax.set_ylabel(r'$neutrinos/cm^2$')
+    phi_t_fig.tight_layout()
+    phi_t_fig.show()
+
+    flux_vs_time_fig, flux_vs_time_ax = plt.subplots(1,1)
+    flux_vs_time_ax.bar(times_unitless, flux_vs_time, width=dts)
+    flux_vs_time_ax.set_title("Flux vs time, integrated over energy")
+    flux_vs_time_ax.set_xlabel("Time Mid-Point (s)")
+    flux_vs_time_ax.set_ylabel(r'$\frac{neutrinos}{{cm^2}*s}$')
+    flux_vs_time_fig.tight_layout()
+    flux_vs_time_AUC = np.sum(np.multiply(flux_vs_time,dts))
+    print(f"AUC for Flux vs time is {flux_vs_time_AUC}")
+    flux_vs_time_fig.show()
+
+    flux_vs_energy = np.zeros_like(labeled[0][0])
+    for en in range(len(flux_vs_energy)):
+        flux_vs_energy[en] = np.sum(np.multiply(labeled_transposed[en][4],dts))
+    flux_vs_energy_fig, flux_vs_energy_ax = plt.subplots(1,1)
+    flux_vs_energy_ax.bar(labeled[0][0], flux_vs_energy, width=0.2e-3)
+    flux_vs_energy_ax.set_title("Flux vs energy, integrated over time")
+    flux_vs_energy_ax.set_xlabel('Mid-Point Energy (GeV)')
+    flux_vs_energy_ax.set_ylabel(r'$\frac{neutrinos}{{cm}^2 * GeV}$')
+    # then find the AUC
+    flux_vs_energy_AUC = np.sum(flux_vs_energy)*0.2e-3
+    print(f"AUC for Flux vs energy is {flux_vs_energy_AUC}")
+    flux_vs_energy_fig.show()
+
+    print(f"AUC ratio fve/fvt = {flux_vs_energy_AUC/flux_vs_time_AUC}")
+    #endregion
 
     # truth_flux_fig, truth_flux_ax = plt.subplots(1,1)
     # truth_flux_ax.scatter()
@@ -59,23 +105,14 @@ if __name__ == '__main__':
 
     # ok for now, let's just swap the phi_t with impulse 1s
 
-    times_unitless = [m.value for m in time_bins_x_axis]
-    temp1 = np.array([times_unitless[0] + 0.5])
-    temp2 = times_unitless[1:]
-    temp3 = times_unitless[0:-1]
-    temp4 = np.subtract(np.array(temp2), np.array(temp3))
-    dts = np.concatenate((np.array(temp1), temp4))
-
     sigma_average = np.zeros_like(times_unitless)
-    conversion = ((0.095e-3)/0.0002)**-1
+    conversion = ((0.095e-3)/0.2e-3)
     for time in range(len(times_unitless)):
         # channel 4 in labeled is anue
-        # phi_t = np.sum(labeled[time][4])*dts[time]*.0002 # 0.2 MeV energy bins for flux, but we're in GeV
+        phi_t = np.sum(labeled[time][4]) # *dts[time]*.2e-3 # 0.2 MeV energy bins for flux, but we're in GeV
         # what is the bin size of the sigma? -- it's 0.095 MeV
-        impulse_substitute = np.zeros_like(labeled[time][4])
-        impulse_substitute[100] = 1
 
-        sigma_average[time] = np.sum(np.multiply(ibd_cxn_truth_downsampled, impulse_substitute))*(0.095) # / phi_t # should be times two for dEv
+        sigma_average[time] = np.sum(np.multiply(ibd_cxn_truth_downsampled, labeled[time][4]))*(conversion) / phi_t # should be times two for dEv
 
     # now plot the flux-averaged cxn
     fig, ax = plt.subplots(1,1)
