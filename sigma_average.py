@@ -48,6 +48,7 @@ if __name__ == '__main__':
     phi_t_ax.set_title(r'$\phi_t$ for Nakazato 0 Fluence')
     phi_t_ax.set_xlabel("Time (s)")
     phi_t_ax.set_ylabel(r'$neutrinos/cm^2$')
+    phi_t_ax.set_xscale('log')
     phi_t_fig.tight_layout()
     phi_t_fig.show()
 
@@ -72,6 +73,7 @@ if __name__ == '__main__':
     # then find the AUC
     flux_vs_energy_AUC = np.sum(flux_vs_energy)*0.2e-3
     print(f"AUC for Flux vs energy is {flux_vs_energy_AUC}")
+    print(f'AUC for phi_t is {np.sum(phi_t_over_time)}')
     flux_vs_energy_fig.show()
 
     print(f"AUC ratio fve/fvt = {flux_vs_energy_AUC/flux_vs_time_AUC}")
@@ -86,18 +88,36 @@ if __name__ == '__main__':
     # this is also time-invariant so only need to compute once
     print("Loaded truth xscn")
 
-    nu_e_bar_cxn_truth = np.array(ibd_cxn_truth['nu_e_bar'])*10**np.array(ibd_cxn_truth['energy'])*1e-38
+    ibd_cxn_truth_energy = 10**np.nan_to_num(np.array(ibd_cxn_truth['energy']), nan=0.0)
+    ibd_cxn_truth_nu_e_bar = np.nan_to_num(np.array(ibd_cxn_truth['nu_e_bar']), nan=0.0)
+    nu_e_bar_cxn_truth = np.multiply(ibd_cxn_truth_nu_e_bar, ibd_cxn_truth_energy)*1e-38
+
+    #region make a plot to show why this interpolation is problematic
+    interpolation_problem_fig, interpolation_problem_ax = plt.subplots(1,1)
+    interpolation_problem_ax.bar(labeled[100][0], labeled[100][4], width=0.2e-3, label=rf'$\phi_t(E_\nu)$ at $t={round(times_unitless[100],5)}$')
+    interpolation_problem_ax.scatter(ibd_cxn_truth_energy, nu_e_bar_cxn_truth, label=r'$\bar{\sigma}}$ Truth')
+    interpolation_problem_fig.legend()
+    interpolation_problem_ax.set_xlabel('Energy (GeV)')
+    interpolation_problem_ax.set_ylabel('~na~')
+    interpolation_problem_ax.set_title(r'$\phi_t$ and $\bar{\sigma}}$ Interpolation')
+    interpolation_problem_ax.set_xlim(min(labeled[100][0]), max(labeled[100][0]))
+    interpolation_problem_ax.set_ylim(0, 10)
+    # interpolation_problem_fig.tight_layout()
+    interpolation_problem_fig.show()
+    #endregion
+
     ibd_cxn_truth_downsampled = np.interp(
         labeled[0][0],
-        10**np.array(ibd_cxn_truth['energy']),
+        ibd_cxn_truth_energy,
         nu_e_bar_cxn_truth
     )
-    ibd_cxn_truth_downsampled = np.nan_to_num(ibd_cxn_truth_downsampled, nan=0.0)
 
+    # ibd_cxn_truth_downsampled = np.nan_to_num(ibd_cxn_truth_downsampled, nan=0.0)
+    print('test')
     # make a plot to compare cxn truths to make sure it downsampled correctly
     cxn_truth_comp_fig, cxn_truth_downsampled_comp = plt.subplots(1, 1, figsize=(8, 8))
+    cxn_truth_downsampled_comp.scatter(labeled[0][0], ibd_cxn_truth_downsampled, marker='D', alpha=0.2)
     cxn_truth_downsampled_comp.scatter(10 ** np.array(ibd_cxn_truth['energy']), nu_e_bar_cxn_truth) # this in GeV
-    cxn_truth_downsampled_comp.scatter(labeled[0][0], ibd_cxn_truth_downsampled)
     cxn_truth_comp_fig.show()
 
     # we want to make the flux average cross-section by using the cross-section from snowglobes
@@ -106,13 +126,14 @@ if __name__ == '__main__':
     # ok for now, let's just swap the phi_t with impulse 1s
 
     sigma_average = np.zeros_like(times_unitless)
-    conversion = ((0.095e-3)/0.2e-3)
+    conversion = ((0.095e-3)/0.2e-3)**-1
+    print(f'Conversion factor is {conversion}')
     for time in range(len(times_unitless)):
         # channel 4 in labeled is anue
-        phi_t = np.sum(labeled[time][4]) # *dts[time]*.2e-3 # 0.2 MeV energy bins for flux, but we're in GeV
+        # phi_t = np.sum(labeled[time][4]) * dts[time] * .2e-3 # 0.2 MeV energy bins for flux, but we're in GeV
         # what is the bin size of the sigma? -- it's 0.095 MeV
 
-        sigma_average[time] = np.sum(np.multiply(ibd_cxn_truth_downsampled, labeled[time][4]))*(conversion) / phi_t # should be times two for dEv
+        sigma_average[time] = (np.sum(conversion * np.multiply(ibd_cxn_truth_downsampled, labeled[time][4]))) / phi_t_over_time[time] # should be times two for dEv
 
     # now plot the flux-averaged cxn
     fig, ax = plt.subplots(1,1)
@@ -121,5 +142,6 @@ if __name__ == '__main__':
     ax.set_xlabel('Time (s)')
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_title(rf'$<\sigma>$ for Nakazato 0 IBD for $\phi_t({labeled[0][0][100]} GeV) = 1$')
+    ax.set_title(rf'$<\sigma>$ for Nakazato 0 IBD')
+    fig.savefig('./sigma for nakazato 0 ibd.png')
     fig.show()
