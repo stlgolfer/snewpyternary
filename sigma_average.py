@@ -88,14 +88,30 @@ if __name__ == '__main__':
     # this is also time-invariant so only need to compute once
     print("Loaded truth xscn")
 
-    ibd_cxn_truth_energy = 10**np.nan_to_num(np.array(ibd_cxn_truth['energy']), nan=0.0)
-    ibd_cxn_truth_nu_e_bar = np.nan_to_num(np.array(ibd_cxn_truth['nu_e_bar']), nan=0.0)
-    nu_e_bar_cxn_truth = np.multiply(ibd_cxn_truth_nu_e_bar, ibd_cxn_truth_energy)*1e-38
+    ibd_cxn_truth_energy = 10 ** np.array(ibd_cxn_truth['energy'])
+
+    truth_calculation = np.multiply(
+        ibd_cxn_truth_energy,
+        np.array(ibd_cxn_truth['nu_e_bar']) * 1e-38
+    )
+
+    truth_calculation = np.nan_to_num(truth_calculation, nan=0.0)
+
+    #region plot nu_e_bar_cxn_truth
+    cxn_truth_fig, cxn_truth_ax = plt.subplots(1,1)
+    cxn_truth_ax.scatter(10 ** np.array(ibd_cxn_truth['energy']), truth_calculation)
+    cxn_truth_ax.set_xlabel('Energy (GeV)')
+    cxn_truth_ax.set_ylabel(r'${cm}^2$')
+    cxn_truth_ax.set_title(r'$\bar{\sigma}}$ Truth')
+    cxn_truth_ax.set_xscale('log')
+    cxn_truth_ax.set_yscale('log')
+    cxn_truth_fig.show()
+    #endregion
 
     #region make a plot to show why this interpolation is problematic
     interpolation_problem_fig, interpolation_problem_ax = plt.subplots(1,1)
     interpolation_problem_ax.bar(labeled[100][0], labeled[100][4], width=0.2e-3, label=rf'$\phi_t(E_\nu)$ at $t={round(times_unitless[100],5)}$')
-    interpolation_problem_ax.scatter(ibd_cxn_truth_energy, nu_e_bar_cxn_truth, label=r'$\bar{\sigma}}$ Truth')
+    interpolation_problem_ax.scatter(ibd_cxn_truth_energy, truth_calculation, label=r'$\bar{\sigma}}$ Truth')
     interpolation_problem_fig.legend()
     interpolation_problem_ax.set_xlabel('Energy (GeV)')
     interpolation_problem_ax.set_ylabel('~na~')
@@ -106,34 +122,28 @@ if __name__ == '__main__':
     interpolation_problem_fig.show()
     #endregion
 
-    ibd_cxn_truth_downsampled = np.interp(
-        labeled[0][0],
-        ibd_cxn_truth_energy,
-        nu_e_bar_cxn_truth
-    )
-
-    # ibd_cxn_truth_downsampled = np.nan_to_num(ibd_cxn_truth_downsampled, nan=0.0)
-    print('test')
-    # make a plot to compare cxn truths to make sure it downsampled correctly
-    cxn_truth_comp_fig, cxn_truth_downsampled_comp = plt.subplots(1, 1, figsize=(8, 8))
-    cxn_truth_downsampled_comp.scatter(labeled[0][0], ibd_cxn_truth_downsampled, marker='D', alpha=0.2)
-    cxn_truth_downsampled_comp.scatter(10 ** np.array(ibd_cxn_truth['energy']), nu_e_bar_cxn_truth) # this in GeV
-    cxn_truth_comp_fig.show()
+    # ibd_cxn_truth_downsampled = np.interp(
+    #     labeled[0][0],
+    #     ibd_cxn_truth_energy,
+    #     truth_calculation
+    # )
 
     # we want to make the flux average cross-section by using the cross-section from snowglobes
     # go through each time bin
 
-    # ok for now, let's just swap the phi_t with impulse 1s
-
     sigma_average = np.zeros_like(times_unitless)
-    conversion = ((0.095e-3)/0.2e-3)**-1
-    print(f'Conversion factor is {conversion}')
     for time in range(len(times_unitless)):
         # channel 4 in labeled is anue
         # phi_t = np.sum(labeled[time][4]) * dts[time] * .2e-3 # 0.2 MeV energy bins for flux, but we're in GeV
         # what is the bin size of the sigma? -- it's 0.095 MeV
+        # since cxn_truth is the actual distribution, then it might make more sense to sample the truth flux using the
+        # cxn distribution energies instead of the other way around
 
-        sigma_average[time] = (np.sum(conversion * np.multiply(ibd_cxn_truth_downsampled, labeled[time][4]))) / phi_t_over_time[time] # should be times two for dEv
+        # TODO: will need to do conversion here -- although maybe not since the distribution isn't binned
+        truth_upsampled = np.interp(ibd_cxn_truth_energy, labeled[time][0], labeled[time][4]) * 0.2e-3
+        truth_upsampled = np.nan_to_num(truth_upsampled, nan=0.0)
+
+        sigma_average[time] = np.sum(np.multiply(truth_upsampled, truth_calculation)) / phi_t_over_time[time]
 
     # now plot the flux-averaged cxn
     fig, ax = plt.subplots(1,1)
