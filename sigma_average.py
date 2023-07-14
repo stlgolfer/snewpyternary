@@ -92,34 +92,44 @@ if __name__ == '__main__':
 
     truth_calculation = np.multiply(
         ibd_cxn_truth_energy,
-        np.array(ibd_cxn_truth['nu_e_bar']) * 1e-38
+        np.array(ibd_cxn_truth['nu_e_bar'])
     )
+
+    truth_calculation_no_downsample = np.copy(truth_calculation)*1e-38
 
     truth_calculation = np.nan_to_num(truth_calculation, nan=0.0)
 
+    # downsample the truth flux with 1e38 cm^2 scale since python might have a hard time interpolating such small values
+    truth_calculation = np.interp(labeled[0][0], ibd_cxn_truth_energy, truth_calculation)*1e-38
+    print("Truth CXN Downsampled")
+
     #region plot nu_e_bar_cxn_truth
     cxn_truth_fig, cxn_truth_ax = plt.subplots(1,1)
-    cxn_truth_ax.scatter(10 ** np.array(ibd_cxn_truth['energy']), truth_calculation)
+    cxn_truth_ax.scatter(ibd_cxn_truth_energy, truth_calculation_no_downsample, label="CXN No Downsample")
+    cxn_truth_ax.scatter(labeled[0][0], truth_calculation, label="CXN Downsampled", alpha=0.4)
     cxn_truth_ax.set_xlabel('Energy (GeV)')
     cxn_truth_ax.set_ylabel(r'${cm}^2$')
-    cxn_truth_ax.set_title(r'$\bar{\sigma}}$ Truth')
+    cxn_truth_ax.set_title(r'$\sigma$ Truth')
+    cxn_truth_ax.set_xlim(1e-3, 1e-1)
+    cxn_truth_ax.set_ylim(1e-44, 1e-39)
     cxn_truth_ax.set_xscale('log')
     cxn_truth_ax.set_yscale('log')
+    cxn_truth_fig.legend()
     cxn_truth_fig.show()
     #endregion
 
     #region make a plot to show why this interpolation is problematic
-    interpolation_problem_fig, interpolation_problem_ax = plt.subplots(1,1)
-    interpolation_problem_ax.bar(labeled[100][0], labeled[100][4], width=0.2e-3, label=rf'$\phi_t(E_\nu)$ at $t={round(times_unitless[100],5)}$')
-    interpolation_problem_ax.scatter(ibd_cxn_truth_energy, truth_calculation, label=r'$\bar{\sigma}}$ Truth')
-    interpolation_problem_fig.legend()
-    interpolation_problem_ax.set_xlabel('Energy (GeV)')
-    interpolation_problem_ax.set_ylabel('~na~')
-    interpolation_problem_ax.set_title(r'$\phi_t$ and $\bar{\sigma}}$ Interpolation')
-    interpolation_problem_ax.set_xlim(min(labeled[100][0]), max(labeled[100][0]))
-    interpolation_problem_ax.set_ylim(0, 10)
-    # interpolation_problem_fig.tight_layout()
-    interpolation_problem_fig.show()
+    # interpolation_problem_fig, interpolation_problem_ax = plt.subplots(1,1)
+    # interpolation_problem_ax.bar(labeled[100][0], labeled[100][4], width=0.2e-3, label=rf'$\phi_t(E_\nu)$ at $t={round(times_unitless[100],5)}$')
+    # interpolation_problem_ax.scatter(ibd_cxn_truth_energy, truth_calculation, label=r'$\bar{\sigma}}$ Truth')
+    # interpolation_problem_fig.legend()
+    # interpolation_problem_ax.set_xlabel('Energy (GeV)')
+    # interpolation_problem_ax.set_ylabel('~na~')
+    # interpolation_problem_ax.set_title(r'$\phi_t$ and $\bar{\sigma}}$ Interpolation')
+    # interpolation_problem_ax.set_xlim(min(labeled[100][0]), max(labeled[100][0]))
+    # interpolation_problem_ax.set_ylim(0, 10)
+    # # interpolation_problem_fig.tight_layout()
+    # interpolation_problem_fig.show()
     #endregion
 
     # ibd_cxn_truth_downsampled = np.interp(
@@ -140,10 +150,10 @@ if __name__ == '__main__':
         # cxn distribution energies instead of the other way around
 
         # TODO: will need to do conversion here -- although maybe not since the distribution isn't binned
-        truth_upsampled = np.interp(ibd_cxn_truth_energy, labeled[time][0], labeled[time][4]) * 0.2e-3
-        truth_upsampled = np.nan_to_num(truth_upsampled, nan=0.0)
+        # truth_upsampled = np.interp(ibd_cxn_truth_energy, labeled[time][0], labeled[time][4]) * 0.2e-3
+        # truth_upsampled = np.nan_to_num(truth_upsampled, nan=0.0)
 
-        sigma_average[time] = np.sum(np.multiply(truth_upsampled, truth_calculation)) / phi_t_over_time[time]
+        sigma_average[time] = np.sum(np.multiply(0.2e-3 * labeled[time][4], truth_calculation)) / phi_t_over_time[time]
 
     # now plot the flux-averaged cxn
     fig, ax = plt.subplots(1,1)
