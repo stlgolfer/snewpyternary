@@ -42,7 +42,7 @@ if __name__ == '__main__':
     phi_t_over_time = np.zeros_like(times_unitless)
     flux_vs_time = np.zeros_like(times_unitless)
     for l in range(len(labeled)):
-        phi_t_over_time[l] = np.sum(labeled[l][4])*0.2e-3 * dts[l]
+        phi_t_over_time[l] = np.sum(labeled[l][4])*0.2e-3 #* dts[l]
         flux_vs_time[l] = np.sum(labeled[l][4])*0.2e-3
     phi_t_ax.scatter(times_unitless, phi_t_over_time)
     phi_t_ax.set_title(r'$\phi_t$ for Nakazato 0 Fluence')
