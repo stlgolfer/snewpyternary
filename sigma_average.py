@@ -118,6 +118,20 @@ if __name__ == '__main__':
     cxn_truth_fig.show()
     #endregion
 
+    # region plot truth flux average energy over time
+    truth_flux_average_energy = np.zeros_like(times_unitless)
+    for lt in range(len(labeled)):
+        # find int E*F(E) dE / int F(E) dE, though in all fairness dE will cancel here
+        truth_flux_average_energy[lt] = np.sum(np.multiply(labeled[lt][0], labeled[lt][4])) / np.sum(labeled[lt][4])
+
+    tf_average_energy_fig, tf_average_energy_ax = plt.subplots(1,1, figsize=(8,8))
+    tf_average_energy_ax.bar(times_unitless, truth_flux_average_energy, dts)
+    tf_average_energy_ax.set_xscale('log')
+    tf_average_energy_ax.set_xlabel('Mid-Point of Time (s)')
+    tf_average_energy_ax.set_ylabel('Flux-Weighted Average Energy (GeV)')
+    tf_average_energy_fig.show()
+    #endregion
+
     #region make a plot to show why this interpolation is problematic
     # interpolation_problem_fig, interpolation_problem_ax = plt.subplots(1,1)
     # interpolation_problem_ax.bar(labeled[100][0], labeled[100][4], width=0.2e-3, label=rf'$\phi_t(E_\nu)$ at $t={round(times_unitless[100],5)}$')
