@@ -122,13 +122,14 @@ if __name__ == '__main__':
     truth_flux_average_energy = np.zeros_like(times_unitless)
     for lt in range(len(labeled)):
         # find int E*F(E) dE / int F(E) dE, though in all fairness dE will cancel here
-        truth_flux_average_energy[lt] = np.sum(np.multiply(labeled[lt][0], labeled[lt][4])) / np.sum(labeled[lt][4])
+        truth_flux_average_energy[lt] = np.sum(np.multiply(labeled[lt][0], labeled[lt][4]*dts[lt])) / np.sum(labeled[lt][4]*dts[lt])
 
     tf_average_energy_fig, tf_average_energy_ax = plt.subplots(1,1, figsize=(8,8))
-    tf_average_energy_ax.bar(times_unitless, truth_flux_average_energy, dts)
+    tf_average_energy_ax.scatter(times_unitless, truth_flux_average_energy)
     tf_average_energy_ax.set_xscale('log')
-    tf_average_energy_ax.set_xlabel('Mid-Point of Time (s)')
+    tf_average_energy_ax.set_xlabel('Time (s)')
     tf_average_energy_ax.set_ylabel('Flux-Weighted Average Energy (GeV)')
+    tf_average_energy_ax.set_title(r'$\mathbb{E}(E_\nu|F(E_\nu))$')
     tf_average_energy_fig.show()
     #endregion
 
