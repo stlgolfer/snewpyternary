@@ -224,7 +224,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
             'Ndet': 1,
             'phi_t':2,
             'Nt': config.proxyconfig.Nt_ar40kt()[1],#1,
-            'proxy_name': 'Ar40 + e'
+            'proxy_name': 'Ar40'
         }
     }
     flux_scatter, flux_raw, flux_l_data = process_flux(config, set_no)

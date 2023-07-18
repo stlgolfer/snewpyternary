@@ -193,7 +193,7 @@ class ConfigBestChannel(__DetectorProxyConfiguration__):
         return (['nc'], [], ['ibd'])
 
     def h_ar40kt(self):
-        return ([], ['nue_Ar40', 'e'], [])
+        return ([], ['nue_Ar40'], [])
 
     def h_wc100kt30prct(self):
         return ([], [], ['ibd'])
