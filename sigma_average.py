@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from astropy import units as u
 
-def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: str, cxn_truth_chan_key: str):
+def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: str, cxn_truth_chan_key: str, det_name: str):
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
         config.model_file_paths[0],
         config.model_type,
@@ -27,7 +27,7 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
     flux_scatter_data, raw_data, labeled = process_flux(config, 0)
     # in a time bin, the truth flux is binned in GeV
     labeled_transposed = np.transpose(labeled)
-    # plot_data, raw_data_det, l_data, zeta, sigma_average = process_detector(config, 0, det_name)
+    plot_data, raw_data_det, l_data, zeta, sigma_average = process_detector(config, 0, det_name)
 
     # region let's just try to plot phi_t over time, flux vs time, and flux vs energy
     phi_t_fig, phi_t_ax = plt.subplots(1, 1)
@@ -92,6 +92,20 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
 
     truth_calculation = np.nan_to_num(truth_calculation, nan=0.0)
 
+    # region reconstruct cxn from Ndet to ensure correct smearing matrix was used
+    # pick 0th bin
+    flux_interpolated = np.interp(l_data[0]['Energy'], labeled[0][0], labeled[0][flux_chan])
+    cxn_reconstructed = np.divide(
+        l_data[0]['nue_Ar40'],
+        flux_interpolated
+    ) / (config.proxyconfig.Nt_ar40kt()[1] * 2.5)
+    recon_cxn_fig, recon_cxn_ax = plt.subplots(1,1)
+    recon_cxn_ax.scatter(l_data[0]['Energy'], cxn_reconstructed)
+    recon_cxn_ax.set_xscale('log')
+    recon_cxn_ax.set_yscale('log')
+    recon_cxn_fig.show()
+    # endregion
+
     # downsample the truth flux with 1e38 cm^2 scale since python might have a hard time interpolating such small values
     truth_calculation = np.interp(labeled[0][0], cxn_truth_energy, truth_calculation) * 1e-38
     print("Truth CXN Downsampled")
@@ -141,7 +155,7 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
     ax.set_xlabel('Time (s)')
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_title(rf'$<\sigma>$ for Nakazato 0 IBD')
+    ax.set_title(rf'$<\sigma>$ for Nakazato 0')
     fig.savefig('./sigma for nakazato 0 ibd.png')
     fig.show()
 
@@ -152,4 +166,4 @@ if __name__ == '__main__':
         'AdiabaticMSW_IMO',
         proxy_config=data_handlers.ConfigBestChannel()
     )
-    estimate_cxn(config, 1)
+    estimate_cxn(config, 1, 'xs_nue_Ar40', 'nu_e', 'ar40kt')

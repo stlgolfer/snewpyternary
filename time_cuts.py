@@ -25,17 +25,17 @@ if __name__ == '__main__':
     )
 
     flux_scatter_data, raw_data, labeled = process_flux(config,0)
-    plot_data, raw_data_det, l_data, zeta, sigma_average = process_detector(config,0,'wc100kt30prct')
+    plot_data, raw_data_det, l_data, zeta, sigma_average = process_detector(config,0,'ar40kt')
 
     # make a spectrogram of the actual xscn from snowglobes (it will be time-invariant)
-    ibd_cxn_actual = pd.read_csv('./time_cuts/xs_ibd.csv')  # only want the 'nu_e_bar' channel
+    ibd_cxn_actual = pd.read_csv('./snowglobes_cxns/xs_nue_Ar40.csv')  # only want the 'nu_e_bar' channel
     cxn_comp_fig, (cxn_truth_axes, cxn_actual_axes) = plt.subplots(1, 2, figsize=(16, 8))
     cxn_actual_spectrogram = None
     cxn_truth_spectrogram = None
 
     truth_calculation = np.multiply(
         10**np.array(ibd_cxn_actual['energy']),
-        np.array(ibd_cxn_actual['nu_e_bar'])*1e-38
+        np.array(ibd_cxn_actual['nu_e'])*1e-38
     )
 
     # want 0.05s, 0.07s, 0.1s, 0.3s, 0.5s, 1, 3, 5, 7, 10
@@ -55,11 +55,11 @@ if __name__ == '__main__':
         # ndet_axes.set_ylabel('Event count / MeV')
 
         # ndet_interpolated = np.interp(flux_energy_spectra,l_data[time]['Energy']*100,l_data[time]['ibd'])
-        flux_interpolated = np.interp(l_data[time]['Energy']*1000, flux_energy_spectra, labeled[time][4])
+        flux_interpolated = np.interp(l_data[time]['Energy']*1000, flux_energy_spectra, labeled[time][1])
         cxn_reconstructed = np.divide(
-            l_data[time]['ibd'],
+            l_data[time]['nue_Ar40'],
             flux_interpolated
-        )/(config.proxyconfig.Nt_wc100kt30prct()[2]*2.5) # divide by 2.5 since the energy bin widths are different
+        )/(config.proxyconfig.Nt_ar40kt()[1]*2.5) # divide by 2.5 since the energy bin widths are different
         # ratio_axes.scatter(
         #     l_data[time]['Energy']*1000,
         #     cxn_reconstructed
