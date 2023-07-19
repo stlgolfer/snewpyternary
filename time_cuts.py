@@ -25,17 +25,17 @@ if __name__ == '__main__':
     )
 
     flux_scatter_data, raw_data, labeled = process_flux(config,0)
-    plot_data, raw_data_det, l_data, zeta, sigma_average = process_detector(config,0,'ar40kt')
+    plot_data, raw_data_det, l_data, zeta, sigma_average = process_detector(config,0,'scint20kt')
 
     # make a spectrogram of the actual xscn from snowglobes (it will be time-invariant)
-    ibd_cxn_actual = pd.read_csv('./snowglobes_cxns/xs_nue_Ar40.csv')  # only want the 'nu_e_bar' channel
+    ibd_cxn_actual = pd.read_csv('./snowglobes_cxns/xs_nc_numu_C12.csv')  # only want the 'nu_e_bar' channel
     cxn_comp_fig, (cxn_truth_axes, cxn_actual_axes) = plt.subplots(1, 2, figsize=(16, 8))
     cxn_actual_spectrogram = None
     cxn_truth_spectrogram = None
 
     truth_calculation = np.multiply(
         10**np.array(ibd_cxn_actual['energy']),
-        np.array(ibd_cxn_actual['nu_e'])*1e-38
+        np.array(ibd_cxn_actual['nu_mu'])*1e-38
     )
 
     # want 0.05s, 0.07s, 0.1s, 0.3s, 0.5s, 1, 3, 5, 7, 10
@@ -55,11 +55,21 @@ if __name__ == '__main__':
         # ndet_axes.set_ylabel('Event count / MeV')
 
         # ndet_interpolated = np.interp(flux_energy_spectra,l_data[time]['Energy']*100,l_data[time]['ibd'])
-        flux_interpolated = np.interp(l_data[time]['Energy']*1000, flux_energy_spectra, labeled[time][1])
+        nux_fluence = np.add(
+            labeled[time][2],
+            np.add(
+                np.add(
+                    labeled[time][3],
+                    labeled[time][5]
+                ),
+                labeled[time][6]
+            )
+        )
+        flux_interpolated = np.interp(l_data[time]['Energy']*1000, flux_energy_spectra, nux_fluence)
         cxn_reconstructed = np.divide(
-            l_data[time]['nue_Ar40'],
+            l_data[time]['nc'],
             flux_interpolated
-        )/(config.proxyconfig.Nt_ar40kt()[1]*2.5) # divide by 2.5 since the energy bin widths are different
+        )/(config.proxyconfig.Nt_scint20kt()[0]*2.5) # divide by 2.5 since the energy bin widths are different
         # ratio_axes.scatter(
         #     l_data[time]['Energy']*1000,
         #     cxn_reconstructed
@@ -88,8 +98,9 @@ if __name__ == '__main__':
     cxn_actual_axes.set_title("CXN Reconstructed")
     __X_cxn, __Y_cxn = np.meshgrid(time_bins_x_axis/u.s, l_data[0]['Energy'])
     cxn_actual_axes.set_xlim(0.0001,20)
-    cxn_actual_axes.set_ylim(0,0.1)
-    cxn_actual_pc = cxn_actual_axes.contourf(__X_cxn, __Y_cxn, cxn_actual_spectrogram)
+    cxn_actual_axes.set_ylim(0.01,0.1)
+
+    cxn_actual_pc = cxn_actual_axes.pcolormesh(__X_cxn, __Y_cxn, cxn_actual_spectrogram)
     cxn_comp_fig.colorbar(cxn_actual_pc, ax=cxn_actual_axes, shrink=0.75, label=r'${cm}^{-2}$',
                             format='%.0e')
     cxn_actual_axes.set_xscale('log')
@@ -102,7 +113,7 @@ if __name__ == '__main__':
     cxn_truth_axes.set_xlim(0.0001,20)
     cxn_truth_axes.set_ylim(0,0.1)
     __X_truth, __Y_truth = np.meshgrid(time_bins_x_axis/u.s, 10**np.array(ibd_cxn_actual['energy']))
-    cxn_truth_pc = cxn_truth_axes.contourf(__X_truth, __Y_truth, cxn_truth_spectrogram)
+    cxn_truth_pc = cxn_truth_axes.pcolormesh(__X_truth, __Y_truth, cxn_truth_spectrogram)
     cxn_comp_fig.colorbar(cxn_truth_pc, ax=cxn_truth_axes, shrink=0.75, label=r'${cm}^{-2}$',
                           format='%.0e')
     # cxn_truth_pc.set_clim(vmin=0, vmax=0.1)
@@ -111,7 +122,7 @@ if __name__ == '__main__':
     cxn_comp_fig.show()
 
     one_slice_cxn_comp_fig, one_slice_cxn_truth_vs_recon = plt.subplots(1, 1, figsize=(8, 8))
-    slice_index = 100
+    slice_index = 198
 
     one_slice_cxn_truth_vs_recon.scatter(
         l_data[0]['Energy'],

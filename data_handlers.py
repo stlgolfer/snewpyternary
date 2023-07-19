@@ -190,7 +190,7 @@ class ConfigBestChannel(__DetectorProxyConfiguration__):
         # ibd = np.sum(data['ibd'])
         # nc = np.sum(data['nc'])
         # return [nc, 0, ibd]
-        return (['nc'], [], ['ibd'])
+        return (['nc'], [], [])
 
     def h_ar40kt(self):
         return ([], ['nue_Ar40'], [])
@@ -202,7 +202,7 @@ class ConfigBestChannel(__DetectorProxyConfiguration__):
         return "BstChnl"
 
     def Nt_scint20kt(self) -> [float]:
-        calc = 50*(100E9)*__NA__/12
+        calc = (20E9)*__NA__/12
         return [calc, 1, 1]
 
     def Nt_ar40kt(self) -> [float]:
