@@ -94,11 +94,26 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
 
     # region reconstruct cxn from Ndet to ensure correct smearing matrix was used
     # pick 0th bin
-    flux_interpolated = np.interp(l_data[0]['Energy'], labeled[0][0], labeled[0][flux_chan])
+    nux_fluence = np.add(
+        labeled[0][2],
+        np.add(
+            np.add(
+                labeled[0][3],
+                labeled[0][5]
+            ),
+            labeled[0][6]
+        )
+    )
+    flux_interpolated = np.interp(
+        l_data[0]['Energy'],
+        labeled[0][0],
+        nux_fluence if det_name == 'scint20kt' else labeled[0][flux_chan]
+    )
+
     cxn_reconstructed = np.divide(
-        l_data[0]['nue_Ar40'],
+        l_data[0]['nc'],
         flux_interpolated
-    ) / (config.proxyconfig.Nt_ar40kt()[1] * 2.5)
+    ) / (config.proxyconfig.Nt_scint20kt()[0] * 2.5)
     recon_cxn_fig, recon_cxn_ax = plt.subplots(1,1)
     recon_cxn_ax.scatter(l_data[0]['Energy'], cxn_reconstructed)
     recon_cxn_ax.set_xscale('log')
@@ -166,4 +181,4 @@ if __name__ == '__main__':
         'AdiabaticMSW_IMO',
         proxy_config=data_handlers.ConfigBestChannel()
     )
-    estimate_cxn(config, 1, 'xs_nue_Ar40', 'nu_e', 'ar40kt')
+    estimate_cxn(config, 1, 'xs_nc_numu_C12', 'nu_mu', 'scint20kt')
