@@ -4,6 +4,10 @@ import pandas as pd
 import numpy as np
 from meta_analysis import t_normalize
 import snewpyternary as t
+import sys
+sys.path.insert(0,'./SURF2020fork')
+from SURF2020fork.ternary_helpers import generate_heatmap_dict
+import matplotlib.pyplot as plt
 
 @click.command()
 @click.option('-nux', required=True, help='Location of nux csv')
@@ -18,7 +22,13 @@ def bind(nux, nue, anue):
     raw_combined = list(zip(nux_df['unfolded'], anue_df['unfolded'], nue_df['unfolded']))
     ternary_points = t_normalize(raw_combined)
     print(ternary_points)
-    t.create_default_flux_plot(ternary_points, "yuh", show=True)
+    # get the heatmap of it as well
+
+    fig, tax = t.create_default_flux_plot(ternary_points, "yuh", save=False, show=False)
+    print("Generating heatmap (this might take a while)...")
+    tax.heatmap(generate_heatmap_dict(raw_combined, ternary_points), cmap=plt.get_cmap('PiYG'))
+    print("Done")
+    tax.show()
 
 if __name__ == '__main__':
     bind()
