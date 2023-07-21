@@ -1,3 +1,5 @@
+import click
+
 import snewpyternary as t
 import snowglobes_wrapper
 from model_wrappers import snewpy_models, sn_model_default_time_step
@@ -6,11 +8,20 @@ from meta_analysis import process_flux, process_detector
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import warnings
 from astropy import units as u
 
-def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: str, cxn_truth_chan_key: str, det_name: str):
+def estimate_cxn(
+        config: t.MetaAnalysisConfig,
+        flux_chan: int,
+        cxn_truth_fname: str,
+        cxn_truth_chan_key: str,
+        det_name: str,
+        det_chan_name: str,
+        Nt: float
+):
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
-        config.model_file_paths[0],
+        config.model_file_paths[config.set_numbers[0]],
         config.model_type,
         deltat=sn_model_default_time_step(config.model_type),
         log_bins=True,
@@ -27,7 +38,7 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
     flux_scatter_data, raw_data, labeled = process_flux(config, 0)
     # in a time bin, the truth flux is binned in GeV
     labeled_transposed = np.transpose(labeled)
-    plot_data, raw_data_det, l_data, zeta, sigma_average = process_detector(config, 0, det_name)
+    plot_data, raw_data_det, l_data = process_detector(config, 0, det_name)
 
     # region let's just try to plot phi_t over time, flux vs time, and flux vs energy
     phi_t_fig, phi_t_ax = plt.subplots(1, 1)
@@ -39,6 +50,10 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
                       labeled[l][6]
         phi_t_over_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3  # * dts[l]
         flux_vs_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3
+
+    if det_name == 'scint20kt':
+        warnings.warn("scint20kt uses a slightly different calculation, so don't be surprised if the AUC is wrong")
+
     phi_t_ax.scatter(times_unitless, phi_t_over_time)
     phi_t_ax.set_title(r'$\phi_t$ for Nakazato 0 Fluence')
     phi_t_ax.set_xlabel("Time (s)")
@@ -104,9 +119,9 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
     )
 
     cxn_reconstructed = np.divide(
-        l_data[0]['nc'],
+        l_data[0][det_chan_name],
         flux_interpolated
-    ) / (config.proxyconfig.Nt_scint20kt()[0] * 2.5)
+    ) / (Nt * 2.5)
     recon_cxn_fig, recon_cxn_ax = plt.subplots(1,1)
     recon_cxn_ax.scatter(l_data[0]['Energy'], cxn_reconstructed)
     recon_cxn_ax.set_xscale('log')
@@ -169,11 +184,63 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
     fig.savefig('./sigma for nakazato 0 ibd.png')
     fig.show()
 
-if __name__ == '__main__':
+@click.command()
+@click.argument('model', required=True, type=str, nargs=1)
+@click.option('-p', required=True, type=str)
+@click.option('-flavor', required=True, type=str) # help='nue, anue, or nux'
+@click.option('--submodel', required=False, type=int, help='Internal submodel index number', default=0)
+def configure(model, p, flavor, submodel):
+    warnings.warn('Will use global settings found in meta_analysis.py')
+    warnings.warn('Only BstChnl configuration supported')
+    '''
+    Internal helper function to convert click parameters to config 
+    Returns
+    -------
+
+    '''
     config = t.MetaAnalysisConfig(
-        snewpy_models['Nakazato_2013'],
-        [0],
-        'AdiabaticMSW_IMO',
+        snewpy_models[model],
+        [submodel],
+        p,
         proxy_config=data_handlers.ConfigBestChannel()
     )
-    estimate_cxn(config, 1, 'xs_nc_numu_C12', 'nu_mu', 'scint20kt')
+
+    flavor_to_config = {
+        'nux': {
+            'flux_chan': 1,
+            'cxn_truth_fname': 'xs_nc_numu_C12',
+            'cxn_truth_chan_key': 'nu_mu',
+            'det_name': 'scint20kt',
+            'det_chan_name': 'nc',
+            'Nt': config.proxyconfig.Nt_scint20kt()[0]
+        },
+        'nue': {
+            'flux_chan': 1,
+            'cxn_truth_fname': 'xs_nue_Ar40',
+            'cxn_truth_chan_key': 'nu_e',
+            'det_name': 'ar40kt',
+            'det_chan_name': 'nue_Ar40',
+            'Nt': config.proxyconfig.Nt_ar40kt()[1]
+        },
+        'nue': {
+            'flux_chan': 4,
+            'cxn_truth_fname': 'xs_ibd',
+            'cxn_truth_chan_key': 'nu_e_bar',
+            'det_name': 'wc100kt30prct',
+            'det_chan_name': 'ibd',
+            'Nt': config.proxyconfig.Nt_wc100kt30prct()[2]
+        }
+    }
+
+    estimate_cxn(
+        config,
+        flavor_to_config[flavor]['flux_chan'],
+        flavor_to_config[flavor]['cxn_truth_fname'],
+        flavor_to_config[flavor]['cxn_truth_chan_key'],
+        flavor_to_config[flavor]['det_name'],
+        flavor_to_config[flavor]['det_chan_name'],
+        flavor_to_config[flavor]['Nt']
+    )
+
+if __name__ == '__main__':
+    configure()
