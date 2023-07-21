@@ -23,6 +23,7 @@ from tempfile import TemporaryDirectory
 from model_wrappers import SNEWPYModel
 from data_handlers import __DetectorProxyConfiguration__, ConfigAggregateDetectors
 import pickle
+from model_wrappers import snewpy_models
 
 # snewpy-snowglobes stuff
 import snewpy.snowglobes as snowglobes
@@ -571,3 +572,6 @@ class MetaAnalysisConfig:
         self.set_numbers: list = set_nos
         self.transformation: str = transformation
         self.proxyconfig: __DetectorProxyConfiguration__ = proxy_config
+
+    def stringify(self, submodel=0):
+        return f'{self.model_type} submodel {submodel} {self.transformation} {self.proxyconfig}'

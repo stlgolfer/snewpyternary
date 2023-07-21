@@ -180,9 +180,16 @@ def estimate_cxn(
     ax.set_xlabel('Time (s)')
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_title(rf'$<\sigma>$ for Nakazato 0')
-    fig.savefig('./sigma for nakazato 0 ibd.png')
+    ax.set_title(rf'$<\sigma>$ for Nakazato {config.set_numbers[0]} {cxn_truth_chan_key}')
     fig.show()
+
+    print('Storing average sigma in ./sigmas...')
+    df = pd.DataFrame()
+    df['time'] = times_unitless
+    df['sigma average'] = sigma_average
+    df.to_csv(f'./sigmas/{config.stringify(config.set_numbers[0])} {cxn_truth_chan_key} sigma average.csv')
+    print('Done')
+
 
 @click.command()
 @click.argument('model', required=True, type=str, nargs=1)
