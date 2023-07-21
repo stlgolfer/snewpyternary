@@ -188,19 +188,6 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         save=True
     )
 
-
-    # we also want a TD representation
-    # t.create_regular_plot(raw_data,
-    #                       config.proxyconfig.build_detector_profiles()[detector]['axes'](),
-    #                       f'{config.model_type} {detector}\n{str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins TD {" PreSN" if use_presn else ""}',
-    #                       ylab="Event count",
-    #                       xlab="Time (s)",
-    #                       x_axis=time_bins_x_axis,
-    #                       show=show_charts,
-    #                       save=True,
-    #                       use_x_log=False
-    #                       )
-
     # yeah, we're going to reprocess the flux because inefficient code is the best code for the unfolding
     # N_det is contained in the raw_data points
     # so, we should just be able to do a nice numpy element-wise operation?
@@ -276,59 +263,9 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         if show_charts:
             flux_spect_fig.show()
     #endregion
-    # for t_bin_no in range(len(N_det)):
-    # t_bin_no=195
-    # # mult_plot, mult_axes = plt.subplots(1,1)
-    # # mult_axes.set_xlabel('Energy (MeV)')
-    # # mult_axes.set_ylabel('Event Count')
-    # # mult_axes.bar(mult_time_bins[-1], mult, align='center')
-    # # mult_plot.savefig('./ibd_unfold_one_tbin_mult.png')
-    # flux_averaged_xscn_for_slice = np.sum(
-    #     Rebinning.histogram_mult(
-    #         l_data[t_bin_no]['ibd'],
-    #         l_data[t_bin_no]['Energy'], # need the 1000 so that way we go from GeV to MeV
-    #         flux_l_data[t_bin_no][4], # 4 should be aNuE
-    #         flux_energy_spectra, # is constant across time
-    #         show = True if t_bin_no == 195 else False # TODO: remove when done with t=15
-    #     )[0]
-    # )/phi_t[t_bin_no]
-    # phi_est[t_bin_no] = N_det[t_bin_no]/(n_targets*flux_averaged_xscn_for_slice)
-    # print("Unfolding...")
-    # now we'll have to go through each time bin and find flux-avg-cxn
-    zeta = np.zeros_like(np.transpose(N_det))
-    sigma_average = np.zeros_like(zeta)
-    for t_bin_no in range(len(N_det)):
-        sigma_average_t = N_det[t_bin_no]/(n_targets*phi_t[t_bin_no])
-        zeta[t_bin_no] = N_det[t_bin_no]/(n_targets) # *sigma_average_t #TODO: now phi_est -> zetas. also fix cumsum
-        sigma_average[t_bin_no] = sigma_average_t
-
-    fx_plot, (fx_axes, fx_truth_axes) = plt.subplots(1, 2, figsize=(16,8))
-    fx_axes.plot(time_bins_x_axis, zeta, linestyle='None', marker='.')
-    fx_axes.set_xlabel('Time (s)')
-    fx_axes.set_ylabel(r'$neutrinos/cm^2$')
-    fx_title = f'{detector_to_index[detector]["proxy_name"]} Unfolding in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
-    fx_axes.set_title(fx_title)
-    fx_axes.set_xscale('log')
-
-    fx_truth_axes.plot(time_bins_x_axis, phi_t, linestyle='None', marker='.')
-    fx_truth_axes.set_xlabel('Time (s)')
-    fx_truth_axes.set_ylabel(r'$neutrinos/cm^2$')
-    fx_truth_axes.set_title('Truth Flux')
-    fx_truth_axes.set_xscale('log')
-    fx_plot.savefig(f'./plots/unfolded/{t.clean_newline(fx_title)}.png')
-
-    # plot the flux-averaged cross-section
-    cxn_plot, cxn_axes = plt.subplots(1,1)
-    cxn_axes.plot(time_bins_x_axis, sigma_average, linestyle='None', marker='.')
-    cxn_title = f'{config.model_type} {detector_to_index[detector]["proxy_name"]} CXN in {detector} for \n{config.model_file_paths[set_no].split("/")[-1]}'
-    cxn_axes.set_xlabel('Time (s)')
-    cxn_axes.set_ylabel(r'$cm^2$/?neutrinos')
-    cxn_axes.set_title(cxn_title)
-    cxn_axes.set_xscale('log')
-    cxn_plot.savefig(f'./plots/cxns/{t.clean_newline(cxn_title)}.png')
 
 
-    return plot_data, raw_data, l_data, zeta, sigma_average
+    return plot_data, raw_data, l_data
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int):
 
@@ -342,13 +279,6 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
         log_bins=use_log,
         presn=use_presn
     )
-    
-
-    t.create_default_flux_plot(
-        flux_scatter_data,
-        f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Flux {"Logged" if use_log else "Linear"} Bins {config.transformation}.png',
-        show=show_charts
-        )
 
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
         config.model_file_paths[set_no],
@@ -366,26 +296,6 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int):
     time_bin_plot_title = f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux {"Logged" if use_log else "Linear"} Time Bins {config.transformation}{" PreSN" if use_presn else ""}.png'
     plt.title(time_bin_plot_title)
     plt.savefig(f'./plots/{time_bin_plot_title}')
-    
-    t.create_regular_plot(
-        plot_data=raw_data,
-        axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-        plot_title=f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux {"Logged" if use_log else "Linear"} Bins {config.transformation}{" PreSN" if use_presn else ""}.png',
-        ylab="Total Integrated Flux flavor/cm^2",
-        xlab="Mid-Point Time in Coordinate (s)",
-        x_axis=time_bins_x_axis,
-        show=show_charts,
-        use_x_log=True,save=True)
-
-    t.create_regular_plot(
-        plot_data=t_normalize(raw_data),
-        axes_titles=[r'$\nu_x$', r'$\bar{\nu_e}$', r'$\nu_e$'],
-        plot_title=f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux Fraction {"Logged" if use_log else "Linear"} Bins {config.transformation}{" PreSN" if use_presn else ""}.png',
-        ylab="Total Integrated Flux flavor/cm^2",
-        xlab="Mid-Point Time in Coordinate (s)",
-        x_axis=time_bins_x_axis,
-        show=show_charts,
-        use_x_log=True, save=True)
     return flux_scatter_data, raw_data, labeled
 
 def remap_dict(dictionary,newval):
@@ -431,25 +341,13 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
     # print out information of the set
     print(config.model(config.model_file_paths[number]))
 
-    p_data, r_data, l_data, zeta, sigma_average_det = process_detector(config, number, 'ar40kt')
+    p_data, r_data, l_data = process_detector(config, number, 'ar40kt')
     # need to convert data to an array
     all_plot_data = [list(key) for key in r_data]  # going to take each detector and add them up
-    all_zeta_est = {
-        'ar40kt': zeta,
-        'wc100kt30prct': [],
-        'scint20kt': []
-    }
-    sigma_average_tot = {
-        'ar40kt': sigma_average_det,
-        'wc100kt30prct': [],
-        'scint20kt': []
-    }
 
     for detector in ['wc100kt30prct', 'scint20kt']:
-        p_data, r_data, l_data, zeta, sigma_average_det = process_detector(config, number, detector)
+        p_data, r_data, l_data = process_detector(config, number, detector)
         all_plot_data = all_plot_data + np.asarray([list(key) for key in r_data])
-        all_zeta_est[detector] = zeta
-        sigma_average_tot[detector] = sigma_average_det
 
     # now get the time bins
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
@@ -459,59 +357,7 @@ def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, 
         log_bins=use_log,
         presn=use_presn
     )
-    t.create_regular_plot(all_plot_data,
-                          config.proxyconfig.same_axes(),
-                          f'*Detectors Folded {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
-                          x_axis=time_bins_x_axis,
-                          ylab='Event count',
-                          show=show_charts
-                          )
-    # print integral as well
     # r'$\nu_x$ Proxy', r'$\nu_e$ Proxy', r'$\bar{\nu_e}$ Proxy'
-
-    # print(f'Complete AUC: {np.sum(np.transpose(all_plot_data)[2]) + np.sum(np.transpose(all_plot_data)[0]) + np.sum(np.transpose(all_plot_data)[1])}')
-    print(f'Complete AUC: {simpson(np.transpose(all_plot_data)[0], time_bins_x_axis) + simpson(np.transpose(all_plot_data)[1], time_bins_x_axis) + simpson(np.transpose(all_plot_data)[2], time_bins_x_axis)}')
-    t.create_regular_plot(t_normalize(all_plot_data),
-                          config.proxyconfig.same_axes(),
-                          f'*Detectors Folded Fraction {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
-                          x_axis=time_bins_x_axis,
-                          ylab='Event count',
-                          show=show_charts,
-                          use_x_log=True
-                          )
-
-    zeta_raw = tuple(zip(all_zeta_est['scint20kt'], all_zeta_est['wc100kt30prct'], all_zeta_est['ar40kt']))
-    sigma_average_complete = tuple(zip(
-        sigma_average_tot['scint20kt'],
-        sigma_average_tot['wc100kt30prct'],
-        sigma_average_tot['ar40kt'])
-    )
-
-    #region plot sigma_average for all detectors
-    t.create_regular_plot(sigma_average_complete,
-                          config.proxyconfig.flux_axes(),
-                          f'CXNs for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""} TD.png',
-                          x_axis=time_bins_x_axis,
-                          ylab='cm^2',
-                          show=show_charts
-                          )
-    # send the sigma_average out to a file with time
-    sigma_average_df = pd.DataFrame(sigma_average_complete, columns=config.proxyconfig.flux_axes())
-    # add the time bins to the datafram
-    sigma_average_df['time_bins'] = time_bins_x_axis.value
-    sigma_average_df.to_csv(t.clean_newline(f'./cxns/CXNs for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.csv'))
-
-    #endregion
-
-    #TODO: put the Ndet into a pandas dataframe and export it. even better is to store the Ndet/Nt so that way the math is easier later
-    # we'll call this the zeta parameter. zeta = Ndet/Nt
-    print("Storing zetas...")
-    # divide by Nt
-    # zetas = np.divide(all_plot_data, np.tile([config.proxyconfig.Nt_scint20kt()[0], config.proxyconfig.Nt_ar40kt()[1],
-    #                                   config.proxyconfig.Nt_wc100kt30prct()[2]], [len(all_plot_data), 1]))
-    zeta_df = pd.DataFrame(zeta_raw, columns=config.proxyconfig.flux_axes())
-    zeta_df['time_bins'] = time_bins_x_axis.value
-    zeta_df.to_csv(t.clean_newline(f'./zetas/zetas for {config.model_type} {config.transformation} {str(config.proxyconfig)}\n{_colors[colorid]} {config.model_file_paths[number].split("/")[-1]} {"Logged" if use_log else "Linear"} Bins {" PreSN" if use_presn else ""}.csv'))
 
     # region also create a cumulative plot
     nux_proxy_cumsum = np.cumsum(list(list(zip(*all_plot_data))[0]))
@@ -668,6 +514,9 @@ def process_transformation(config: t.MetaAnalysisConfig):
 @click.option('--detproxy', required=False, type=str, default='AgDet', help='Detector proxy configuration. Options: AgDet or BstChnl')
 @click.option('--heatmap', required=False, type=bool, default=False, help='Include heatmaps. Can only process one submodel at a time')
 def start(showc,models,distance,uselog,p, setno, allsubmodels, cache, presn, tflux, detproxy, heatmap):
+    if detproxy != 'BstChnl':
+        raise ValueError('Use of detproxy option is currently deprecated. Only using BstChnl')
+
     global show_charts
     show_charts = showc
     
