@@ -55,21 +55,16 @@ if __name__ == '__main__':
         # ndet_axes.set_ylabel('Event count / MeV')
 
         # ndet_interpolated = np.interp(flux_energy_spectra,l_data[time]['Energy']*100,l_data[time]['ibd'])
-        nux_fluence = np.add(
-            labeled[time][2],
-            np.add(
-                np.add(
-                    labeled[time][3],
-                    labeled[time][5]
-                ),
-                labeled[time][6]
-            )
-        )
+        nux_fluence = labeled[time][1] + labeled[time][2] + labeled[time][3] + labeled[time][4] + labeled[time][5] + labeled[time][6]
         flux_interpolated = np.interp(l_data[time]['Energy']*1000, flux_energy_spectra, nux_fluence)
         cxn_reconstructed = np.divide(
             l_data[time]['nc'],
             flux_interpolated
         )/(config.proxyconfig.Nt_scint20kt()[0]*2.5) # divide by 2.5 since the energy bin widths are different
+
+        # if we're using scint20kt, then we need to 0 out the cxn for energies less than 10 MeV (0.01 GeV)
+        cxn_reconstructed[l_data[0]['Energy']*1000 < 15] = 0
+
         # ratio_axes.scatter(
         #     l_data[time]['Energy']*1000,
         #     cxn_reconstructed
