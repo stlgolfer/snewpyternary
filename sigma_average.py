@@ -35,8 +35,10 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
     phi_t_over_time = np.zeros_like(times_unitless)
     flux_vs_time = np.zeros_like(times_unitless)
     for l in range(len(labeled)):
-        phi_t_over_time[l] = np.sum(labeled[l][flux_chan]) * 0.2e-3  # * dts[l]
-        flux_vs_time[l] = np.sum(labeled[l][flux_chan]) * 0.2e-3
+        nux_fluence = labeled[l][1] + labeled[l][2] + labeled[l][3] + labeled[l][4] + labeled[l][5] + \
+                      labeled[l][6]
+        phi_t_over_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3  # * dts[l]
+        flux_vs_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3
     phi_t_ax.scatter(times_unitless, phi_t_over_time)
     phi_t_ax.set_title(r'$\phi_t$ for Nakazato 0 Fluence')
     phi_t_ax.set_xlabel("Time (s)")
@@ -94,16 +96,7 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
 
     # region reconstruct cxn from Ndet to ensure correct smearing matrix was used
     # pick 0th bin
-    nux_fluence = np.add(
-        labeled[0][2],
-        np.add(
-            np.add(
-                labeled[0][3],
-                labeled[0][5]
-            ),
-            labeled[0][6]
-        )
-    )
+    nux_fluence = labeled[0][1] + labeled[0][2] + labeled[0][3] + labeled[0][4] + labeled[0][5] + labeled[0][6]
     flux_interpolated = np.interp(
         l_data[0]['Energy'],
         labeled[0][0],
@@ -161,7 +154,9 @@ def estimate_cxn(config: t.MetaAnalysisConfig, flux_chan: int, cxn_truth_fname: 
 
     sigma_average = np.zeros_like(times_unitless)
     for time in range(len(times_unitless)):
-        sigma_average[time] = np.sum(np.multiply(0.2e-3 * labeled[time][flux_chan], truth_calculation)) / phi_t_over_time[time]
+        nux_fluence = labeled[time][1] + labeled[time][2] + labeled[time][3] + labeled[time][4] + labeled[time][5] + \
+                      labeled[time][6]
+        sigma_average[time] = np.sum(np.multiply(0.2e-3 * (nux_fluence if det_name == 'scint20kt' else labeled[time][flux_chan]), truth_calculation)) / phi_t_over_time[time]
 
     # now plot the flux-averaged cxn
     fig, ax = plt.subplots(1, 1)
