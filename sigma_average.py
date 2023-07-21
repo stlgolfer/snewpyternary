@@ -187,23 +187,19 @@ def estimate_cxn(
     ax.set_title(rf'$<\sigma>$ for Nakazato {config.set_numbers[0]} {cxn_truth_chan_key}')
     fig.show()
 
-    if __name__ == '__main__':
-        # only save the sigmas in a csv if this is being run by itself
-        print('Storing average sigma in ./sigmas...')
-        df = pd.DataFrame()
-        df['time'] = times_unitless
-        df['sigma average'] = sigma_average
-        df.to_csv(f'./sigmas/{config.stringify(config.set_numbers[0])} {cxn_truth_chan_key} sigma average.csv')
-        print('Done')
-
     #region unfold attempt
     # at this point, we have everything we need to also unfold. the form should be similar to the phi_t calculation
     # for now, just try unfolding anue
     phi_est_unfolded = np.zeros_like(times_unitless)
     for phi_est_time_bin in range(len(times_unitless)):
-        phi_est_unfolded[phi_est_time_bin] = dts[phi_est_time_bin]\
-                           * 0.2e-3 * np.sum(l_data[phi_est_time_bin][det_chan_name]) \
-                           / (Nt * sigma_average[phi_est_time_bin])
+        if det_name == 'scint20kt':
+            l_data[phi_est_time_bin][det_chan_name][l_data[0]['Energy']*1000 < 15] = 0
+
+        Ndet = dts[phi_est_time_bin] * 0.2e-3 * np.sum(
+            l_data[phi_est_time_bin][det_chan_name]
+        )
+
+        phi_est_unfolded[phi_est_time_bin] = Ndet / (Nt * sigma_average[phi_est_time_bin])
     unfold_fig, unfold_ax = plt.subplots(1,1)
     unfold_ax.set_xscale('log')
     unfold_ax.scatter(times_unitless, phi_est_unfolded, label='Unfolded')
@@ -212,6 +208,17 @@ def estimate_cxn(
     unfold_ax.legend()
     unfold_fig.show()
     #endregion
+
+    if __name__ == '__main__':
+        # only save the sigmas in a csv if this is being run by itself
+        print('Storing average sigma in ./sigmas...')
+        df = pd.DataFrame()
+        df['time'] = times_unitless
+        df['sigma average'] = sigma_average
+        df['unfolded'] = phi_est_unfolded
+        df.to_csv(f'./sigmas/{config.stringify(config.set_numbers[0])}_{cxn_truth_chan_key}_sigma_average.csv')
+        print('Done')
+
     return sigma_average
 
 
