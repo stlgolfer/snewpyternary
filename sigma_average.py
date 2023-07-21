@@ -222,7 +222,7 @@ def configure(model, p, flavor, submodel):
             'det_chan_name': 'nue_Ar40',
             'Nt': config.proxyconfig.Nt_ar40kt()[1]
         },
-        'nue': {
+        'anue': {
             'flux_chan': 4,
             'cxn_truth_fname': 'xs_ibd',
             'cxn_truth_chan_key': 'nu_e_bar',
