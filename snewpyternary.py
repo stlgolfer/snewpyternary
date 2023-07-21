@@ -574,4 +574,4 @@ class MetaAnalysisConfig:
         self.proxyconfig: __DetectorProxyConfiguration__ = proxy_config
 
     def stringify(self, submodel=0):
-        return f'{self.model_type} submodel {submodel} {self.transformation} {self.proxyconfig}'
+        return f'{self.model_type} s{submodel} {self.transformation} {self.proxyconfig}'

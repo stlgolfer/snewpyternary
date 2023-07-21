@@ -48,14 +48,14 @@ def estimate_cxn(
     for l in range(len(labeled)):
         nux_fluence = labeled[l][1] + labeled[l][2] + labeled[l][3] + labeled[l][4] + labeled[l][5] + \
                       labeled[l][6]
-        phi_t_over_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3  # * dts[l]
+        phi_t_over_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3  * dts[l]
         flux_vs_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3
 
     if det_name == 'scint20kt':
         warnings.warn("scint20kt uses a slightly different calculation, so don't be surprised if the AUC is wrong")
 
     phi_t_ax.scatter(times_unitless, phi_t_over_time)
-    phi_t_ax.set_title(r'$\phi_t$ for Nakazato 0 Fluence')
+    phi_t_ax.set_title(rf'$\phi_t$ for {config.model_type} {config.set_numbers[0]} Fluence')
     phi_t_ax.set_xlabel("Time (s)")
     phi_t_ax.set_ylabel(r'$neutrinos/cm^2$')
     phi_t_ax.set_xscale('log')
@@ -171,7 +171,11 @@ def estimate_cxn(
     for time in range(len(times_unitless)):
         nux_fluence = labeled[time][1] + labeled[time][2] + labeled[time][3] + labeled[time][4] + labeled[time][5] + \
                       labeled[time][6]
-        sigma_average[time] = np.sum(np.multiply(0.2e-3 * (nux_fluence if det_name == 'scint20kt' else labeled[time][flux_chan]), truth_calculation)) / phi_t_over_time[time]
+        sigma_average[time] = np.sum(
+            np.multiply(
+                dts[time] * 0.2e-3 * (nux_fluence if det_name == 'scint20kt' else labeled[time][flux_chan]),
+                truth_calculation)
+        ) / phi_t_over_time[time]
 
     # now plot the flux-averaged cxn
     fig, ax = plt.subplots(1, 1)
@@ -183,12 +187,32 @@ def estimate_cxn(
     ax.set_title(rf'$<\sigma>$ for Nakazato {config.set_numbers[0]} {cxn_truth_chan_key}')
     fig.show()
 
-    print('Storing average sigma in ./sigmas...')
-    df = pd.DataFrame()
-    df['time'] = times_unitless
-    df['sigma average'] = sigma_average
-    df.to_csv(f'./sigmas/{config.stringify(config.set_numbers[0])} {cxn_truth_chan_key} sigma average.csv')
-    print('Done')
+    if __name__ == '__main__':
+        # only save the sigmas in a csv if this is being run by itself
+        print('Storing average sigma in ./sigmas...')
+        df = pd.DataFrame()
+        df['time'] = times_unitless
+        df['sigma average'] = sigma_average
+        df.to_csv(f'./sigmas/{config.stringify(config.set_numbers[0])} {cxn_truth_chan_key} sigma average.csv')
+        print('Done')
+
+    #region unfold attempt
+    # at this point, we have everything we need to also unfold. the form should be similar to the phi_t calculation
+    # for now, just try unfolding anue
+    phi_est_unfolded = np.zeros_like(times_unitless)
+    for phi_est_time_bin in range(len(times_unitless)):
+        phi_est_unfolded[phi_est_time_bin] = dts[phi_est_time_bin]\
+                           * 0.2e-3 * np.sum(l_data[phi_est_time_bin][det_chan_name]) \
+                           / (Nt * sigma_average[phi_est_time_bin])
+    unfold_fig, unfold_ax = plt.subplots(1,1)
+    unfold_ax.set_xscale('log')
+    unfold_ax.scatter(times_unitless, phi_est_unfolded, label='Unfolded')
+    unfold_ax.scatter(times_unitless, phi_t_over_time, label=r'$\phi_t$ Truth', alpha=0.2)
+    unfold_ax.set_title(f'{config.stringify()} {cxn_truth_chan_key} Unfolded')
+    unfold_ax.legend()
+    unfold_fig.show()
+    #endregion
+    return sigma_average
 
 
 @click.command()
