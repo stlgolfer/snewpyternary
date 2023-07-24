@@ -20,14 +20,23 @@ def bind(nux, nue, anue, title):
     anue_df = pd.read_csv(anue)
 
     # now that everything is loaded, need to put df into raw tuples
-    raw_combined = list(zip(nux_df['unfolded'], anue_df['unfolded'], nue_df['unfolded']))
+    raw_combined = list(
+        zip(
+            np.cumsum(nux_df['unfolded']),
+            np.cumsum(anue_df['unfolded']),
+            np.cumsum(nue_df['unfolded'])
+        )
+    )
+    ndet_raw_combined = list(zip(nux_df['Ndet'], anue_df['Ndet'], nue_df['Ndet']))
+
+    # need to source error from original
     ternary_points = t_normalize(raw_combined)
     # print(ternary_points)
     # get the heatmap of it as well
 
     fig, tax = t.create_default_flux_plot(ternary_points, title, save=False, show=False)
     print("Generating heatmap (this might take a while)...")
-    tax.heatmap(generate_heatmap_dict(raw_combined, ternary_points), cmap=plt.get_cmap('PiYG'))
+    tax.heatmap(generate_heatmap_dict(ndet_raw_combined, ternary_points), cmap=plt.get_cmap('PiYG'))
     print("Done")
     tax.show()
 

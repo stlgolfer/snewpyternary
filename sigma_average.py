@@ -191,6 +191,7 @@ def estimate_cxn(
     # at this point, we have everything we need to also unfold. the form should be similar to the phi_t calculation
     # for now, just try unfolding anue
     phi_est_unfolded = np.zeros_like(times_unitless)
+    Ndet_over_time = np.zeros_like(times_unitless)
     for phi_est_time_bin in range(len(times_unitless)):
         if det_name == 'scint20kt':
             l_data[phi_est_time_bin][det_chan_name][l_data[0]['Energy']*1000 < 15] = 0
@@ -198,6 +199,7 @@ def estimate_cxn(
         Ndet = dts[phi_est_time_bin] * 0.2e-3 * np.sum(
             l_data[phi_est_time_bin][det_chan_name]
         )
+        Ndet_over_time[phi_est_time_bin] = Ndet
 
         phi_est_unfolded[phi_est_time_bin] = Ndet / (Nt * sigma_average[phi_est_time_bin])
     unfold_fig, unfold_ax = plt.subplots(1,1)
@@ -216,6 +218,7 @@ def estimate_cxn(
         df['time'] = times_unitless
         df['sigma average'] = sigma_average
         df['unfolded'] = phi_est_unfolded
+        df['Ndet'] = Ndet_over_time
         df.to_csv(f'./sigmas/{config.stringify(config.set_numbers[0])}_{cxn_truth_chan_key}_sigma_average.csv')
         print('Done')
 

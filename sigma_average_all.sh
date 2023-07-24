@@ -1,0 +1,1 @@
+python sigma_average.py Nakazato_2013 -p AdiabaticMSW_NMO -flavor nux && python sigma_average.py Nakazato_2013 -p AdiabaticMSW_NMO -flavor nue && python sigma_average.py Nakazato_2013 -p AdiabaticMSW_NMO -flavor anue
