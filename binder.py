@@ -6,7 +6,7 @@ from meta_analysis import t_normalize
 import snewpyternary as t
 import sys
 sys.path.insert(0,'./SURF2020fork')
-from SURF2020fork.ternary_helpers import generate_heatmap_dict
+from SURF2020fork.ternary_helpers import generate_heatmap_dict_phi_est, generate_heatmap_dict
 import matplotlib.pyplot as plt
 
 @click.command()
@@ -22,11 +22,12 @@ def bind(nux, nue, anue, title):
     # now that everything is loaded, need to put df into raw tuples
     raw_combined = list(
         zip(
-            np.cumsum(nux_df['unfolded']),
-            np.cumsum(anue_df['unfolded']),
-            np.cumsum(nue_df['unfolded'])
+            nux_df['unfolded'],
+            anue_df['unfolded'],
+            nue_df['unfolded']
         )
     )
+
     ndet_raw_combined = list(zip(nux_df['Ndet'], anue_df['Ndet'], nue_df['Ndet']))
 
     # need to source error from original
@@ -36,9 +37,13 @@ def bind(nux, nue, anue, title):
 
     fig, tax = t.create_default_flux_plot(ternary_points, title, save=False, show=False)
     print("Generating heatmap (this might take a while)...")
-    tax.heatmap(generate_heatmap_dict(ndet_raw_combined, ternary_points), cmap=plt.get_cmap('PiYG'))
+    tax.heatmap(generate_heatmap_dict(raw_combined, ternary_points), cmap=plt.get_cmap('PiYG'))
     print("Done")
     tax.show()
+
+    Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined), "",save=False,show=False)
+    Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined,t_normalize(ndet_raw_combined)))
+    Ndet_tax.show()
 
 if __name__ == '__main__':
     bind()
