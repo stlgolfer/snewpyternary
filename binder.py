@@ -28,7 +28,14 @@ def bind(nux, nue, anue, title):
         )
     )
 
-    ndet_raw_combined = list(zip(nux_df['Ndet'], anue_df['Ndet'], nue_df['Ndet']))
+    # delta_time = np.subtract(nux_df['time'][1:], nux_df['time'][0:-1])
+    ndet_raw_combined = list(
+        zip(
+            nux_df['Ndet'],
+            anue_df['Ndet'],
+            nue_df['Ndet']
+        )
+    )
 
     # need to source error from original
     ternary_points = t_normalize(raw_combined)
@@ -37,7 +44,7 @@ def bind(nux, nue, anue, title):
 
     fig, tax = t.create_default_flux_plot(ternary_points, title, save=False, show=False)
     print("Generating heatmap (this might take a while)...")
-    tax.heatmap(generate_heatmap_dict(raw_combined, ternary_points), cmap=plt.get_cmap('PiYG'))
+    # tax.heatmap(generate_heatmap_dict_phi_est(raw_combined, ternary_points, ndet_raw_combined), cmap=plt.get_cmap('PiYG'))
     print("Done")
     tax.show()
 
