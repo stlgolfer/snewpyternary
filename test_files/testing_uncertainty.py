@@ -33,7 +33,8 @@ def prob_func(px,py):
     prob2[prob2>1] = 1
 
     # return px**2 + py**2
-    prob1 = ((A + B + C)**5*np.exp(-0.5*((A + B + C)**2*(B*C*px**2 + A*(C*py**2 + B*(px + py)**2)))/(A*B*C)))/(A*B*C*math.pi)
+    prob1 = ((A + B + C)**5*np.exp(-0.5*((A + B + C)*(B*C*(B + C)*px**2 + A**2*(C*py**2 + B*(-1 + px + py)**2) +\
+                A*(C**2*py**2 + B**2*(-1 + px + py)**2 + 2*B*C*(px**2 + px*(-1 + py) + (-1 + py)*py))))/(A*B*C)))/(A*B*C*math.pi)
     prob1[prob1 > 1] = 1
     return prob2
 
