@@ -37,6 +37,15 @@ def bind(nux, nue, anue, title):
         )
     )
 
+    ebin = 0.02e-3
+    ndet_raw_combined_per_time = list(
+        zip(
+            np.divide(nux_df['Ndet'],nux_df['dt'])/ebin,
+            np.divide(anue_df['Ndet'],nux_df['dt'])/ebin,
+            np.divide(nue_df['Ndet'],nux_df['dt'])/ebin
+        )
+    )
+
     # need to source error from original
     ternary_points = t_normalize(raw_combined)
     # print(ternary_points)
@@ -44,12 +53,12 @@ def bind(nux, nue, anue, title):
 
     fig, tax = t.create_default_flux_plot(ternary_points, title, save=False, show=False)
     print("Generating heatmap (this might take a while)...")
-    tax.heatmap(generate_heatmap_dict_phi_est(raw_combined, ternary_points, ndet_raw_combined), cmap=plt.get_cmap('PiYG'))
+    tax.heatmap(generate_heatmap_dict_phi_est(raw_combined, ternary_points, ndet_raw_combined_per_time), cmap=plt.get_cmap('PiYG'))
     print("Done")
     tax.show()
 
-    Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined), "",save=False,show=False)
-    Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined,t_normalize(ndet_raw_combined)))
+    Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined_per_time), "",save=False,show=False)
+    Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined_per_time,t_normalize(ndet_raw_combined_per_time)))
     # ndet_heatmap = generate_heatmap_dict_v2(ndet_raw_combined,t_normalize(ndet_raw_combined))
     # Ndet_tax.heatmap(ndet_heatmap, cmap=plt.get_cmap('PiYG'))
     Ndet_tax.show()
