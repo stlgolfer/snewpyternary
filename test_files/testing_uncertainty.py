@@ -2,16 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-const = 50
-A = const #= 3.813e-11
-B = const #1.577e-10
-C = const #6.3499e-08
+from matplotlib import animation
 
-phi_A = const
-phi_B = const
-phi_C = const
 
-def prob_func_phi_est(fA,fB):
+def prob_func_phi_est(fA,fB,A,B,C,phi_A,phi_B,phi_C):
     #fA = px  # check_point[0] / (check_point[0] + check_point[1])  # sum(check_point)
     #fB = py  # check_point[1] / (check_point[0] + check_point[1])  # sum(check_point)
 
@@ -36,7 +30,7 @@ def prob_func_phi_est(fA,fB):
     prob[prob > 1] = 1
     return prob
 
-def prob_func(px,py):
+def prob_func(px,py,A,B,C):
     # global A
     # global B
     # global C
@@ -70,28 +64,45 @@ def prob_func(px,py):
 
 if __name__ == '__main__':
     # see if we can just plot some poisson distributions for A, B, and C
-    samples = 1000
-    A_poisson_samples = np.random.poisson(A, samples)
-    B_poisson_samples = np.random.poisson(B, samples)
-    C_poisson_samples = np.random.poisson(C, samples)
-
-    poissons_fig, pois_ax = plt.subplots(1,1)
-    pois_ax.hist(A_poisson_samples, label='A')
-    pois_ax.hist(B_poisson_samples, label='B')
-    pois_ax.hist(C_poisson_samples, label='C')
-    poissons_fig.legend()
-    plt.show()
+    # samples = 1000
+    # A_poisson_samples = np.random.poisson(A, samples)
+    # B_poisson_samples = np.random.poisson(B, samples)
+    # C_poisson_samples = np.random.poisson(C, samples)
+    #
+    # poissons_fig, pois_ax = plt.subplots(1,1)
+    # pois_ax.hist(A_poisson_samples, label='A')
+    # pois_ax.hist(B_poisson_samples, label='B')
+    # pois_ax.hist(C_poisson_samples, label='C')
+    # poissons_fig.legend()
+    # plt.show()
 
     # now, plot the PDF, though this will be in 3D, so use a mesh
     pdf_fig, pdf_ax = plt.subplots(1,1) # subplot_kw={'projection':'3d'}
     x = np.linspace(0,1,1000)
     y = np.linspace(0,1,1000)
     px, py = np.meshgrid(x,y)
-    prob = np.array(prob_func_phi_est(px,py))
     # pdf_ax.set_zlim(0,1)
-    surf = pdf_ax.pcolormesh(px,py,prob)
+    A = 1
+    B = 1
+    C = 1
+    x = y = z = 1
+    surf = pdf_ax.pcolormesh(px, py, np.array(prob_func_phi_est(px, py,A,B,C,x,y,z)))
     pdf_fig.colorbar(surf)
     pdf_ax.set_xlabel('fA')
     pdf_ax.set_ylabel('fB')
 
-    pdf_fig.show()
+    # let's do an animation to show sensitivity to constants
+    constants = np.linspace(2,50,48)
+    def __update(const):
+        surf = pdf_ax.pcolormesh(px, py, np.array(prob_func_phi_est(px, py, const, const, const, const, const, const)))
+        pdf_ax.set_title(f'const={const}')
+        # pdf_fig.colorbar(surf)
+
+
+    ani = animation.FuncAnimation(pdf_fig, __update, constants, repeat=True)
+    # code courtesy of Josh Q.
+    print('Saving spectrogram video animation...')
+    writermp4 = animation.FFMpegWriter(fps=5)
+    ani.save('video.mp4', writer=writermp4)
+    print('...Done')
+    # pdf_fig.show()
