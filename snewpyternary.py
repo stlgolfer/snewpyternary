@@ -256,9 +256,9 @@ def create_detector_event_scatter(
                 # since we summed here, we have to also multiply by the E-bin width
                 # assume that th E-bin width is constant (which it should be since it's coming right out of snewpy)
                 energy_bin_width = (dict_data['Energy'][-1] - dict_data['Energy'][0])/len(dict_data['Energy'])
-                a = results[0] * energy_bin_width
-                b = results[1] * energy_bin_width
-                c = results[2] * energy_bin_width
+                a = results[0] #* energy_bin_width
+                b = results[1] #* energy_bin_width
+                c = results[2] #* energy_bin_width
 
                 processed_raw.append((results[0],results[1],results[2]))
                 
@@ -501,9 +501,9 @@ def create_flux_scatter(modelFilePath,
         aNuE = np.sum(time_bin[4])
         aNuX = np.sum(time_bin[5])+np.sum(time_bin[6])
         # also need to multiply by 0.2 MeV for correct sum
-        a = (NuX + aNuX)*0.2
-        b = (aNuE)*0.2
-        c = (NuE)*0.2
+        a = (NuX + aNuX)#*0.2
+        b = (aNuE)#*0.2
+        c = (NuE)#*0.2
         total = a+b+c
         plotting_data.append((scale*a/total,scale*b/total,scale*c/total))
         raw.append((a,b,c))

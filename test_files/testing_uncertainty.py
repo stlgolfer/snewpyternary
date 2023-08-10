@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-A = 6.69e-10
-B = 1.51e-11
-C = 1.58e-07
+A = 3.813e-11
+B = 1.577e-10
+C = 6.3499e-08
 
 phi_A = 205.08
 phi_B = 0.003
@@ -82,13 +82,13 @@ if __name__ == '__main__':
     plt.show()
 
     # now, plot the PDF, though this will be in 3D, so use a mesh
-    pdf_fig, pdf_ax = plt.subplots(1,1,subplot_kw={'projection':'3d'})
+    pdf_fig, pdf_ax = plt.subplots(1,1) # subplot_kw={'projection':'3d'}
     x = np.linspace(0,1,1000)
     y = np.linspace(0,1,1000)
     px, py = np.meshgrid(x,y)
-    prob = np.array(prob_func_phi_est(px,py))
-    pdf_ax.set_zlim(0,1)
-    surf = pdf_ax.contour3D(px,py,prob,500)
+    prob = np.array(prob_func(px,py))
+    # pdf_ax.set_zlim(0,1)
+    surf = pdf_ax.pcolormesh(px,py,prob)
     pdf_fig.colorbar(surf)
 
     pdf_fig.show()
