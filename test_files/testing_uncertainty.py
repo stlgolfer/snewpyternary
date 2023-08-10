@@ -2,13 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-A = 3.813e-11
-B = 1.577e-10
-C = 6.3499e-08
+const = 50
+A = const #= 3.813e-11
+B = const #1.577e-10
+C = const #6.3499e-08
 
-phi_A = 205.08
-phi_B = 0.003
-phi_C = 71.731
+phi_A = const
+phi_B = const
+phi_C = const
 
 def prob_func_phi_est(fA,fB):
     #fA = px  # check_point[0] / (check_point[0] + check_point[1])  # sum(check_point)
@@ -86,9 +87,11 @@ if __name__ == '__main__':
     x = np.linspace(0,1,1000)
     y = np.linspace(0,1,1000)
     px, py = np.meshgrid(x,y)
-    prob = np.array(prob_func(px,py))
+    prob = np.array(prob_func_phi_est(px,py))
     # pdf_ax.set_zlim(0,1)
     surf = pdf_ax.pcolormesh(px,py,prob)
     pdf_fig.colorbar(surf)
+    pdf_ax.set_xlabel('fA')
+    pdf_ax.set_ylabel('fB')
 
     pdf_fig.show()

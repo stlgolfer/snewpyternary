@@ -44,12 +44,12 @@ def bind(nux, nue, anue, title):
 
     fig, tax = t.create_default_flux_plot(ternary_points, title, save=False, show=False)
     print("Generating heatmap (this might take a while)...")
-    tax.heatmap(generate_heatmap_dict_phi_est(raw_combined, ternary_points/100, ndet_raw_combined), cmap=plt.get_cmap('PiYG'))
+    tax.heatmap(generate_heatmap_dict_phi_est(raw_combined, ternary_points, ndet_raw_combined), cmap=plt.get_cmap('PiYG'))
     print("Done")
     tax.show()
 
     Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined), "",save=False,show=False)
-    Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined,t_normalize(ndet_raw_combined)/100))
+    Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined,t_normalize(ndet_raw_combined)))
     # ndet_heatmap = generate_heatmap_dict_v2(ndet_raw_combined,t_normalize(ndet_raw_combined))
     # Ndet_tax.heatmap(ndet_heatmap, cmap=plt.get_cmap('PiYG'))
     Ndet_tax.show()
