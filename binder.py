@@ -6,7 +6,7 @@ from meta_analysis import t_normalize
 import snewpyternary as t
 import sys
 sys.path.insert(0,'./SURF2020fork')
-from SURF2020fork.ternary_helpers import generate_heatmap_dict_phi_est, generate_heatmap_dict, generate_heatmap_dict_v2
+from SURF2020fork.ternary_helpers import generate_heatmap_dict_phi_est, generate_heatmap_dict
 import matplotlib.pyplot as plt
 
 @click.command()
@@ -22,9 +22,9 @@ def bind(nux, nue, anue, title):
     # now that everything is loaded, need to put df into raw tuples
     raw_combined = list(
         zip(
-            nux_df['unfolded'],
-            anue_df['unfolded'],
-            nue_df['unfolded']
+            np.cumsum(nux_df['unfolded']),
+            np.cumsum(anue_df['unfolded']),
+            np.cumsum(nue_df['unfolded'])
         )
     )
 
@@ -40,9 +40,9 @@ def bind(nux, nue, anue, title):
     ebin = 0.02e-3
     ndet_raw_combined_per_time = list(
         zip(
-            np.divide(nux_df['Ndet'],nux_df['dt'])/ebin,
-            np.divide(anue_df['Ndet'],nux_df['dt'])/ebin,
-            np.divide(nue_df['Ndet'],nux_df['dt'])/ebin
+            np.cumsum(np.divide(nux_df['Ndet'],nux_df['dt'])/ebin),
+            np.cumsum(np.divide(anue_df['Ndet'],nux_df['dt'])/ebin),
+            np.cumsum(np.divide(nue_df['Ndet'],nux_df['dt'])/ebin)
         )
     )
 
