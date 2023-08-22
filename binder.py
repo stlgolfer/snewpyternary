@@ -51,7 +51,7 @@ def bind(nux, nue, anue, title):
     # print(ternary_points)
     # get the heatmap of it as well
 
-    fig, tax = t.create_default_flux_plot(t_normalize(raw_combined), title, save=False, show=False)
+    fig, tax = t.create_default_flux_plot(t_normalize(raw_combined), title, save=True, show=False)
     print("Generating heatmap (this might take a while)...")
     tax.heatmap(generate_heatmap_dict_phi_est(raw_combined, ternary_points, ndet_raw_combined_per_time,sigma_mult=3), cmap=plt.get_cmap('PiYG'))
     print("Done")
