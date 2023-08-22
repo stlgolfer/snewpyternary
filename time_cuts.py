@@ -25,7 +25,7 @@ if __name__ == '__main__':
     )
 
     flux_scatter_data, raw_data, labeled = process_flux(config,0)
-    plot_data, raw_data_det, l_data, zeta, sigma_average = process_detector(config,0,'scint20kt')
+    plot_data, raw_data_det, l_data = process_detector(config,0,'scint20kt')
 
     # make a spectrogram of the actual xscn from snowglobes (it will be time-invariant)
     ibd_cxn_actual = pd.read_csv('./snowglobes_cxns/xs_nc_numu_C12.csv')  # only want the 'nu_e_bar' channel

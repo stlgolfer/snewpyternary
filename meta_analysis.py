@@ -309,13 +309,14 @@ def remap_dict(dictionary,newval):
     return new_dict
 
 def t_normalize(raw_data):
-    normalized = []
-    for point in raw_data:
-        a = point[0]
-        b = point[1]
-        c = point[2]
+    normalized = np.zeros_like(raw_data)
+    for point in range(len(normalized)):
+        a = raw_data[point][0]
+        b = raw_data[point][1]
+        c = raw_data[point][2]
         tot = a + b + c
-        normalized.append((100 * a / tot, 100 * b / tot, 100 * c / tot))
+        normalized[point] = (100 * a / tot, 100 * b / tot, 100 * c / tot)
+        #normalized.append()
     return normalized
 
 def ternary_distance(p1: tuple, p2: tuple):

@@ -199,7 +199,7 @@ def estimate_cxn(
         Ndet = dts[phi_est_time_bin] * 0.2e-3 * np.sum(
             l_data[phi_est_time_bin][det_chan_name]
         )
-        Ndet_over_time[phi_est_time_bin] = Ndet
+        Ndet_over_time[phi_est_time_bin] = Ndet #/(0.2e-3 * dts[phi_est_time_bin])
 
         phi_est_unfolded[phi_est_time_bin] = Ndet / (Nt * sigma_average[phi_est_time_bin])
     unfold_fig, unfold_ax = plt.subplots(1,1)
@@ -216,9 +216,11 @@ def estimate_cxn(
         print('Storing average sigma in ./sigmas...')
         df = pd.DataFrame()
         df['time'] = times_unitless
+        df['dt'] = dts
         df['sigma average'] = sigma_average
         df['unfolded'] = phi_est_unfolded
         df['Ndet'] = Ndet_over_time
+
         df.to_csv(f'./sigmas/{config.stringify(config.set_numbers[0])}_{cxn_truth_chan_key}_sigma_average.csv')
         print('Done')
 
