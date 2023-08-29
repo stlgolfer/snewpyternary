@@ -10,6 +10,7 @@ import sys
 sys.path.insert(0,'./SURF2020fork')
 from SURF2020fork.ternary_helpers import generate_heatmap_dict_phi_est, generate_heatmap_dict
 import matplotlib.pyplot as plt
+import math
 import warnings
 
 @click.command()
@@ -57,6 +58,9 @@ def bind(nux, nue, anue, title, heatmap):
         )
     )
 
+    ternary_points = t_normalize(unfolded_csum)
+    unfolded_ternary_points_pre_csum = t_normalize(unfolded_pre_csum)
+
     #region time domain error bars
     unfolded_transpose_csum = list(zip(*unfolded_csum))
     ndet_raw_transpose_csum = list(zip(*ndet_raw_combined_per_time))
@@ -73,13 +77,34 @@ def bind(nux, nue, anue, title, heatmap):
     nue_error_td_pre_csum = 3*np.divide(unfolded_transpose_pre_csum[2], np.sqrt(ndet_raw_transpose_pre_csum[2]))
     #endregion
 
+    #region time domain ternary error bars
+    no_csum_frac_error_bars_td_nux = np.zeros(len(ternary_points))
+    no_csum_frac_error_bars_td_anue = np.zeros(len(ternary_points))
+    no_csum_frac_error_bars_td_nue = np.zeros(len(ternary_points))
+    for i in range(len(no_csum_frac_error_bars_td_nux)):
+        x = nux_df['unfolded'][i]/6
+        y = (anue_df['unfolded'])[i]
+        z = (nue_df['unfolded'])[i]
+        A = list(zip(*ndet_raw_combined_per_time_pre_csum))[0][i]
+        B = list(zip(*ndet_raw_combined_per_time_pre_csum))[1][i]
+        C = list(zip(*ndet_raw_combined_per_time_pre_csum))[2][i]
+
+        error_x = math.sqrt((x**2*(B*C*(y + z)**2 + A*(C*y**2 + B*z**2)))/(A*B*C*(x + y + z)**4))
+        error_y = math.sqrt((y**2*(B*C*x**2 + A*(B*z**2 + C*(x + z)**2)))/(A*B*C*(x + y + z)**4))
+        error_z = math.sqrt(((B*C*x**2 + A*(C*y**2 + B*(x + y)**2))*z**2)/(A*B*C*(x + y + z)**4))
+
+        no_csum_frac_error_bars_td_nux[i] = error_x
+        no_csum_frac_error_bars_td_anue[i] = error_y
+        no_csum_frac_error_bars_td_nue[i] = error_z
+    #endregion
+
     # need to source error from original
-    ternary_points = t_normalize(unfolded_csum)
+
     # print(ternary_points)
     # get the heatmap of it as well
 
     #region make some time domain plots as well
-    time_domain_fig, ((td_c_ax, td_c_frac_ax), (td_ax, td_frac_ax)) = plt.subplots(2,2, figsize=(8,8))
+    time_domain_fig, (td_c_ax, td_c_frac_ax) = plt.subplots(1,2, figsize=(8,5))
     td_c_ax.errorbar(nux_df['time'], np.cumsum(nux_df['unfolded']/6), yerr=nux_csum_error_td, fmt='.', label=r'$\nu_x$ Unf.')
     td_c_ax.errorbar(nux_df['time'], np.cumsum(anue_df['unfolded']), yerr=anue_csum_error_td, fmt='.', label=r'$\bar{\nu_e}$ Unf.')
     td_c_ax.errorbar(nux_df['time'], np.cumsum(nue_df['unfolded']), yerr=nue_csum_error_td, fmt='.', label=r'$\nu_e$ Unf.')
@@ -106,11 +131,21 @@ def bind(nux, nue, anue, title, heatmap):
     td_c_frac_ax.set_ylabel('%')
     td_c_frac_ax.legend()
 
-    td_frac_ax.scatter(nux_df['time'], list(zip(*unfolded_pre_csum))[0], label=r'$\nu_x$ Unf.')
-    td_frac_ax.scatter(nux_df['time'], list(zip(*unfolded_pre_csum))[1], label=r'$\bar{\nu_e}$ Unf.')
-    td_frac_ax.scatter(nux_df['time'], list(zip(*unfolded_pre_csum))[2], label=r'$\nu_e$ Unf.')
+    time_domain_fig.suptitle(title)
+    time_domain_fig.savefig(f'./plots/{title} Cumulative Time Domain.png')
+    time_domain_fig.show()
+
+    time_domain_fig_no_csum, (td_ax, td_frac_ax) = plt.subplots(1,2,figsize=(8,5))
+
+    print(no_csum_frac_error_bars_td_nux)
+    no_csum_frac_error_bars_td_anue = np.ones_like(no_csum_frac_error_bars_td_nux)*10
+    no_csum_frac_error_bars_td_nue = np.ones_like(no_csum_frac_error_bars_td_nux) * 10
+    td_frac_ax.errorbar(nux_df['time'], list(zip(*unfolded_ternary_points_pre_csum))[0], fmt='.', label=r'$\nu_x$ Unf.')
+    td_frac_ax.errorbar(nux_df['time'], list(zip(*unfolded_ternary_points_pre_csum))[1], fmt='.', label=r'$\bar{\nu_e}$ Unf.')
+    td_frac_ax.errorbar(nux_df['time'], list(zip(*unfolded_ternary_points_pre_csum))[2], fmt='.', label=r'$\nu_e$ Unf.')
     td_frac_ax.set_xscale('log')
     td_frac_ax.set_xlabel('Mid-Point Time (s)')
+    td_frac_ax.set_ylim(0,100)
     td_frac_ax.set_ylabel('%')
     td_frac_ax.legend()
 
@@ -130,9 +165,9 @@ def bind(nux, nue, anue, title, heatmap):
     td_ax_inset.errorbar(nux_df['time'], nue_df['unfolded'], yerr=nue_error_td_pre_csum, fmt='.', label=r'$\nu_e$ Unf.')
     td_ax_inset.set_xscale('log')
 
-    time_domain_fig.suptitle(title)
-    time_domain_fig.savefig(f'./plots/{title} Time Domain.png')
-    time_domain_fig.show()
+    time_domain_fig_no_csum.suptitle(title)
+    time_domain_fig_no_csum.savefig(f'./plots/{title} Time Domain.png')
+    time_domain_fig_no_csum.show()
 
     #endregion
 
