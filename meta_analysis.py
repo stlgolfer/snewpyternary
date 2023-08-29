@@ -146,7 +146,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         }
     }
 
-    spt_title = f'{config.model_type} {detector}\n {str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins {sptc_index[detector]["proxy"]} Spectra{" PreSN" if use_presn else ""}'
+    # spt_title = f'{config.model_type} {detector}\n {str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins {sptc_index[detector]["proxy"]} Spectra{" PreSN" if use_presn else ""}'
+    spt_title = f'{config.stringify(submodel=set_no)} {detector}'
     spt_full_content = []
     # now go through the l_data, which has rows containing dict_data
     with tqdm(total = len(l_data)) as pbar:
@@ -175,7 +176,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     # dump the figure for later arrangement
     spt_fig.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
-    pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
+    # pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
 
     if show_charts:
         spt_fig.show()
@@ -257,8 +258,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         # ani.save('video.mp4', writer=writermp4)
         print('...Done')
 
-        flux_spect_fig.savefig('./anue flux spectrogram.png')
-        pickle.dump(flux_spect_fig, open('./anue flux spectrogram.pickle', 'wb'))
+        flux_spect_fig.savefig(f'./spectra/{config.stringify(submodel=set_no)} anue flux spectrogram.png')
+        # pickle.dump(flux_spect_fig, open(f'./spectra/{config.stringify(submodel=set_no)} anue flux spectrogram.pickle', 'wb'))
 
         if show_charts:
             flux_spect_fig.show()

@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import warnings
 from astropy import units as u
+from tqdm import tqdm
 
 def estimate_cxn(
         config: t.MetaAnalysisConfig,
@@ -40,6 +41,12 @@ def estimate_cxn(
     # in a time bin, the truth flux is binned in GeV
     labeled_transposed = np.transpose(labeled)
     plot_data, raw_data_det, l_data = process_detector(config, submodel_number, det_name)
+
+    #region make spectrograms and save them in the right spot
+    spt_full_content = []
+    # now go through the l_data, which has rows containing dict_data
+
+    #endregion
 
     # region let's just try to plot phi_t over time, flux vs time, and flux vs energy
     phi_t_fig, phi_t_ax = plt.subplots(1, 1)
