@@ -17,7 +17,8 @@ import warnings
 @click.option('-nue', required=True, help='Location of nue csv')
 @click.option('-anue', required=True, help='Location of anue csv')
 @click.option('--title', required=False, help='Title of the ternary plot', default='')
-def bind(nux, nue, anue, title):
+@click.option('--heatmap', required=False, help='Create heatmap?', default=True)
+def bind(nux, nue, anue, title, heatmap):
     nux_df = pd.read_csv(nux)
     nue_df = pd.read_csv(nue)
     anue_df = pd.read_csv(anue)
@@ -31,6 +32,7 @@ def bind(nux, nue, anue, title):
             np.cumsum(nue_df['unfolded'])
         )
     )
+    pre_csum = t_normalize(raw_combined)
 
     ebin = 0.02e-3
     ndet_raw_combined_per_time = list(
@@ -46,6 +48,46 @@ def bind(nux, nue, anue, title):
     # print(ternary_points)
     # get the heatmap of it as well
 
+    #region make some time domain plots as well
+    time_domain_fig, ((td_c_ax, td_c_frac_ax), (td_ax, td_frac_ax)) = plt.subplots(2,2, figsize=(16,16))
+    td_c_ax.scatter(nux_df['time'], np.cumsum(nux_df['unfolded']/6), label=r'$\nu_x$ Unf.', linestyle=(0, (1,10)))
+    td_c_ax.scatter(nux_df['time'], np.cumsum(anue_df['unfolded']), label=r'$\bar{\nu_e}$ Unf.', linestyle='solid')
+    td_c_ax.scatter(nux_df['time'], np.cumsum(nue_df['unfolded']), label=r'$\nu_e$ Unf.', linestyle='dotted')
+    td_c_ax.set_xscale('log')
+    td_c_ax.set_xlabel('Mid-Point Time (s)')
+    td_c_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$ Cumu.')
+    td_c_ax.legend()
+
+    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[0], label=r'$\nu_x Unf.')
+    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[1], label=r'$\bar{\nu_e} Unf.')
+    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[2], label=r'$\nu_e Unf.')
+    td_c_frac_ax.set_xscale('log')
+    td_c_frac_ax.set_xlabel('Mid-Point Time (s)')
+    td_c_frac_ax.set_ylabel('%')
+    td_c_frac_ax.legend()
+
+    td_frac_ax.scatter(nux_df['time'], list(zip(*pre_csum))[0], label=r'$\nu_x Unf.')
+    td_frac_ax.scatter(nux_df['time'], list(zip(*pre_csum))[1], label=r'$\bar{\nu_e} Unf.')
+    td_frac_ax.scatter(nux_df['time'], list(zip(*pre_csum))[2], label=r'$\nu_e Unf.')
+    td_frac_ax.set_xscale('log')
+    td_frac_ax.set_xlabel('Mid-Point Time (s)')
+    td_frac_ax.set_ylabel('%')
+    td_frac_ax.legend()
+
+    td_ax.scatter(nux_df['time'], nux_df['unfolded'] / 6, label=r'$\nu_x$ Unf.', linestyle=(0, (1, 10)))
+    td_ax.scatter(nux_df['time'], anue_df['unfolded'], label=r'$\bar{\nu_e}$ Unf.', linestyle='solid')
+    td_ax.scatter(nux_df['time'], nue_df['unfolded'], label=r'$\nu_e$ Unf.', linestyle='dotted')
+    td_ax.set_xscale('log')
+    td_ax.set_xlabel('Mid-Point Time (s)')
+    td_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$')
+    td_ax.legend()
+    time_domain_fig.suptitle(title)
+    time_domain_fig.savefig(f'./plots/{title} Time Domain.png')
+    time_domain_fig.show()
+
+    #endregion
+
+    #region ternary diagram for phi_est_flux
     scale = 100
     figure, tax = ternary.figure(scale=scale)
     tax.boundary(linewidth=2.0)
@@ -62,10 +104,11 @@ def bind(nux, nue, anue, title):
     #     if (p + 1 >= len(plotting_data)):
     #         break
         # tax.line(plotting_data[p], plotting_data[p + 1], color=(widths[p], 0, 0, 1), linestyle=':', linewidth=3)
-    print("Generating heatmap (this might take a while)...")
-    tax.heatmap(generate_heatmap_dict_phi_est(raw_combined, ternary_points, ndet_raw_combined_per_time, sigma_mult=3),
-                cmap=plt.get_cmap('PiYG'))
-    print("Done")
+    if heatmap:
+        print("Generating heatmap (this might take a while)...")
+        tax.heatmap(generate_heatmap_dict_phi_est(raw_combined, ternary_points, ndet_raw_combined_per_time, sigma_mult=3),
+                    cmap=plt.get_cmap('PiYG'))
+        print("Done")
     colormap = {}
     for i,p in enumerate(t_normalize(raw_combined)):
         colormap[tuple(p)] = widths[i]
@@ -81,9 +124,11 @@ def bind(nux, nue, anue, title):
     # fig, tax = t.create_default_flux_plot(t_normalize(raw_combined), rf'{title} $\phi_e$', save=False, show=False)
     tax.show()
     tax.savefig(f'./fluxes/{title} Unfolded.png')
+    #endregion
 
     Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined_per_time), f'{title} Ndet',save=False,show=False)
-    Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined_per_time,t_normalize(ndet_raw_combined_per_time)))
+    if heatmap:
+        Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined_per_time,t_normalize(ndet_raw_combined_per_time)))
     Ndet_tax.show()
     Ndet_tax.savefig(f'./plots/{title} Ndet.png')
 

@@ -20,8 +20,9 @@ def estimate_cxn(
         det_chan_name: str,
         Nt: float
 ):
+    submodel_number = config.set_numbers[0]
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
-        config.model_file_paths[config.set_numbers[0]],
+        config.model_file_paths[submodel_number],
         config.model_type,
         deltat=sn_model_default_time_step(config.model_type),
         log_bins=True,
@@ -35,10 +36,10 @@ def estimate_cxn(
     temp4 = np.subtract(np.array(temp2), np.array(temp3))
     dts = np.concatenate((np.array(temp1), temp4))
 
-    flux_scatter_data, raw_data, labeled = process_flux(config, 0)
+    flux_scatter_data, raw_data, labeled = process_flux(config, submodel_number)
     # in a time bin, the truth flux is binned in GeV
     labeled_transposed = np.transpose(labeled)
-    plot_data, raw_data_det, l_data = process_detector(config, 0, det_name)
+    plot_data, raw_data_det, l_data = process_detector(config, submodel_number, det_name)
 
     # region let's just try to plot phi_t over time, flux vs time, and flux vs energy
     phi_t_fig, phi_t_ax = plt.subplots(1, 1)
@@ -206,7 +207,7 @@ def estimate_cxn(
     unfold_ax.set_xscale('log')
     unfold_ax.scatter(times_unitless, phi_est_unfolded, label='Unfolded')
     unfold_ax.scatter(times_unitless, phi_t_over_time, label=r'$\phi_t$ Truth', alpha=0.2)
-    unfold_ax.set_title(f'{config.stringify()} {cxn_truth_chan_key} Unfolded')
+    unfold_ax.set_title(f'{config.stringify(submodel_number)} {cxn_truth_chan_key} Unfolded')
     unfold_ax.legend()
     unfold_fig.show()
     #endregion
