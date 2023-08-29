@@ -32,13 +32,13 @@ def bind(nux, nue, anue, title, heatmap):
             np.cumsum(nue_df['unfolded'])
         )
     )
-    unfolded_pre_csum = t_normalize(list(
+    unfolded_pre_csum = list(
         zip(
             (nux_df['unfolded']/6),
             (anue_df['unfolded']),
             (nue_df['unfolded'])
         )
-    ))
+    )
 
     ebin = 0.02e-3
     ndet_raw_combined_per_time = list(
@@ -51,9 +51,9 @@ def bind(nux, nue, anue, title, heatmap):
 
     ndet_raw_combined_per_time_pre_csum = list(
         zip(
-            (np.divide(nux_df['Ndet'], nux_df['dt']) / ebin),
-            (np.divide(anue_df['Ndet'], nux_df['dt']) / ebin),
-            (np.divide(nue_df['Ndet'], nux_df['dt']) / ebin)
+            np.divide(nux_df['Ndet'], nux_df['dt']) / ebin,
+            np.divide(anue_df['Ndet'], nux_df['dt']) / ebin,
+            np.divide(nue_df['Ndet'], nux_df['dt']) / ebin
         )
     )
 
@@ -80,39 +80,56 @@ def bind(nux, nue, anue, title, heatmap):
 
     #region make some time domain plots as well
     time_domain_fig, ((td_c_ax, td_c_frac_ax), (td_ax, td_frac_ax)) = plt.subplots(2,2, figsize=(8,8))
-    td_c_ax.errorbar(nux_df['time'], np.cumsum(nux_df['unfolded']/6), yerr=nux_csum_error_td, fmt='o', label=r'$\nu_x$ Unf.')
-    td_c_ax.errorbar(nux_df['time'], np.cumsum(anue_df['unfolded']), yerr=anue_csum_error_td, fmt='o', label=r'$\bar{\nu_e}$ Unf.')
-    td_c_ax.errorbar(nux_df['time'], np.cumsum(nue_df['unfolded']), yerr=nue_csum_error_td, fmt='o', label=r'$\nu_e$ Unf.')
+    td_c_ax.errorbar(nux_df['time'], np.cumsum(nux_df['unfolded']/6), yerr=nux_csum_error_td, fmt='.', label=r'$\nu_x$ Unf.')
+    td_c_ax.errorbar(nux_df['time'], np.cumsum(anue_df['unfolded']), yerr=anue_csum_error_td, fmt='.', label=r'$\bar{\nu_e}$ Unf.')
+    td_c_ax.errorbar(nux_df['time'], np.cumsum(nue_df['unfolded']), yerr=nue_csum_error_td, fmt='.', label=r'$\nu_e$ Unf.')
     td_c_ax.set_xscale('log')
     td_c_ax.set_yscale('log')
     td_c_ax.set_xlabel('Mid-Point Time (s)')
     td_c_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$ Cumu.')
     td_c_ax.legend()
 
-    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[0], label=r'$\nu_x Unf.')
-    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[1], label=r'$\bar{\nu_e} Unf.')
-    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[2], label=r'$\nu_e Unf.')
+    td_c_ax_inset = td_c_ax.inset_axes([0.55,0.1, 0.4,0.5])
+    td_c_ax_inset.errorbar(nux_df['time'], np.cumsum(nux_df['unfolded'] / 6), yerr=nux_csum_error_td, fmt='.',
+                     label=r'$\nu_x$ Unf.')
+    td_c_ax_inset.errorbar(nux_df['time'], np.cumsum(anue_df['unfolded']), yerr=anue_csum_error_td, fmt='.',
+                     label=r'$\bar{\nu_e}$ Unf.')
+    td_c_ax_inset.errorbar(nux_df['time'], np.cumsum(nue_df['unfolded']), yerr=nue_csum_error_td, fmt='.',
+                     label=r'$\nu_e$ Unf.')
+    td_c_ax_inset.set_xscale('log')
+
+    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[0], label=r'$\nu_x$ Unf.')
+    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[1], label=r'$\bar{\nu_e}$ Unf.')
+    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[2], label=r'$\nu_e$ Unf.')
     td_c_frac_ax.set_xscale('log')
     td_c_frac_ax.set_xlabel('Mid-Point Time (s)')
     td_c_frac_ax.set_ylabel('%')
     td_c_frac_ax.legend()
 
-    td_frac_ax.scatter(nux_df['time'], list(zip(*unfolded_pre_csum))[0], label=r'$\nu_x Unf.')
-    td_frac_ax.scatter(nux_df['time'], list(zip(*unfolded_pre_csum))[1], label=r'$\bar{\nu_e} Unf.')
-    td_frac_ax.scatter(nux_df['time'], list(zip(*unfolded_pre_csum))[2], label=r'$\nu_e Unf.')
+    td_frac_ax.scatter(nux_df['time'], list(zip(*unfolded_pre_csum))[0], label=r'$\nu_x$ Unf.')
+    td_frac_ax.scatter(nux_df['time'], list(zip(*unfolded_pre_csum))[1], label=r'$\bar{\nu_e}$ Unf.')
+    td_frac_ax.scatter(nux_df['time'], list(zip(*unfolded_pre_csum))[2], label=r'$\nu_e$ Unf.')
     td_frac_ax.set_xscale('log')
     td_frac_ax.set_xlabel('Mid-Point Time (s)')
     td_frac_ax.set_ylabel('%')
     td_frac_ax.legend()
 
-    td_ax.errorbar(nux_df['time'], nux_df['unfolded'] / 6, yerr=nux_error_td_pre_csum, fmt='o', label=r'$\nu_x$ Unf.')
-    td_ax.errorbar(nux_df['time'], anue_df['unfolded'], yerr=anue_error_td_pre_csum, fmt='o', label=r'$\bar{\nu_e}$ Unf.')
-    td_ax.errorbar(nux_df['time'], nue_df['unfolded'], yerr=nue_error_td_pre_csum, fmt='o', label=r'$\nu_e$ Unf.')
+    td_ax.errorbar(nux_df['time'], nux_df['unfolded'] / 6, yerr=nux_error_td_pre_csum, fmt='.', label=r'$\nu_x$ Unf.')
+    td_ax.errorbar(nux_df['time'], anue_df['unfolded'], yerr=anue_error_td_pre_csum, fmt='.', label=r'$\bar{\nu_e}$ Unf.')
+    td_ax.errorbar(nux_df['time'], nue_df['unfolded'], yerr=nue_error_td_pre_csum, fmt='.', label=r'$\nu_e$ Unf.')
     td_ax.set_xscale('log')
     td_ax.set_yscale('log')
     td_ax.set_xlabel('Mid-Point Time (s)')
     td_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$')
     td_ax.legend()
+    # let's also make the same plot but in regular y-scale
+    td_ax_inset = td_ax.inset_axes([0.55,0.1, 0.4,0.5])
+    td_ax_inset.errorbar(nux_df['time'], nux_df['unfolded'] / 6, yerr=nux_error_td_pre_csum, fmt='.', label=r'$\nu_x$ Unf.')
+    td_ax_inset.errorbar(nux_df['time'], anue_df['unfolded'], yerr=anue_error_td_pre_csum, fmt='.',
+                   label=r'$\bar{\nu_e}$ Unf.')
+    td_ax_inset.errorbar(nux_df['time'], nue_df['unfolded'], yerr=nue_error_td_pre_csum, fmt='.', label=r'$\nu_e$ Unf.')
+    td_ax_inset.set_xscale('log')
+
     time_domain_fig.suptitle(title)
     time_domain_fig.savefig(f'./plots/{title} Time Domain.png')
     time_domain_fig.show()
@@ -130,24 +147,12 @@ def bind(nux, nue, anue, title, heatmap):
     tax.right_axis_label(r'$\bar{\nu_e}$')
     tax.left_axis_label(r'$\nu_e$')
 
-    # tax.scatter(points=plotting_data, color="red")
-    widths = np.linspace(0.01, 1, num=len(unfolded_csum))
-    # for p in range(len(plotting_data) - 1):
-    #     if (p + 1 >= len(plotting_data)):
-    #         break
-        # tax.line(plotting_data[p], plotting_data[p + 1], color=(widths[p], 0, 0, 1), linestyle=':', linewidth=3)
     if heatmap:
         print("Generating heatmap (this might take a while)...")
         tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time, sigma_mult=3),
                     cmap=plt.get_cmap('PiYG'))
         print("Done")
-    colormap = {}
-    for i,p in enumerate(t_normalize(unfolded_csum)):
-        colormap[tuple(p)] = widths[i]
     tax.plot_colored_trajectory(t_normalize(unfolded_csum), cmap=plt.get_cmap('binary'))
-    # tax.heatmap(colormap, cmap=plt.get_cmap('Greys'))
-    # hm, what if we tried stacking heatmaps?
-
 
     tax.ticks(axis='lbr', linewidth=1, multiple=scale / 10)
     tax.clear_matplotlib_ticks()
