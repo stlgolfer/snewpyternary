@@ -67,6 +67,10 @@ def estimate_cxn(
     phi_t_ax.set_xlabel("Time (s)")
     phi_t_ax.set_ylabel(r'$neutrinos/cm^2$')
     phi_t_ax.set_xscale('log')
+    phi_t_inset_ax = phi_t_ax.inset_axes([0.2,0.2,0.5,0.5])
+    phi_t_inset_ax.scatter(times_unitless, phi_t_over_time)
+    phi_t_inset_ax.set_xscale('log')
+    phi_t_inset_ax.set_yscale('log')
     phi_t_fig.tight_layout()
     phi_t_fig.show()
 

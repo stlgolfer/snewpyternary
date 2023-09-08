@@ -89,19 +89,47 @@ def bind(nux, nue, anue, title, heatmap):
         B = list(zip(*ndet_raw_combined_per_time_pre_csum))[1][i]
         C = list(zip(*ndet_raw_combined_per_time_pre_csum))[2][i]
 
-        error_x = math.sqrt((x**2*(B*C*(y + z)**2 + A*(C*y**2 + B*z**2)))/(A*B*C*(x + y + z)**4))
-        error_y = math.sqrt((y**2*(B*C*x**2 + A*(B*z**2 + C*(x + z)**2)))/(A*B*C*(x + y + z)**4))
-        error_z = math.sqrt(((B*C*x**2 + A*(C*y**2 + B*(x + y)**2))*z**2)/(A*B*C*(x + y + z)**4))
+        error_x = 3*math.sqrt((x**2*(B*C*(y + z)**2 + A*(C*y**2 + B*z**2)))/(A*B*C*(x + y + z)**4))
+        error_y = 3*math.sqrt((y**2*(B*C*x**2 + A*(B*z**2 + C*(x + z)**2)))/(A*B*C*(x + y + z)**4))
+        error_z = 3*math.sqrt(((B*C*x**2 + A*(C*y**2 + B*(x + y)**2))*z**2)/(A*B*C*(x + y + z)**4))
 
-        no_csum_frac_error_bars_td_nux[i] = error_x
-        no_csum_frac_error_bars_td_anue[i] = error_y
-        no_csum_frac_error_bars_td_nue[i] = error_z
+        no_csum_frac_error_bars_td_nux[i] = error_x*100
+        no_csum_frac_error_bars_td_anue[i] = error_y*100
+        no_csum_frac_error_bars_td_nue[i] = error_z*100
+    #endregion
+
+    #region time domain fractional error bars cumulative sum
+    csum_frac_error_bars_td_nux = np.zeros(len(ternary_points))
+    csum_frac_error_bars_td_anue = np.zeros(len(ternary_points))
+    csum_frac_error_bars_td_nue = np.zeros(len(ternary_points))
+
+    for i in range(len(csum_frac_error_bars_td_nux)):
+        x = unfolded_transpose_csum[0][i]/6
+        y = unfolded_transpose_csum[1][i]
+        z = unfolded_transpose_csum[2][i]
+
+        A = ndet_raw_transpose_csum[0][i]
+        B = ndet_raw_transpose_csum[1][i]
+        C = ndet_raw_transpose_csum[2][i]
+
+        error_x = 3*math.sqrt((x**2*(B*C*(y + z)**2 + A*(C*y**2 + B*z**2)))/(A*B*C*(x + y + z)**4))
+        error_y = 3*math.sqrt((y**2*(B*C*x**2 + A*(B*z**2 + C*(x + z)**2)))/(A*B*C*(x + y + z)**4))
+        error_z = 3*math.sqrt(((B*C*x**2 + A*(C*y**2 + B*(x + y)**2))*z**2)/(A*B*C*(x + y + z)**4))
+
+        csum_frac_error_bars_td_nux[i] = error_x*100
+        csum_frac_error_bars_td_anue[i] = error_y*100
+        csum_frac_error_bars_td_nue[i] = error_z*100
     #endregion
 
     # need to source error from original
 
     # print(ternary_points)
     # get the heatmap of it as well
+
+    #region general plot settings
+    ELINE_WIDTH = 1
+    ECAP_SIZE = 4
+    #endregion
 
     #region make some time domain plots as well
     time_domain_fig, (td_c_ax, td_c_frac_ax) = plt.subplots(1,2, figsize=(8,5))
@@ -123,12 +151,37 @@ def bind(nux, nue, anue, title, heatmap):
                      label=r'$\nu_e$ Unf.')
     td_c_ax_inset.set_xscale('log')
 
-    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[0], label=r'$\nu_x$ Unf.')
-    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[1], label=r'$\bar{\nu_e}$ Unf.')
-    td_c_frac_ax.scatter(nux_df['time'], list(zip(*ternary_points))[2], label=r'$\nu_e$ Unf.')
+    td_c_frac_ax.errorbar(
+        nux_df['time'],
+        list(zip(*ternary_points))[0],
+        label=r'$\nu_x$ Unf.',
+        yerr=csum_frac_error_bars_td_nux,
+        elinewidth=ELINE_WIDTH,
+        capsize=ECAP_SIZE,
+        fmt='.'
+    )
+    td_c_frac_ax.errorbar(
+        nux_df['time'],
+        list(zip(*ternary_points))[1],
+        label=r'$\bar{\nu_e}$ Unf.',
+        yerr=csum_frac_error_bars_td_anue,
+        elinewidth=ELINE_WIDTH,
+        capsize=ECAP_SIZE,
+        fmt='.'
+    )
+    td_c_frac_ax.errorbar(
+        nux_df['time'],
+        list(zip(*ternary_points))[2],
+        label=r'$\nu_e$ Unf.',
+        yerr=csum_frac_error_bars_td_nue,
+        elinewidth=ELINE_WIDTH,
+        capsize=ECAP_SIZE,
+        fmt='.'
+    )
     td_c_frac_ax.set_xscale('log')
     td_c_frac_ax.set_xlabel('Mid-Point Time (s)')
     td_c_frac_ax.set_ylabel('%')
+    td_c_frac_ax.set_ylim(0, 100)
     td_c_frac_ax.legend()
 
     time_domain_fig.suptitle(title)
@@ -138,11 +191,33 @@ def bind(nux, nue, anue, title, heatmap):
     time_domain_fig_no_csum, (td_ax, td_frac_ax) = plt.subplots(1,2,figsize=(8,5))
 
     print(no_csum_frac_error_bars_td_nux)
-    no_csum_frac_error_bars_td_anue = np.ones_like(no_csum_frac_error_bars_td_nux)*10
-    no_csum_frac_error_bars_td_nue = np.ones_like(no_csum_frac_error_bars_td_nux) * 10
-    td_frac_ax.errorbar(nux_df['time'], list(zip(*unfolded_ternary_points_pre_csum))[0], fmt='.', label=r'$\nu_x$ Unf.')
-    td_frac_ax.errorbar(nux_df['time'], list(zip(*unfolded_ternary_points_pre_csum))[1], fmt='.', label=r'$\bar{\nu_e}$ Unf.')
-    td_frac_ax.errorbar(nux_df['time'], list(zip(*unfolded_ternary_points_pre_csum))[2], fmt='.', label=r'$\nu_e$ Unf.')
+    td_frac_ax.errorbar(
+        nux_df['time'],
+        list(zip(*unfolded_ternary_points_pre_csum))[0],
+        yerr=no_csum_frac_error_bars_td_nux,
+        elinewidth=ELINE_WIDTH,
+        capsize=ECAP_SIZE,
+        fmt='.',
+        label=r'$\nu_x$ Unf.'
+    )
+    td_frac_ax.errorbar(
+        nux_df['time'],
+        list(zip(*unfolded_ternary_points_pre_csum))[1],
+        yerr=no_csum_frac_error_bars_td_anue,
+        elinewidth=ELINE_WIDTH,
+        capsize=ECAP_SIZE,
+        fmt='.',
+        label=r'$\bar{\nu_e}$ Unf.'
+    )
+    td_frac_ax.errorbar(
+        nux_df['time'],
+        list(zip(*unfolded_ternary_points_pre_csum))[2],
+        yerr=no_csum_frac_error_bars_td_nue,
+        elinewidth=ELINE_WIDTH,
+        capsize=ECAP_SIZE,
+        fmt='.',
+        label=r'$\nu_e$ Unf.'
+    )
     td_frac_ax.set_xscale('log')
     td_frac_ax.set_xlabel('Mid-Point Time (s)')
     td_frac_ax.set_ylim(0,100)
