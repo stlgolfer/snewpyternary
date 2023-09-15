@@ -217,7 +217,7 @@ def estimate_cxn(
     unfold_fig, unfold_ax = plt.subplots(1,1)
     unfold_ax.set_xscale('log')
     unfold_ax.scatter(times_unitless, phi_est_unfolded, label='Unfolded')
-    unfold_ax.scatter(times_unitless, phi_t_over_time, label=r'$\phi_t$ Truth', alpha=0.2)
+    unfold_ax.scatter(times_unitless, phi_t_over_time, label=r'$\phi_t$ Truth', marker='1', color='red', sizes=100*np.ones_like(phi_t_over_time)) #, alpha=0.2
     unfold_ax.set_title(f'{config.stringify(submodel_number)} {cxn_truth_chan_key} Unfolded')
     unfold_ax.legend()
     unfold_fig.show()
