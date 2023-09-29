@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import ternary
 
-from meta_analysis import t_normalize
+from meta_analysis import t_normalize, ternary_distance, ternary_subtract, ternary_dotproduct
 import snewpyternary as t
 import sys
 sys.path.insert(0,'./SURF2020fork')
@@ -278,6 +278,26 @@ def bind(nux, nue, anue, title, heatmap):
         Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined_per_time,t_normalize(ndet_raw_combined_per_time)))
     Ndet_tax.show()
     Ndet_tax.savefig(f'./plots/{title} Ndet.png')
+
+    #region calculate curliness of ternary cumul plot
+    # ternary points is this
+    def sig(x):
+        return 1 if x > 0 else -1 if x < 0 else 0
+
+    numerator_sum = 0
+    if len(ternary_points) > 2:
+        for l in range(1, len(ternary_points)):
+            # get delta
+            sign_factor = sig(ternary_dotproduct(
+                ternary_subtract(ternary_points[-1], ternary_points[0]),
+                ternary_subtract(ternary_points[l], ternary_points[l - 1])
+            ) / (ternary_distance(ternary_points[-1], ternary_points[0]) * ternary_distance(ternary_points[l],
+                                                                                            ternary_points[l - 1])))
+            # print(sig(sign_factor))
+
+            numerator_sum = numerator_sum + ternary_distance(ternary_points[l], ternary_points[l - 1]) * sign_factor
+    print(numerator_sum / ternary_distance(ternary_points[-1], ternary_points[0]))
+    #endregion
 
 if __name__ == '__main__':
     bind()

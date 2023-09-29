@@ -337,6 +337,13 @@ def ternary_distance(p1: tuple, p2: tuple):
     dz = p2[2] - p1[2]
     return math.sqrt(dx**2 + dy**2 + dz**2)
 
+def ternary_subtract(p1: tuple, p2: tuple):
+    #p1 - p2
+    return (p1[0]-p2[0],p1[1]-p2[1],p1[2]-p2[2])
+
+def ternary_dotproduct(p1: tuple, p2: tuple):
+    return p1[0]*p2[0]+p1[1]*p2[1]+p1[2]*p2[2]
+
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot, cum_sum_tax: TernaryAxesSubplot) -> None:
     # flux_scatter, flux_raw, flux_l_data = process_flux(config, number)
 
