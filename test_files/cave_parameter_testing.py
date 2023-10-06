@@ -17,8 +17,7 @@ if __name__ == "__main__":
     tax.scatter(points=ternary_points)
     tax.ticks(axis='lbr', linewidth=1, multiple=10)
     tax.clear_matplotlib_ticks()
-    tax.get_axes().axis('off')  # disables regular matlab plot axes
-    tax.show()
+    tax.get_axes().axis('off')  # disables regular matlab plot axe
 
     # now choose the point that is farthest away. should be O(n) so should be ok
     max_point = None
@@ -42,6 +41,8 @@ if __name__ == "__main__":
         max_distance = -1*max_distance
     # now max distance is the "curl"
     print(max_distance)
+    tax.get_axes().text(0,-10,rf'$\iota={round(max_distance,3)}$')
+    tax.show()
 
     #region old way of doing this
     # def sig(x):
