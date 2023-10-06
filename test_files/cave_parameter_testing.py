@@ -3,7 +3,8 @@ import ternary
 import math
 
 if __name__ == "__main__":
-    ternary_points = [(30,40,30),(20,70,10),(15,80,5),(2,90,3)]
+    # ternary_points = [(30,40,30),(20,70,10),(2,90,3)] #,(15,80,5) #RH
+    ternary_points = [(80, 10, 10), (10, 10, 80), (2, 90, 3)]  #LH
 
     figure, tax = ternary.figure(scale=100)
     tax.boundary(linewidth=2.0)
@@ -31,15 +32,14 @@ if __name__ == "__main__":
         if h > max_distance:
             max_distance = h
             max_point = point
+    main_line_slope = (ternary_points[0][1]-ternary_points[-1][1])/(ternary_points[0][0]-ternary_points[-1][0])
 
-    # this is probably a bad way of doing this, but let's measure the sign by first
-    # find the axis that the main line is "most" on. For example, if the end points are
-    # basically stacked on top of each other, see if the max point is to the right or left
-    # since most of the models work this way, it should be ok. actually just use whether
-    # it's right or left of the end point (so somewhere in the middle)
-    if max_point[0] < ternary_points[-1][0]:
-        max_distance = -1*max_distance
-    # now max distance is the "curl"
+    main_line_eqn_output = main_line_slope*(max_point[0]-ternary_points[0][0]) - ternary_points[0][1] #point slope
+    if main_line_slope < 0 and max_point[1] < main_line_eqn_output:
+        max_distance = max_distance*-1
+    elif main_line_slope > 0 and max_point[1] > main_line_eqn_output:
+        max_distance = max_distance*-1
+    # now max distance is the "curl" with sign correction
     print(max_distance)
     tax.get_axes().text(0,-10,rf'$\iota={round(max_distance,3)}$')
     tax.show()
