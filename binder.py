@@ -281,22 +281,26 @@ def bind(nux, nue, anue, title, heatmap):
 
     #region calculate curliness of ternary cumul plot
     # ternary points is this
-    def sig(x):
-        return 1 if x > 0 else -1 if x < 0 else 0
+    max_point = None
+    max_distance = 0
+    main_line = ternary_distance(ternary_points[0], ternary_points[-1])
+    for point in ternary_points[1:-1]:
+        a = ternary_distance(point, ternary_points[-1])
+        b = ternary_distance(point, ternary_points[0])
+        s = (a + main_line + b) / 2  # Heron's semi-perimeter
+        h = math.sqrt(4 * s * (s - a) * (s - b) * (s - main_line) / main_line ** 2)
+        if h > max_distance:
+            max_distance = h
+            max_point = point
+    main_line_slope = (ternary_points[0][1] - ternary_points[-1][1]) / (ternary_points[0][0] - ternary_points[-1][0])
 
-    numerator_sum = 0
-    if len(ternary_points) > 2:
-        for l in range(1, len(ternary_points)):
-            # get delta
-            sign_factor = sig(ternary_dotproduct(
-                ternary_subtract(ternary_points[-1], ternary_points[0]),
-                ternary_subtract(ternary_points[l], ternary_points[l - 1])
-            ) / (ternary_distance(ternary_points[-1], ternary_points[0]) * ternary_distance(ternary_points[l],
-                                                                                            ternary_points[l - 1])))
-            # print(sig(sign_factor))
-
-            numerator_sum = numerator_sum + ternary_distance(ternary_points[l], ternary_points[l - 1]) * sign_factor
-    print(numerator_sum / ternary_distance(ternary_points[-1], ternary_points[0]))
+    main_line_eqn_output = main_line_slope * (max_point[0] - ternary_points[0][0]) - ternary_points[0][1]  # point slope
+    if main_line_slope < 0 and max_point[1] < main_line_eqn_output:
+        max_distance = max_distance * -1
+    elif main_line_slope > 0 and max_point[1] > main_line_eqn_output:
+        max_distance = max_distance * -1
+    # now max distance is the "curl" with sign correction
+    print(f'Curliness is: {max_distance}')
     #endregion
 
 if __name__ == '__main__':
