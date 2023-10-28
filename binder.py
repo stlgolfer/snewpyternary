@@ -13,6 +13,25 @@ import matplotlib.pyplot as plt
 import math
 import warnings
 
+def project_ternary_points(points):
+    scale = 100
+    figure, tax = ternary.figure(scale=scale)
+    tax.boundary(linewidth=2.0)
+    tax.gridlines(color="blue", multiple=scale / 10)
+    tax.set_title('Projection')
+    # data is organized in top, right, left
+    tax.bottom_axis_label(r'$\nu_x$')
+    tax.right_axis_label(r'$\bar{\nu_e}$')
+    tax.left_axis_label(r'$\nu_e$')
+    tax.scatter(points)
+
+    projected_points = tax.get_axes().collections[0].get_offsets().data
+    # print(f'end: {projected_points[-1]}, intial: {projected_points[0]}')
+    tax.show()
+    # figure.close()
+    return projected_points
+
+
 @click.command()
 @click.option('-nux', required=True, help='Location of nux csv')
 @click.option('-nue', required=True, help='Location of nue csv')
@@ -281,26 +300,40 @@ def bind(nux, nue, anue, title, heatmap):
 
     #region calculate curliness of ternary cumul plot
     # ternary points is this
-    max_point = None
-    max_distance = 0
-    main_line = ternary_distance(ternary_points[0], ternary_points[-1])
-    for point in ternary_points[1:-1]:
-        a = ternary_distance(point, ternary_points[-1])
-        b = ternary_distance(point, ternary_points[0])
-        s = (a + main_line + b) / 2  # Heron's semi-perimeter
-        h = math.sqrt(4 * s * (s - a) * (s - b) * (s - main_line) / main_line ** 2)
-        if h > max_distance:
-            max_distance = h
-            max_point = point
-    main_line_slope = (ternary_points[0][1] - ternary_points[-1][1]) / (ternary_points[0][0] - ternary_points[-1][0])
+    # max_point = None
+    # max_distance = 0
+    # main_line = ternary_distance(ternary_points[0], ternary_points[-1])
+    # for point in ternary_points[1:-1]:
+    #     a = ternary_distance(point, ternary_points[-1])
+    #     b = ternary_distance(point, ternary_points[0])
+    #     s = (a + main_line + b) / 2  # Heron's semi-perimeter
+    #     h = math.sqrt(4 * s * (s - a) * (s - b) * (s - main_line) / main_line ** 2)
+    #     if h > max_distance:
+    #         max_distance = h
+    #         max_point = point
+    # main_line_slope = (ternary_points[0][1] - ternary_points[-1][1]) / (ternary_points[0][0] - ternary_points[-1][0])
+    #
+    # main_line_eqn_output = main_line_slope * (max_point[0] - ternary_points[0][0]) - ternary_points[0][1]  # point slope
+    # if main_line_slope < 0 and max_point[1] < main_line_eqn_output:
+    #     max_distance = max_distance * -1
+    # elif main_line_slope > 0 and max_point[1] > main_line_eqn_output:
+    #     max_distance = max_distance * -1
+    # # now max distance is the "curl" with sign correction
+    # print(f'Curliness is: {max_distance}')
 
-    main_line_eqn_output = main_line_slope * (max_point[0] - ternary_points[0][0]) - ternary_points[0][1]  # point slope
-    if main_line_slope < 0 and max_point[1] < main_line_eqn_output:
-        max_distance = max_distance * -1
-    elif main_line_slope > 0 and max_point[1] > main_line_eqn_output:
-        max_distance = max_distance * -1
-    # now max distance is the "curl" with sign correction
-    print(f'Curliness is: {max_distance}')
+    # let's try getting the projected points directly from matplotlib
+
+    # now we also want to write this out to a file. we will just keep appending to the same file since binder is
+    # typically used repeatedly
+    # calculate slope using projected data
+    proj_points = project_ternary_points(ternary_points)
+    proj_f = proj_points[-1]
+    proj_i = proj_points[0]
+    slope = (proj_f[1]-proj_i[1])/(proj_f[0]-proj_i[0])
+    print(f'slope is {slope}')
+    curliness_file = open("curliness_from_binder.csv", "a")
+    curliness_file.write(f'{title},{slope}\n')
+    curliness_file.close()
     #endregion
 
 if __name__ == '__main__':
