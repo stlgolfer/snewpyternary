@@ -282,6 +282,9 @@ def bind(nux, nue, anue, title, heatmap):
                     cmap=plt.get_cmap('PiYG'))
         print("Done")
     tax.plot_colored_trajectory(t_normalize(unfolded_csum), cmap=plt.get_cmap('binary'))
+    # we also want to paint the starting point and end point differently
+    tax.scatter([tuple(ternary_points[-1])], marker='s', color='red', linewidth=10)
+    tax.scatter([tuple(ternary_points[0])], marker='^', linewidth=10, color='blue')
 
     tax.ticks(axis='lbr', linewidth=1, multiple=scale / 10)
     tax.clear_matplotlib_ticks()
