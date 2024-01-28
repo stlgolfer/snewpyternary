@@ -227,7 +227,7 @@ def estimate_cxn(
         # only save the sigmas in a csv if this is being run by itself
         print('Storing average sigma in ./sigmas...')
         df = pd.DataFrame()
-        df['time'] = times_unitless
+        df['time'] = np.array(times_unitless) + 0.0001 + abs(times_unitless[0]) #TODO: shift axis to include more of the time window
         df['dt'] = dts
         df['sigma average'] = sigma_average
         df['unfolded'] = phi_est_unfolded

@@ -6,7 +6,7 @@ echo Enter submodel start index
 read si
 echo Enter submodel end index
 read ei
-echo Bind heatma t/f
+echo Bind heatmap true/false
 read heat
 
 for ((i=si; i<= ei; i++))

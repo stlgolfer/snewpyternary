@@ -76,7 +76,7 @@ def bind(nux, nue, anue, title, heatmap):
             np.divide(nue_df['Ndet'], nux_df['dt']) / ebin
         )
     )
-
+    ERROR_MULTIPLIER = 1
     ternary_points = t_normalize(unfolded_csum)
     unfolded_ternary_points_pre_csum = t_normalize(unfolded_pre_csum)
 
@@ -84,16 +84,16 @@ def bind(nux, nue, anue, title, heatmap):
     unfolded_transpose_csum = list(zip(*unfolded_csum))
     ndet_raw_transpose_csum = list(zip(*ndet_raw_combined_per_time))
 
-    nux_csum_error_td = 3*np.divide(unfolded_transpose_csum[0], np.sqrt(ndet_raw_transpose_csum[0]))
-    anue_csum_error_td = 3*np.divide(unfolded_transpose_csum[1], np.sqrt(ndet_raw_transpose_csum[1]))
-    nue_csum_error_td = 3*np.divide(unfolded_transpose_csum[2], np.sqrt(ndet_raw_transpose_csum[2]))
+    nux_csum_error_td = ERROR_MULTIPLIER*np.divide(unfolded_transpose_csum[0], np.sqrt(ndet_raw_transpose_csum[0]))
+    anue_csum_error_td = ERROR_MULTIPLIER*np.divide(unfolded_transpose_csum[1], np.sqrt(ndet_raw_transpose_csum[1]))
+    nue_csum_error_td = ERROR_MULTIPLIER*np.divide(unfolded_transpose_csum[2], np.sqrt(ndet_raw_transpose_csum[2]))
 
     unfolded_transpose_pre_csum = list(zip(*unfolded_pre_csum))
     ndet_raw_transpose_pre_csum = list(zip(*ndet_raw_combined_per_time_pre_csum))
 
-    nux_error_td_pre_csum = 3*np.divide(unfolded_transpose_pre_csum[0], np.sqrt(ndet_raw_transpose_pre_csum[0]))
-    anue_error_td_pre_csum = 3*np.divide(unfolded_transpose_pre_csum[1], np.sqrt(ndet_raw_transpose_pre_csum[1]))
-    nue_error_td_pre_csum = 3*np.divide(unfolded_transpose_pre_csum[2], np.sqrt(ndet_raw_transpose_pre_csum[2]))
+    nux_error_td_pre_csum = ERROR_MULTIPLIER*np.divide(unfolded_transpose_pre_csum[0], np.sqrt(ndet_raw_transpose_pre_csum[0]))
+    anue_error_td_pre_csum = ERROR_MULTIPLIER*np.divide(unfolded_transpose_pre_csum[1], np.sqrt(ndet_raw_transpose_pre_csum[1]))
+    nue_error_td_pre_csum = ERROR_MULTIPLIER*np.divide(unfolded_transpose_pre_csum[2], np.sqrt(ndet_raw_transpose_pre_csum[2]))
     #endregion
 
     #region time domain ternary error bars
@@ -108,13 +108,13 @@ def bind(nux, nue, anue, title, heatmap):
         B = list(zip(*ndet_raw_combined_per_time_pre_csum))[1][i]
         C = list(zip(*ndet_raw_combined_per_time_pre_csum))[2][i]
 
-        error_x = 3*math.sqrt((x**2*(B*C*(y + z)**2 + A*(C*y**2 + B*z**2)))/(A*B*C*(x + y + z)**4))
-        error_y = 3*math.sqrt((y**2*(B*C*x**2 + A*(B*z**2 + C*(x + z)**2)))/(A*B*C*(x + y + z)**4))
-        error_z = 3*math.sqrt(((B*C*x**2 + A*(C*y**2 + B*(x + y)**2))*z**2)/(A*B*C*(x + y + z)**4))
+        error_x = ERROR_MULTIPLIER*math.sqrt((x**2*(B*C*(y + z)**2 + A*(C*y**2 + B*z**2)))/(A*B*C*(x + y + z)**4))
+        error_y = ERROR_MULTIPLIER*math.sqrt((y**2*(B*C*x**2 + A*(B*z**2 + C*(x + z)**2)))/(A*B*C*(x + y + z)**4))
+        error_z = ERROR_MULTIPLIER*math.sqrt(((B*C*x**2 + A*(C*y**2 + B*(x + y)**2))*z**2)/(A*B*C*(x + y + z)**4))
 
-        no_csum_frac_error_bars_td_nux[i] = error_x*100
-        no_csum_frac_error_bars_td_anue[i] = error_y*100
-        no_csum_frac_error_bars_td_nue[i] = error_z*100
+        no_csum_frac_error_bars_td_nux[i] = error_x #TODO: need to check units, but might not need 100 multiplier
+        no_csum_frac_error_bars_td_anue[i] = error_y
+        no_csum_frac_error_bars_td_nue[i] = error_z
     #endregion
 
     #region time domain fractional error bars cumulative sum
@@ -131,13 +131,13 @@ def bind(nux, nue, anue, title, heatmap):
         B = ndet_raw_transpose_csum[1][i]
         C = ndet_raw_transpose_csum[2][i]
 
-        error_x = 3*math.sqrt((x**2*(B*C*(y + z)**2 + A*(C*y**2 + B*z**2)))/(A*B*C*(x + y + z)**4))
-        error_y = 3*math.sqrt((y**2*(B*C*x**2 + A*(B*z**2 + C*(x + z)**2)))/(A*B*C*(x + y + z)**4))
-        error_z = 3*math.sqrt(((B*C*x**2 + A*(C*y**2 + B*(x + y)**2))*z**2)/(A*B*C*(x + y + z)**4))
+        error_x = ERROR_MULTIPLIER*math.sqrt((x**2*(B*C*(y + z)**2 + A*(C*y**2 + B*z**2)))/(A*B*C*(x + y + z)**4))
+        error_y = ERROR_MULTIPLIER*math.sqrt((y**2*(B*C*x**2 + A*(B*z**2 + C*(x + z)**2)))/(A*B*C*(x + y + z)**4))
+        error_z = ERROR_MULTIPLIER*math.sqrt(((B*C*x**2 + A*(C*y**2 + B*(x + y)**2))*z**2)/(A*B*C*(x + y + z)**4))
 
-        csum_frac_error_bars_td_nux[i] = error_x*100
-        csum_frac_error_bars_td_anue[i] = error_y*100
-        csum_frac_error_bars_td_nue[i] = error_z*100
+        csum_frac_error_bars_td_nux[i] = error_x
+        csum_frac_error_bars_td_anue[i] = error_y
+        csum_frac_error_bars_td_nue[i] = error_z
     #endregion
 
     # need to source error from original
@@ -261,6 +261,7 @@ def bind(nux, nue, anue, title, heatmap):
 
     time_domain_fig_no_csum.suptitle(title)
     time_domain_fig_no_csum.savefig(f'./plots/{title} Time Domain.png')
+    print(f'Time domain plot painted {len(nux_df["time"])} points')
     time_domain_fig_no_csum.show()
 
     #endregion
@@ -278,7 +279,7 @@ def bind(nux, nue, anue, title, heatmap):
 
     if heatmap:
         print("Generating heatmap (this might take a while)...")
-        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time, sigma_mult=3),
+        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time, sigma_mult=ERROR_MULTIPLIER),
                     cmap=plt.get_cmap('PiYG'))
         print("Done")
     tax.plot_colored_trajectory(t_normalize(unfolded_csum), cmap=plt.get_cmap('binary'))
@@ -293,6 +294,7 @@ def bind(nux, nue, anue, title, heatmap):
     # fig, tax = t.create_default_flux_plot(t_normalize(unfolded_csum), rf'{title} $\phi_e$', save=False, show=False)
     tax.show()
     tax.savefig(f'./fluxes/{title} Unfolded.png')
+    print(f'Ternary diagram painted {len(ternary_points)} points')
     #endregion
 
     Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined_per_time), f'{title} Ndet',save=False,show=False)
