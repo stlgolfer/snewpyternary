@@ -147,14 +147,14 @@ def bind(nux, nue, anue, title, heatmap):
 
     #region general plot settings
     ELINE_WIDTH = 1
-    ECAP_SIZE = 4
+    ECAP_SIZE = 0 # previously 4
     #endregion
 
     #region make some time domain plots as well
     time_domain_fig, (td_c_ax, td_c_frac_ax) = plt.subplots(1,2, figsize=(8,5))
-    td_c_ax.errorbar(nux_df['time'], np.cumsum(nux_df['unfolded']/6), yerr=nux_csum_error_td, fmt='.', label=r'$\nu_x$ Unf.')
-    td_c_ax.errorbar(nux_df['time'], np.cumsum(anue_df['unfolded']), yerr=anue_csum_error_td, fmt='.', label=r'$\bar{\nu_e}$ Unf.')
-    td_c_ax.errorbar(nux_df['time'], np.cumsum(nue_df['unfolded']), yerr=nue_csum_error_td, fmt='.', label=r'$\nu_e$ Unf.')
+    td_c_ax.errorbar(nux_df['time'], np.cumsum(nux_df['unfolded']/6), yerr=nux_csum_error_td, fmt='.', label=r'$\nu_x$ Unf.', errorevery=3)
+    td_c_ax.errorbar(nux_df['time'], np.cumsum(anue_df['unfolded']), yerr=anue_csum_error_td, fmt='.', label=r'$\bar{\nu_e}$ Unf.',errorevery=4)
+    td_c_ax.errorbar(nux_df['time'], np.cumsum(nue_df['unfolded']), yerr=nue_csum_error_td, fmt='.', label=r'$\nu_e$ Unf.',errorevery=5)
     td_c_ax.set_xscale('log')
     td_c_ax.set_yscale('log')
     td_c_ax.set_xlabel('Mid-Point Time (s)')
@@ -163,11 +163,11 @@ def bind(nux, nue, anue, title, heatmap):
 
     td_c_ax_inset = td_c_ax.inset_axes([0.55,0.1, 0.4,0.5])
     td_c_ax_inset.errorbar(nux_df['time'], np.cumsum(nux_df['unfolded'] / 6), yerr=nux_csum_error_td, fmt='.',
-                     label=r'$\nu_x$ Unf.')
+                     label=r'$\nu_x$ Unf.', errorevery=3)
     td_c_ax_inset.errorbar(nux_df['time'], np.cumsum(anue_df['unfolded']), yerr=anue_csum_error_td, fmt='.',
-                     label=r'$\bar{\nu_e}$ Unf.')
+                     label=r'$\bar{\nu_e}$ Unf.', errorevery=4)
     td_c_ax_inset.errorbar(nux_df['time'], np.cumsum(nue_df['unfolded']), yerr=nue_csum_error_td, fmt='.',
-                     label=r'$\nu_e$ Unf.')
+                     label=r'$\nu_e$ Unf.', errorevery=5)
     td_c_ax_inset.set_xscale('log')
 
     td_c_frac_ax.errorbar(
@@ -177,7 +177,8 @@ def bind(nux, nue, anue, title, heatmap):
         yerr=csum_frac_error_bars_td_nux,
         elinewidth=ELINE_WIDTH,
         capsize=ECAP_SIZE,
-        fmt='.'
+        fmt='.',
+        errorevery=3
     )
     td_c_frac_ax.errorbar(
         nux_df['time'],
@@ -186,7 +187,8 @@ def bind(nux, nue, anue, title, heatmap):
         yerr=csum_frac_error_bars_td_anue,
         elinewidth=ELINE_WIDTH,
         capsize=ECAP_SIZE,
-        fmt='.'
+        fmt='.',
+        errorevery=4
     )
     td_c_frac_ax.errorbar(
         nux_df['time'],
@@ -195,7 +197,8 @@ def bind(nux, nue, anue, title, heatmap):
         yerr=csum_frac_error_bars_td_nue,
         elinewidth=ELINE_WIDTH,
         capsize=ECAP_SIZE,
-        fmt='.'
+        fmt='.',
+        errorevery=5
     )
     td_c_frac_ax.set_xscale('log')
     td_c_frac_ax.set_xlabel('Mid-Point Time (s)')
@@ -217,7 +220,8 @@ def bind(nux, nue, anue, title, heatmap):
         elinewidth=ELINE_WIDTH,
         capsize=ECAP_SIZE,
         fmt='.',
-        label=r'$\nu_x$ Unf.'
+        label=r'$\nu_x$ Unf.',
+        errorevery=3
     )
     td_frac_ax.errorbar(
         nux_df['time'],
@@ -226,7 +230,8 @@ def bind(nux, nue, anue, title, heatmap):
         elinewidth=ELINE_WIDTH,
         capsize=ECAP_SIZE,
         fmt='.',
-        label=r'$\bar{\nu_e}$ Unf.'
+        label=r'$\bar{\nu_e}$ Unf.',
+        errorevery=4
     )
     td_frac_ax.errorbar(
         nux_df['time'],
@@ -235,7 +240,8 @@ def bind(nux, nue, anue, title, heatmap):
         elinewidth=ELINE_WIDTH,
         capsize=ECAP_SIZE,
         fmt='.',
-        label=r'$\nu_e$ Unf.'
+        label=r'$\nu_e$ Unf.',
+        errorevery=5
     )
     td_frac_ax.set_xscale('log')
     td_frac_ax.set_xlabel('Mid-Point Time (s)')
@@ -243,9 +249,12 @@ def bind(nux, nue, anue, title, heatmap):
     td_frac_ax.set_ylabel('%')
     td_frac_ax.legend()
 
-    td_ax.errorbar(nux_df['time'], nux_df['unfolded'] / 6, yerr=nux_error_td_pre_csum, fmt='.', label=r'$\nu_x$ Unf.')
-    td_ax.errorbar(nux_df['time'], anue_df['unfolded'], yerr=anue_error_td_pre_csum, fmt='.', label=r'$\bar{\nu_e}$ Unf.')
-    td_ax.errorbar(nux_df['time'], nue_df['unfolded'], yerr=nue_error_td_pre_csum, fmt='.', label=r'$\nu_e$ Unf.')
+    td_ax.errorbar(nux_df['time'], nux_df['unfolded'] / 6, yerr=nux_error_td_pre_csum, fmt='.', label=r'$\nu_x$ Unf.',
+        errorevery=3)
+    td_ax.errorbar(nux_df['time'], anue_df['unfolded'], yerr=anue_error_td_pre_csum, fmt='.', label=r'$\bar{\nu_e}$ Unf.',
+        errorevery=4)
+    td_ax.errorbar(nux_df['time'], nue_df['unfolded'], yerr=nue_error_td_pre_csum, fmt='.', label=r'$\nu_e$ Unf.',
+        errorevery=5)
     td_ax.set_xscale('log')
     td_ax.set_yscale('log')
     td_ax.set_xlabel('Mid-Point Time (s)')
