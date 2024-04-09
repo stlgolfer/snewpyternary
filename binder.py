@@ -157,7 +157,7 @@ def bind(nux, nue, anue, title, heatmap):
     td_c_ax.errorbar(nux_df['time'], np.cumsum(nue_df['unfolded']), yerr=nue_csum_error_td, fmt='.', label=r'$\nu_e$ Unf.',errorevery=5)
     td_c_ax.set_xscale('log')
     td_c_ax.set_yscale('log')
-    td_c_ax.set_xlabel('Mid-Point Time (s)')
+    td_c_ax.set_xlabel('Mid-Point Time (s) + t0')
     td_c_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$ Cumu.')
     td_c_ax.legend()
 
@@ -201,7 +201,7 @@ def bind(nux, nue, anue, title, heatmap):
         errorevery=5
     )
     td_c_frac_ax.set_xscale('log')
-    td_c_frac_ax.set_xlabel('Mid-Point Time (s)')
+    td_c_frac_ax.set_xlabel('Mid-Point Time (s) + t0')
     td_c_frac_ax.set_ylabel('%')
     td_c_frac_ax.set_ylim(0, 100)
     td_c_frac_ax.legend()
@@ -244,7 +244,7 @@ def bind(nux, nue, anue, title, heatmap):
         errorevery=5
     )
     td_frac_ax.set_xscale('log')
-    td_frac_ax.set_xlabel('Mid-Point Time (s)')
+    td_frac_ax.set_xlabel('Mid-Point Time (s) + t0')
     td_frac_ax.set_ylim(0,100)
     td_frac_ax.set_ylabel('%')
     td_frac_ax.legend()
@@ -257,7 +257,7 @@ def bind(nux, nue, anue, title, heatmap):
         errorevery=5)
     td_ax.set_xscale('log')
     td_ax.set_yscale('log')
-    td_ax.set_xlabel('Mid-Point Time (s)')
+    td_ax.set_xlabel('Mid-Point Time (s) + t0')
     td_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$')
     td_ax.legend()
     # let's also make the same plot but in regular y-scale

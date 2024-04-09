@@ -163,7 +163,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                 spt_full_content = np.column_stack((spt_full_content, spt_content[sptc_index[detector]['index']]))
             pbar.update(1)
     spt_ax.set_ylabel('Energy (GeV)')
-    spt_ax.set_xlabel('Time (s)')
+    spt_ax.set_xlabel(r'Time + $t_0$ (s)')
     # spt_ax.set_zlabel('Event rate')
     spt_ax.set_title(spt_title)
     # x dim should be energy bins, y should be time?

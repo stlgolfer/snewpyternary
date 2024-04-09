@@ -64,7 +64,7 @@ def estimate_cxn(
 
     phi_t_ax.scatter(times_unitless, phi_t_over_time)
     phi_t_ax.set_title(rf'$\phi_t$ for {config.model_type} {config.set_numbers[0]} Fluence')
-    phi_t_ax.set_xlabel("Time (s)")
+    phi_t_ax.set_xlabel(r"Time + $t_0$ (s)")
     phi_t_ax.set_ylabel(r'$neutrinos/cm^2$')
     phi_t_ax.set_xscale('log')
     phi_t_inset_ax = phi_t_ax.inset_axes([0.2,0.2,0.5,0.5])
@@ -211,7 +211,7 @@ def estimate_cxn(
         Ndet = dts[phi_est_time_bin] * 0.2e-3 * np.sum(
             l_data[phi_est_time_bin][det_chan_name]
         )
-        Ndet_over_time[phi_est_time_bin] = Ndet #/(0.2e-3 * dts[phi_est_time_bin])
+        Ndet_over_time[phi_est_time_bin] = Ndet /(0.2e-3 * dts[phi_est_time_bin])
 
         phi_est_unfolded[phi_est_time_bin] = Ndet / (Nt * sigma_average[phi_est_time_bin])
     unfold_fig, unfold_ax = plt.subplots(1,1)
@@ -221,6 +221,16 @@ def estimate_cxn(
     unfold_ax.set_title(f'{config.stringify(submodel_number)} {cxn_truth_chan_key} Unfolded')
     unfold_ax.legend()
     unfold_fig.show()
+    #endregion
+
+    #region also plot the Ndet_over_time as a general check
+    ndet_fig, ndet_ax = plt.subplots(1)
+    ndet_ax.set_xscale('log')
+    ndet_ax.scatter(times_unitless, Ndet_over_time)
+    ndet_ax.set_title(f'{config.stringify(submodel_number)} {cxn_truth_chan_key} Detector Count')
+    ndet_ax.set_xlabel('Time + t0 (s)')
+    ndet_ax.set_ylabel('Detector Count')
+    ndet_fig.show()
     #endregion
 
     if __name__ == '__main__':
