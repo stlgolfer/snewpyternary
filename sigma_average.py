@@ -4,7 +4,7 @@ import snewpyternary as t
 import snowglobes_wrapper
 from model_wrappers import snewpy_models, sn_model_default_time_step
 import data_handlers
-from meta_analysis import process_flux, process_detector
+from meta_analysis import process_flux, process_detector, t_normalize
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -38,6 +38,7 @@ def estimate_cxn(
     dts = np.concatenate((np.array(temp1), temp4))
 
     flux_scatter_data, raw_data, labeled = process_flux(config, submodel_number)
+
     # in a time bin, the truth flux is binned in GeV
     labeled_transposed = np.transpose(labeled)
     plot_data, raw_data_det, l_data = process_detector(config, submodel_number, det_name)
@@ -46,6 +47,14 @@ def estimate_cxn(
     spt_full_content = []
     # now go through the l_data, which has rows containing dict_data
 
+    #endregion
+
+    #region flux ternary diagram
+    flux_td_title = f'{config.stringify(config.set_numbers[0])} Truth Flux'
+    # need to divide the nux data by 6
+    flux_td_fig, flux_td_tax = t.create_default_flux_plot(t_normalize([(x[0]/6,x[1],x[2]) for x in raw_data]), flux_td_title)
+    flux_td_tax.show()
+    flux_td_tax.savefig(f'./plots/{flux_td_title} Ternary Diagram.png')
     #endregion
 
     # region let's just try to plot phi_t over time, flux vs time, and flux vs energy

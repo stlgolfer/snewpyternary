@@ -544,16 +544,19 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     tax.left_axis_label(r'$\nu_e$')
 
     # tax.scatter(points=plotting_data, color="red")
-    widths = np.linspace(0.01, 1, num=len(plotting_data))
-    for p in range(len(plotting_data) - 1):
-        if (p + 1 >= len(plotting_data)):
-            break
-        # tax.line(plotting_data[p], plotting_data[p + 1], color=(widths[p], 0, 0, 1), linestyle=':', linewidth=3)
-    tax.scatter(plotting_data, color='white')
+    # widths = np.linspace(0.01, 1, num=len(plotting_data))
+    # for p in range(len(plotting_data) - 1):
+    #     if (p + 1 >= len(plotting_data)):
+    #         break
+    #     # tax.line(plotting_data[p], plotting_data[p + 1], color=(widths[p], 0, 0, 1), linestyle=':', linewidth=3)
+    # tax.scatter(plotting_data, color='white')
+    tax.plot_colored_trajectory(plotting_data, cmap=plt.get_cmap('binary'))
 
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
+    tax.scatter([tuple(plotting_data[-1])], marker='s', color='red', linewidth=10)
+    tax.scatter([tuple(plotting_data[0])], marker='^', linewidth=10, color='blue')
 
     if show == True:
         tax.show()

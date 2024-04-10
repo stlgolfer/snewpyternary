@@ -268,7 +268,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     return plot_data, raw_data, l_data
 
-def process_flux(config: t.MetaAnalysisConfig, set_no: int):
+def process_flux(config: t.MetaAnalysisConfig, set_no: int, divide=1):
 
     flux_scatter_data, raw_data, labeled = t.create_flux_scatter(
         config.model_file_paths[set_no],
