@@ -17,3 +17,4 @@ last_chart.png
 ./anue flux spectrogram.pickle
 ./anue flux spectrogram.png
 /sigmas
+/flux_saves

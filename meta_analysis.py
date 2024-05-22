@@ -297,6 +297,17 @@ def process_flux(config: t.MetaAnalysisConfig, set_no: int, divide=1):
     time_bin_plot_title = f'{config.model_type} {config.model_file_paths[set_no].split("/")[-1]} Truth Flux {"Logged" if use_log else "Linear"} Time Bins {config.transformation}{" PreSN" if use_presn else ""}.png'
     plt.title(time_bin_plot_title)
     plt.savefig(f'./plots/{time_bin_plot_title}')
+
+    # now save this data
+    axes_labels = data_handlers.ConfigBestChannel().flux_axes()
+    data_reshuffled = np.vstack(raw_data).T
+    df = pd.DataFrame({
+        'time':time_bins_x_axis,
+        f'raw_data_nux':data_reshuffled[0],
+        f'raw_data_anue': data_reshuffled[1],
+        f'raw_data_nue': data_reshuffled[2]
+    })
+    df.to_csv(f'./flux_saves/{config.stringify(set_no)}_flux_save.csv')
     return flux_scatter_data, raw_data, labeled
 
 def remap_dict(dictionary,newval):
