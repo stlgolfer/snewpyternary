@@ -146,7 +146,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         }
     }
 
-    spt_title = f'{config.model_type} {detector}\n {str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins {sptc_index[detector]["proxy"]} Spectra{" PreSN" if use_presn else ""}'
+    # spt_title = f'{config.model_type} {detector}\n {str(config.proxyconfig)} {config.transformation} {"Logged" if use_log else "Linear"} Bins {sptc_index[detector]["proxy"]} Spectra{" PreSN" if use_presn else ""}'
+    spt_title = f'{config.stringify(submodel=set_no)} {detector}'
     spt_full_content = []
     # now go through the l_data, which has rows containing dict_data
     with tqdm(total = len(l_data)) as pbar:
@@ -162,7 +163,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
                 spt_full_content = np.column_stack((spt_full_content, spt_content[sptc_index[detector]['index']]))
             pbar.update(1)
     spt_ax.set_ylabel('Energy (GeV)')
-    spt_ax.set_xlabel('Time (s)')
+    spt_ax.set_xlabel(r'Time + $t_0$ (s)')
     # spt_ax.set_zlabel('Event rate')
     spt_ax.set_title(spt_title)
     # x dim should be energy bins, y should be time?
@@ -175,7 +176,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     # dump the figure for later arrangement
     spt_fig.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
-    pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
+    # pickle.dump(spt_fig, open(f'./spectra/{t.clean_newline(spt_title)}.pickle', 'wb'))
 
     if show_charts:
         spt_fig.show()
@@ -257,8 +258,8 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         # ani.save('video.mp4', writer=writermp4)
         print('...Done')
 
-        flux_spect_fig.savefig('./anue flux spectrogram.png')
-        pickle.dump(flux_spect_fig, open('./anue flux spectrogram.pickle', 'wb'))
+        flux_spect_fig.savefig(f'./spectra/{config.stringify(submodel=set_no)} anue flux spectrogram.png')
+        # pickle.dump(flux_spect_fig, open(f'./spectra/{config.stringify(submodel=set_no)} anue flux spectrogram.pickle', 'wb'))
 
         if show_charts:
             flux_spect_fig.show()
@@ -267,7 +268,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
 
     return plot_data, raw_data, l_data
 
-def process_flux(config: t.MetaAnalysisConfig, set_no: int):
+def process_flux(config: t.MetaAnalysisConfig, set_no: int, divide=1):
 
     flux_scatter_data, raw_data, labeled = t.create_flux_scatter(
         config.model_file_paths[set_no],
@@ -335,6 +336,13 @@ def ternary_distance(p1: tuple, p2: tuple):
     dy = p2[1] - p1[1]
     dz = p2[2] - p1[2]
     return math.sqrt(dx**2 + dy**2 + dz**2)
+
+def ternary_subtract(p1: tuple, p2: tuple):
+    #p1 - p2
+    return (p1[0]-p2[0],p1[1]-p2[1],p1[2]-p2[2])
+
+def ternary_dotproduct(p1: tuple, p2: tuple):
+    return p1[0]*p2[0]+p1[1]*p2[1]+p1[2]*p2[2]
 
 def aggregate_detector(config: t.MetaAnalysisConfig, number: int, colorid: int, tax: TernaryAxesSubplot, cum_sum_tax: TernaryAxesSubplot) -> None:
     # flux_scatter, flux_raw, flux_l_data = process_flux(config, number)

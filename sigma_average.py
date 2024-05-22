@@ -4,12 +4,13 @@ import snewpyternary as t
 import snowglobes_wrapper
 from model_wrappers import snewpy_models, sn_model_default_time_step
 import data_handlers
-from meta_analysis import process_flux, process_detector
+from meta_analysis import process_flux, process_detector, t_normalize
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import warnings
 from astropy import units as u
+from tqdm import tqdm
 
 def estimate_cxn(
         config: t.MetaAnalysisConfig,
@@ -20,8 +21,9 @@ def estimate_cxn(
         det_chan_name: str,
         Nt: float
 ):
+    submodel_number = config.set_numbers[0]
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
-        config.model_file_paths[config.set_numbers[0]],
+        config.model_file_paths[submodel_number],
         config.model_type,
         deltat=sn_model_default_time_step(config.model_type),
         log_bins=True,
@@ -35,10 +37,25 @@ def estimate_cxn(
     temp4 = np.subtract(np.array(temp2), np.array(temp3))
     dts = np.concatenate((np.array(temp1), temp4))
 
-    flux_scatter_data, raw_data, labeled = process_flux(config, 0)
+    flux_scatter_data, raw_data, labeled = process_flux(config, submodel_number)
+
     # in a time bin, the truth flux is binned in GeV
     labeled_transposed = np.transpose(labeled)
-    plot_data, raw_data_det, l_data = process_detector(config, 0, det_name)
+    plot_data, raw_data_det, l_data = process_detector(config, submodel_number, det_name)
+
+    #region make spectrograms and save them in the right spot
+    spt_full_content = []
+    # now go through the l_data, which has rows containing dict_data
+
+    #endregion
+
+    #region flux ternary diagram
+    flux_td_title = f'{config.stringify(config.set_numbers[0])} Truth Flux'
+    # need to divide the nux data by 6
+    flux_td_fig, flux_td_tax = t.create_default_flux_plot(t_normalize([(x[0]/6,x[1],x[2]) for x in raw_data]), flux_td_title)
+    flux_td_tax.show()
+    flux_td_tax.savefig(f'./plots/{flux_td_title} Ternary Diagram.png')
+    #endregion
 
     # region let's just try to plot phi_t over time, flux vs time, and flux vs energy
     phi_t_fig, phi_t_ax = plt.subplots(1, 1)
@@ -56,9 +73,13 @@ def estimate_cxn(
 
     phi_t_ax.scatter(times_unitless, phi_t_over_time)
     phi_t_ax.set_title(rf'$\phi_t$ for {config.model_type} {config.set_numbers[0]} Fluence')
-    phi_t_ax.set_xlabel("Time (s)")
+    phi_t_ax.set_xlabel(r"Time + $t_0$ (s)")
     phi_t_ax.set_ylabel(r'$neutrinos/cm^2$')
     phi_t_ax.set_xscale('log')
+    phi_t_inset_ax = phi_t_ax.inset_axes([0.2,0.2,0.5,0.5])
+    phi_t_inset_ax.scatter(times_unitless, phi_t_over_time)
+    phi_t_inset_ax.set_xscale('log')
+    phi_t_inset_ax.set_yscale('log')
     phi_t_fig.tight_layout()
     phi_t_fig.show()
 
@@ -199,23 +220,33 @@ def estimate_cxn(
         Ndet = dts[phi_est_time_bin] * 0.2e-3 * np.sum(
             l_data[phi_est_time_bin][det_chan_name]
         )
-        Ndet_over_time[phi_est_time_bin] = Ndet #/(0.2e-3 * dts[phi_est_time_bin])
+        Ndet_over_time[phi_est_time_bin] = Ndet /(0.2e-3 * dts[phi_est_time_bin])
 
         phi_est_unfolded[phi_est_time_bin] = Ndet / (Nt * sigma_average[phi_est_time_bin])
     unfold_fig, unfold_ax = plt.subplots(1,1)
     unfold_ax.set_xscale('log')
     unfold_ax.scatter(times_unitless, phi_est_unfolded, label='Unfolded')
-    unfold_ax.scatter(times_unitless, phi_t_over_time, label=r'$\phi_t$ Truth', alpha=0.2)
-    unfold_ax.set_title(f'{config.stringify()} {cxn_truth_chan_key} Unfolded')
+    unfold_ax.scatter(times_unitless, phi_t_over_time, label=r'$\phi_t$ Truth', marker='1', color='red', sizes=100*np.ones_like(phi_t_over_time)) #, alpha=0.2
+    unfold_ax.set_title(f'{config.stringify(submodel_number)} {cxn_truth_chan_key} Unfolded')
     unfold_ax.legend()
     unfold_fig.show()
+    #endregion
+
+    #region also plot the Ndet_over_time as a general check
+    ndet_fig, ndet_ax = plt.subplots(1)
+    ndet_ax.set_xscale('log')
+    ndet_ax.scatter(times_unitless, Ndet_over_time)
+    ndet_ax.set_title(f'{config.stringify(submodel_number)} {cxn_truth_chan_key} Detector Count')
+    ndet_ax.set_xlabel('Time + t0 (s)')
+    ndet_ax.set_ylabel('Detector Count')
+    ndet_fig.show()
     #endregion
 
     if __name__ == '__main__':
         # only save the sigmas in a csv if this is being run by itself
         print('Storing average sigma in ./sigmas...')
         df = pd.DataFrame()
-        df['time'] = times_unitless
+        df['time'] = np.array(times_unitless) + 0.0001 + abs(times_unitless[0]) #TODO: shift axis to include more of the time window
         df['dt'] = dts
         df['sigma average'] = sigma_average
         df['unfolded'] = phi_est_unfolded
