@@ -220,7 +220,9 @@ def estimate_cxn(
         Ndet = dts[phi_est_time_bin] * 0.2e-3 * np.sum(
             l_data[phi_est_time_bin][det_chan_name]
         )
-        Ndet_over_time[phi_est_time_bin] = Ndet /(0.2e-3 * dts[phi_est_time_bin])
+        #TODO: need to figure out if this needs to be commented out or not. it looks like rishi's code
+        # considers when they're maybe still binned?
+        Ndet_over_time[phi_est_time_bin] = Ndet #/(0.2e-3 * dts[phi_est_time_bin])
 
         phi_est_unfolded[phi_est_time_bin] = Ndet / (Nt * sigma_average[phi_est_time_bin])
     unfold_fig, unfold_ax = plt.subplots(1,1)
