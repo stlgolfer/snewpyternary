@@ -60,22 +60,37 @@ def bind(nux, nue, anue, title, heatmap):
         )
     )
 
-    ebin = 0.02e-3
+    # ndet_raw_combined_per_time = list(
+    #     zip(
+    #         np.cumsum(np.divide(nux_df['Ndet'],nux_df['dt'])),
+    #         np.cumsum(np.divide(anue_df['Ndet'],nux_df['dt'])),
+    #         np.cumsum(np.divide(nue_df['Ndet'],nux_df['dt']))
+    #     )
+    # )
+
     ndet_raw_combined_per_time = list(
         zip(
-            np.cumsum(np.divide(nux_df['Ndet'],nux_df['dt'])/ebin),
-            np.cumsum(np.divide(anue_df['Ndet'],nux_df['dt'])/ebin),
-            np.cumsum(np.divide(nue_df['Ndet'],nux_df['dt'])/ebin)
+            np.cumsum(nux_df['Ndet']),
+            np.cumsum(anue_df['Ndet']),
+            np.cumsum(nue_df['Ndet'])
         )
     )
 
     ndet_raw_combined_per_time_pre_csum = list(
         zip(
-            np.divide(nux_df['Ndet'], nux_df['dt']) / ebin,
-            np.divide(anue_df['Ndet'], nux_df['dt']) / ebin,
-            np.divide(nue_df['Ndet'], nux_df['dt']) / ebin
+            nux_df['Ndet'],
+            anue_df['Ndet'],
+            nue_df['Ndet']
         )
     )
+
+    # ndet_raw_combined_per_time_pre_csum = list(
+    #     zip(
+    #         np.divide(nux_df['Ndet'], nux_df['dt']),
+    #         np.divide(anue_df['Ndet'], nux_df['dt']) / ebin,
+    #         np.divide(nue_df['Ndet'], nux_df['dt']) / ebin
+    #     )
+    # )
     ERROR_MULTIPLIER = 1
     ternary_points = t_normalize(unfolded_csum)
     unfolded_ternary_points_pre_csum = t_normalize(unfolded_pre_csum)
@@ -319,7 +334,7 @@ def bind(nux, nue, anue, title, heatmap):
 
     if heatmap:
         print("Generating heatmap (this might take a while)...")
-        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_pre_csum, unfolded_ternary_points_pre_csum, ndet_raw_combined_per_time,
+        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_pre_csum, unfolded_ternary_points_pre_csum, ndet_raw_combined_per_time_pre_csum,
                                                   sigma_mult=ERROR_MULTIPLIER),
                     cmap=plt.get_cmap('PiYG'), colorbar=False)
         print("Done")
