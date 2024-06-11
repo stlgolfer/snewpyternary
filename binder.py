@@ -302,8 +302,39 @@ def bind(nux, nue, anue, title, heatmap):
 
     # fig, tax = t.create_default_flux_plot(t_normalize(unfolded_csum), rf'{title} $\phi_e$', save=False, show=False)
     tax.show()
-    tax.savefig(f'./fluxes/{title} Unfolded.png')
+    tax.savefig(f'./fluxes/{title} Unfolded CSum.png')
     print(f'Ternary diagram painted {len(ternary_points)} points')
+    #endregion
+
+    #region ternary diagram for phi_est_flux but not cumulatively summed
+    scale = 100
+    figure, tax = ternary.figure(scale=scale)
+    tax.boundary(linewidth=2.0)
+    tax.gridlines(color="blue", multiple=scale / 10)
+    tax.set_title(rf'{title} $\phi_e$ No CSum')
+    # data is organized in top, right, left
+    tax.bottom_axis_label(r'$\nu_x$')
+    tax.right_axis_label(r'$\bar{\nu_e}$')
+    tax.left_axis_label(r'$\nu_e$')
+
+    if heatmap:
+        print("Generating heatmap (this might take a while)...")
+        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_pre_csum, unfolded_ternary_points_pre_csum, ndet_raw_combined_per_time,
+                                                  sigma_mult=ERROR_MULTIPLIER),
+                    cmap=plt.get_cmap('PiYG'), colorbar=False)
+        print("Done")
+    tax.plot_colored_trajectory(unfolded_ternary_points_pre_csum, cmap=plt.get_cmap('binary'))
+    # we also want to paint the starting point and end point differently
+    tax.scatter([tuple(unfolded_ternary_points_pre_csum[-1])], marker='s', color='red', linewidth=10)
+    tax.scatter([tuple(unfolded_ternary_points_pre_csum[0])], marker='^', linewidth=10, color='blue')
+
+    tax.ticks(axis='lbr', linewidth=1, multiple=scale / 10)
+    tax.clear_matplotlib_ticks()
+    tax.get_axes().axis('off')
+
+    # fig, tax = t.create_default_flux_plot(t_normalize(unfolded_csum), rf'{title} $\phi_e$', save=False, show=False)
+    tax.show()
+    tax.savefig(f'./fluxes/{title} Unfolded no CSum.png')
     #endregion
 
     Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined_per_time), f'{title} Ndet',save=False,show=False)
