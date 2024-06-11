@@ -304,7 +304,7 @@ def bind(nux, nue, anue, title, heatmap):
     if heatmap:
         print("Generating heatmap (this might take a while)...")
         tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time, sigma_mult=ERROR_MULTIPLIER),
-                    cmap=plt.get_cmap('PiYG'))
+                    cmap=plt.get_cmap('PiYG'), colorbar=False)
         print("Done")
     tax.plot_colored_trajectory(t_normalize(unfolded_csum), cmap=plt.get_cmap('binary'))
     # we also want to paint the starting point and end point differently

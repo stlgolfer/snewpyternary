@@ -217,13 +217,13 @@ def estimate_cxn(
         if det_name == 'scint20kt':
             l_data[phi_est_time_bin][det_chan_name][l_data[0]['Energy']*1000 < 15] = 0
 
-        Ndet = dts[phi_est_time_bin] * 0.2e-3 * np.sum(
+        Ndet = np.sum(
             l_data[phi_est_time_bin][det_chan_name]
-        )
+        ) # dts[phi_est_time_bin] * 0.2e-3 *
         #TODO: need to figure out if this needs to be commented out or not. it looks like rishi's code
         # considers when they're maybe still binned? no the integration part should be right
         # look at line 220 the integration already happens so this should in fact be total count and units line up
-        Ndet_over_time[phi_est_time_bin] = Ndet /(0.2e-3 * dts[phi_est_time_bin])
+        Ndet_over_time[phi_est_time_bin] = Ndet #/(0.2e-3 * dts[phi_est_time_bin])
 
         phi_est_unfolded[phi_est_time_bin] = Ndet / (Nt * sigma_average[phi_est_time_bin])
         # ok double check where the 0.2e-3 * dts are happening because i bet something isn't getting canceled somewhere
