@@ -65,8 +65,8 @@ def estimate_cxn(
     for l in range(len(labeled)):
         nux_fluence = labeled[l][1] + labeled[l][2] + labeled[l][3] + labeled[l][4] + labeled[l][5] + \
                       labeled[l][6]
-        phi_t_over_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3  * dts[l]
-        flux_vs_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3
+        phi_t_over_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence)  #* 0.2e-3  * dts[l]
+        flux_vs_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence)  #* 0.2e-3
 
     if det_name == 'scint20kt':
         warnings.warn("scint20kt uses a slightly different calculation, so don't be surprised if the AUC is wrong")
@@ -102,7 +102,7 @@ def estimate_cxn(
     flux_vs_energy_ax.set_xlabel('Mid-Point Energy (GeV)')
     flux_vs_energy_ax.set_ylabel(r'$\frac{neutrinos}{{cm}^2 * GeV}$')
     # then find the AUC
-    flux_vs_energy_AUC = np.sum(flux_vs_energy) * 0.2e-3
+    flux_vs_energy_AUC = np.sum(flux_vs_energy)  #* 0.2e-3
     print(f"AUC for Flux vs energy is {flux_vs_energy_AUC}")
     print(f'AUC for phi_t is {np.sum(phi_t_over_time)}')
     flux_vs_energy_fig.show()
@@ -194,7 +194,8 @@ def estimate_cxn(
                       labeled[time][6]
         sigma_average[time] = np.sum(
             np.multiply(
-                dts[time] * 0.2e-3 * (nux_fluence if det_name == 'scint20kt' else labeled[time][flux_chan]),
+                #dts[time] * 0.2e-3 *\
+                (nux_fluence if det_name == 'scint20kt' else labeled[time][flux_chan]),
                 truth_calculation)
         ) / phi_t_over_time[time]
 
