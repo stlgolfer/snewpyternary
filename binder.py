@@ -91,7 +91,7 @@ def bind(nux, nue, anue, title, heatmap):
     #         np.divide(nue_df['Ndet'], nux_df['dt']) / ebin
     #     )
     # )
-    ERROR_MULTIPLIER = 1
+    ERROR_MULTIPLIER = 100
     ternary_points = t_normalize(unfolded_csum)
     unfolded_ternary_points_pre_csum = t_normalize(unfolded_pre_csum)
 
@@ -99,16 +99,16 @@ def bind(nux, nue, anue, title, heatmap):
     unfolded_transpose_csum = list(zip(*unfolded_csum))
     ndet_raw_transpose_csum = list(zip(*ndet_raw_combined_per_time))
 
-    nux_csum_error_td = ERROR_MULTIPLIER*np.divide(unfolded_transpose_csum[0], np.sqrt(ndet_raw_transpose_csum[0]))
-    anue_csum_error_td = ERROR_MULTIPLIER*np.divide(unfolded_transpose_csum[1], np.sqrt(ndet_raw_transpose_csum[1]))
-    nue_csum_error_td = ERROR_MULTIPLIER*np.divide(unfolded_transpose_csum[2], np.sqrt(ndet_raw_transpose_csum[2]))
+    nux_csum_error_td = np.divide(unfolded_transpose_csum[0], np.sqrt(ndet_raw_transpose_csum[0]))
+    anue_csum_error_td = np.divide(unfolded_transpose_csum[1], np.sqrt(ndet_raw_transpose_csum[1]))
+    nue_csum_error_td = np.divide(unfolded_transpose_csum[2], np.sqrt(ndet_raw_transpose_csum[2]))
 
     unfolded_transpose_pre_csum = list(zip(*unfolded_pre_csum))
     ndet_raw_transpose_pre_csum = list(zip(*ndet_raw_combined_per_time_pre_csum))
 
-    nux_error_td_pre_csum = ERROR_MULTIPLIER*np.divide(unfolded_transpose_pre_csum[0], np.sqrt(ndet_raw_transpose_pre_csum[0]))
-    anue_error_td_pre_csum = ERROR_MULTIPLIER*np.divide(unfolded_transpose_pre_csum[1], np.sqrt(ndet_raw_transpose_pre_csum[1]))
-    nue_error_td_pre_csum = ERROR_MULTIPLIER*np.divide(unfolded_transpose_pre_csum[2], np.sqrt(ndet_raw_transpose_pre_csum[2]))
+    nux_error_td_pre_csum = np.divide(unfolded_transpose_pre_csum[0], np.sqrt(ndet_raw_transpose_pre_csum[0]))
+    anue_error_td_pre_csum = np.divide(unfolded_transpose_pre_csum[1], np.sqrt(ndet_raw_transpose_pre_csum[1]))
+    nue_error_td_pre_csum = np.divide(unfolded_transpose_pre_csum[2], np.sqrt(ndet_raw_transpose_pre_csum[2]))
     #endregion
 
     #region time domain ternary error bars
@@ -173,7 +173,7 @@ def bind(nux, nue, anue, title, heatmap):
     td_c_ax.set_xscale('log')
     td_c_ax.set_yscale('log')
     td_c_ax.set_xlabel('Mid-Point Time (s) + t0')
-    td_c_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$ Cumu.')
+    td_c_ax.set_ylabel(r'$\frac{neutrinos}{cm^2}$ Cumu.')
     td_c_ax.legend()
 
     td_c_ax_inset = td_c_ax.inset_axes([0.55,0.1, 0.4,0.5])
@@ -273,7 +273,7 @@ def bind(nux, nue, anue, title, heatmap):
     td_ax.set_xscale('log')
     td_ax.set_yscale('log')
     td_ax.set_xlabel('Mid-Point Time (s) + t0')
-    td_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$')
+    td_ax.set_ylabel(r'$\frac{neutrinos}{cm^2}$')
     td_ax.legend()
     # let's also make the same plot but in regular y-scale
     td_ax_inset = td_ax.inset_axes([0.55,0.1, 0.4,0.5])
@@ -303,7 +303,7 @@ def bind(nux, nue, anue, title, heatmap):
 
     if heatmap:
         print("Generating heatmap (this might take a while)...")
-        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time, sigma_mult=ERROR_MULTIPLIER),
+        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time),
                     cmap=plt.get_cmap('PiYG'), colorbar=False)
         print("Done")
     tax.plot_colored_trajectory(t_normalize(unfolded_csum), cmap=plt.get_cmap('binary'))
@@ -334,8 +334,7 @@ def bind(nux, nue, anue, title, heatmap):
 
     if heatmap:
         print("Generating heatmap (this might take a while)...")
-        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_pre_csum, unfolded_ternary_points_pre_csum, ndet_raw_combined_per_time_pre_csum,
-                                                  sigma_mult=ERROR_MULTIPLIER),
+        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_pre_csum, unfolded_ternary_points_pre_csum, ndet_raw_combined_per_time_pre_csum),
                     cmap=plt.get_cmap('PiYG'), colorbar=False)
         print("Done")
     tax.plot_colored_trajectory(unfolded_ternary_points_pre_csum, cmap=plt.get_cmap('binary'))
