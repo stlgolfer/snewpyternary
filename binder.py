@@ -13,6 +13,9 @@ import matplotlib.pyplot as plt
 import math
 import warnings
 
+# change matplotlib font sizes
+TERNARY_AXES_LABEL_FONT_SIZE = 20
+
 def project_ternary_points(points):
     scale = 100
     figure, tax = ternary.figure(scale=scale)
@@ -297,9 +300,9 @@ def bind(nux, nue, anue, title, heatmap):
     tax.gridlines(color="blue", multiple=scale / 10)
     tax.set_title(rf'{title} $\phi_e$')
     # data is organized in top, right, left
-    tax.bottom_axis_label(r'$\nu_x$')
-    tax.right_axis_label(r'$\bar{\nu_e}$')
-    tax.left_axis_label(r'$\nu_e$')
+    tax.bottom_axis_label(r'$\nu_x$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
+    tax.right_axis_label(r'$\bar{\nu_e}$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
+    tax.left_axis_label(r'$\nu_e$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
 
     if heatmap:
         print("Generating heatmap (this might take a while)...")
@@ -328,9 +331,9 @@ def bind(nux, nue, anue, title, heatmap):
     tax.gridlines(color="blue", multiple=scale / 10)
     tax.set_title(rf'{title} $\phi_e$ No CSum')
     # data is organized in top, right, left
-    tax.bottom_axis_label(r'$\nu_x$')
-    tax.right_axis_label(r'$\bar{\nu_e}$')
-    tax.left_axis_label(r'$\nu_e$')
+    tax.bottom_axis_label(r'$\nu_x$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
+    tax.right_axis_label(r'$\bar{\nu_e}$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
+    tax.left_axis_label(r'$\nu_e$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
 
     if heatmap:
         print("Generating heatmap (this might take a while)...")
