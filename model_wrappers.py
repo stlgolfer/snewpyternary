@@ -33,7 +33,7 @@ __sn_model_def_time_step_lib['Sukhbold_2015'] = 0.1*u.s
 __sn_model_def_time_step_lib['Tamborra_2014'] = 0.009*u.s
 __sn_model_def_time_step_lib['Walk_2018'] = 0.005*u.s
 __sn_model_def_time_step_lib['Walk_2019'] = 0.005*u.s
-__sn_model_def_time_step_lib['Warren_2020'] = 0.015*u.s
+__sn_model_def_time_step_lib['Warren_2020'] = 0.013*u.s
 __sn_model_def_time_step_lib['Zha_2021'] = 0.009*u.s #0.0009, but this seems waaay too small. we want ~200-500 bins
 
 

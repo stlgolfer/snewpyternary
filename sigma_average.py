@@ -65,8 +65,8 @@ def estimate_cxn(
     for l in range(len(labeled)):
         nux_fluence = labeled[l][1] + labeled[l][2] + labeled[l][3] + labeled[l][4] + labeled[l][5] + \
                       labeled[l][6]
-        phi_t_over_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3  * dts[l]
-        flux_vs_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence) * 0.2e-3
+        phi_t_over_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence)  #* 0.2e-3  * dts[l]
+        flux_vs_time[l] = np.sum(labeled[l][flux_chan] if det_name != "scint20kt" else nux_fluence)  #* 0.2e-3
 
     if det_name == 'scint20kt':
         warnings.warn("scint20kt uses a slightly different calculation, so don't be surprised if the AUC is wrong")
@@ -102,7 +102,7 @@ def estimate_cxn(
     flux_vs_energy_ax.set_xlabel('Mid-Point Energy (GeV)')
     flux_vs_energy_ax.set_ylabel(r'$\frac{neutrinos}{{cm}^2 * GeV}$')
     # then find the AUC
-    flux_vs_energy_AUC = np.sum(flux_vs_energy) * 0.2e-3
+    flux_vs_energy_AUC = np.sum(flux_vs_energy)  #* 0.2e-3
     print(f"AUC for Flux vs energy is {flux_vs_energy_AUC}")
     print(f'AUC for phi_t is {np.sum(phi_t_over_time)}')
     flux_vs_energy_fig.show()
@@ -194,7 +194,8 @@ def estimate_cxn(
                       labeled[time][6]
         sigma_average[time] = np.sum(
             np.multiply(
-                dts[time] * 0.2e-3 * (nux_fluence if det_name == 'scint20kt' else labeled[time][flux_chan]),
+                #dts[time] * 0.2e-3 *\
+                (nux_fluence if det_name == 'scint20kt' else labeled[time][flux_chan]),
                 truth_calculation)
         ) / phi_t_over_time[time]
 
@@ -217,12 +218,16 @@ def estimate_cxn(
         if det_name == 'scint20kt':
             l_data[phi_est_time_bin][det_chan_name][l_data[0]['Energy']*1000 < 15] = 0
 
-        Ndet = dts[phi_est_time_bin] * 0.2e-3 * np.sum(
+        Ndet = np.sum(
             l_data[phi_est_time_bin][det_chan_name]
-        )
-        Ndet_over_time[phi_est_time_bin] = Ndet /(0.2e-3 * dts[phi_est_time_bin])
+        ) # dts[phi_est_time_bin] *
+        #TODO: need to figure out if this needs to be commented out or not. it looks like rishi's code
+        # considers when they're maybe still binned? no the integration part should be right
+        # look at line 220 the integration already happens so this should in fact be total count and units line up
+        Ndet_over_time[phi_est_time_bin] = Ndet #/(0.2e-3 * dts[phi_est_time_bin])
 
         phi_est_unfolded[phi_est_time_bin] = Ndet / (Nt * sigma_average[phi_est_time_bin])
+        # ok double check where the 0.2e-3 * dts are happening because i bet something isn't getting canceled somewhere
     unfold_fig, unfold_ax = plt.subplots(1,1)
     unfold_ax.set_xscale('log')
     unfold_ax.scatter(times_unitless, phi_est_unfolded, label='Unfolded')

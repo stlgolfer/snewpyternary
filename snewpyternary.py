@@ -539,9 +539,9 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     tax.gridlines(color="blue", multiple=scale/10)
     tax.set_title(plot_title)
     # data is organized in top, right, left
-    tax.bottom_axis_label(r'$\nu_x$')
-    tax.right_axis_label(r'$\bar{\nu_e}$')
-    tax.left_axis_label(r'$\nu_e$')
+    tax.bottom_axis_label(r'$\nu_x$', fontsize=20)
+    tax.right_axis_label(r'$\bar{\nu_e}$', fontsize=20)
+    tax.left_axis_label(r'$\nu_e$', fontsize=20)
 
     # tax.scatter(points=plotting_data, color="red")
     # widths = np.linspace(0.01, 1, num=len(plotting_data))

@@ -13,6 +13,9 @@ import matplotlib.pyplot as plt
 import math
 import warnings
 
+# change matplotlib font sizes
+TERNARY_AXES_LABEL_FONT_SIZE = 20
+
 def project_ternary_points(points):
     scale = 100
     figure, tax = ternary.figure(scale=scale)
@@ -60,23 +63,38 @@ def bind(nux, nue, anue, title, heatmap):
         )
     )
 
-    ebin = 0.02e-3
+    # ndet_raw_combined_per_time = list(
+    #     zip(
+    #         np.cumsum(np.divide(nux_df['Ndet'],nux_df['dt'])),
+    #         np.cumsum(np.divide(anue_df['Ndet'],nux_df['dt'])),
+    #         np.cumsum(np.divide(nue_df['Ndet'],nux_df['dt']))
+    #     )
+    # )
+
     ndet_raw_combined_per_time = list(
         zip(
-            np.cumsum(np.divide(nux_df['Ndet'],nux_df['dt'])/ebin),
-            np.cumsum(np.divide(anue_df['Ndet'],nux_df['dt'])/ebin),
-            np.cumsum(np.divide(nue_df['Ndet'],nux_df['dt'])/ebin)
+            np.cumsum(nux_df['Ndet']),
+            np.cumsum(anue_df['Ndet']),
+            np.cumsum(nue_df['Ndet'])
         )
     )
 
     ndet_raw_combined_per_time_pre_csum = list(
         zip(
-            np.divide(nux_df['Ndet'], nux_df['dt']) / ebin,
-            np.divide(anue_df['Ndet'], nux_df['dt']) / ebin,
-            np.divide(nue_df['Ndet'], nux_df['dt']) / ebin
+            nux_df['Ndet'],
+            anue_df['Ndet'],
+            nue_df['Ndet']
         )
     )
-    ERROR_MULTIPLIER = 1
+
+    # ndet_raw_combined_per_time_pre_csum = list(
+    #     zip(
+    #         np.divide(nux_df['Ndet'], nux_df['dt']),
+    #         np.divide(anue_df['Ndet'], nux_df['dt']) / ebin,
+    #         np.divide(nue_df['Ndet'], nux_df['dt']) / ebin
+    #     )
+    # )
+    ERROR_MULTIPLIER = 100
     ternary_points = t_normalize(unfolded_csum)
     unfolded_ternary_points_pre_csum = t_normalize(unfolded_pre_csum)
 
@@ -84,16 +102,16 @@ def bind(nux, nue, anue, title, heatmap):
     unfolded_transpose_csum = list(zip(*unfolded_csum))
     ndet_raw_transpose_csum = list(zip(*ndet_raw_combined_per_time))
 
-    nux_csum_error_td = ERROR_MULTIPLIER*np.divide(unfolded_transpose_csum[0], np.sqrt(ndet_raw_transpose_csum[0]))
-    anue_csum_error_td = ERROR_MULTIPLIER*np.divide(unfolded_transpose_csum[1], np.sqrt(ndet_raw_transpose_csum[1]))
-    nue_csum_error_td = ERROR_MULTIPLIER*np.divide(unfolded_transpose_csum[2], np.sqrt(ndet_raw_transpose_csum[2]))
+    nux_csum_error_td = np.divide(unfolded_transpose_csum[0], np.sqrt(ndet_raw_transpose_csum[0]))
+    anue_csum_error_td = np.divide(unfolded_transpose_csum[1], np.sqrt(ndet_raw_transpose_csum[1]))
+    nue_csum_error_td = np.divide(unfolded_transpose_csum[2], np.sqrt(ndet_raw_transpose_csum[2]))
 
     unfolded_transpose_pre_csum = list(zip(*unfolded_pre_csum))
     ndet_raw_transpose_pre_csum = list(zip(*ndet_raw_combined_per_time_pre_csum))
 
-    nux_error_td_pre_csum = ERROR_MULTIPLIER*np.divide(unfolded_transpose_pre_csum[0], np.sqrt(ndet_raw_transpose_pre_csum[0]))
-    anue_error_td_pre_csum = ERROR_MULTIPLIER*np.divide(unfolded_transpose_pre_csum[1], np.sqrt(ndet_raw_transpose_pre_csum[1]))
-    nue_error_td_pre_csum = ERROR_MULTIPLIER*np.divide(unfolded_transpose_pre_csum[2], np.sqrt(ndet_raw_transpose_pre_csum[2]))
+    nux_error_td_pre_csum = np.divide(unfolded_transpose_pre_csum[0], np.sqrt(ndet_raw_transpose_pre_csum[0]))
+    anue_error_td_pre_csum = np.divide(unfolded_transpose_pre_csum[1], np.sqrt(ndet_raw_transpose_pre_csum[1]))
+    nue_error_td_pre_csum = np.divide(unfolded_transpose_pre_csum[2], np.sqrt(ndet_raw_transpose_pre_csum[2]))
     #endregion
 
     #region time domain ternary error bars
@@ -158,7 +176,7 @@ def bind(nux, nue, anue, title, heatmap):
     td_c_ax.set_xscale('log')
     td_c_ax.set_yscale('log')
     td_c_ax.set_xlabel('Mid-Point Time (s) + t0')
-    td_c_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$ Cumu.')
+    td_c_ax.set_ylabel(r'$\frac{neutrinos}{cm^2}$ Cumu.')
     td_c_ax.legend()
 
     td_c_ax_inset = td_c_ax.inset_axes([0.55,0.1, 0.4,0.5])
@@ -258,7 +276,7 @@ def bind(nux, nue, anue, title, heatmap):
     td_ax.set_xscale('log')
     td_ax.set_yscale('log')
     td_ax.set_xlabel('Mid-Point Time (s) + t0')
-    td_ax.set_ylabel(r'$\frac{neutrinos}{0.2*MeV*dt}$')
+    td_ax.set_ylabel(r'$\frac{neutrinos}{cm^2}$')
     td_ax.legend()
     # let's also make the same plot but in regular y-scale
     td_ax_inset = td_ax.inset_axes([0.55,0.1, 0.4,0.5])
@@ -282,14 +300,14 @@ def bind(nux, nue, anue, title, heatmap):
     tax.gridlines(color="blue", multiple=scale / 10)
     tax.set_title(rf'{title} $\phi_e$')
     # data is organized in top, right, left
-    tax.bottom_axis_label(r'$\nu_x$')
-    tax.right_axis_label(r'$\bar{\nu_e}$')
-    tax.left_axis_label(r'$\nu_e$')
+    tax.bottom_axis_label(r'$\nu_x$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
+    tax.right_axis_label(r'$\bar{\nu_e}$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
+    tax.left_axis_label(r'$\nu_e$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
 
     if heatmap:
         print("Generating heatmap (this might take a while)...")
-        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time, sigma_mult=ERROR_MULTIPLIER),
-                    cmap=plt.get_cmap('PiYG'))
+        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time),
+                    cmap=plt.get_cmap('PiYG'), colorbar=False)
         print("Done")
     tax.plot_colored_trajectory(t_normalize(unfolded_csum), cmap=plt.get_cmap('binary'))
     # we also want to paint the starting point and end point differently
@@ -302,8 +320,38 @@ def bind(nux, nue, anue, title, heatmap):
 
     # fig, tax = t.create_default_flux_plot(t_normalize(unfolded_csum), rf'{title} $\phi_e$', save=False, show=False)
     tax.show()
-    tax.savefig(f'./fluxes/{title} Unfolded.png')
+    tax.savefig(f'./fluxes/{title} Unfolded CSum.png')
     print(f'Ternary diagram painted {len(ternary_points)} points')
+    #endregion
+
+    #region ternary diagram for phi_est_flux but not cumulatively summed
+    scale = 100
+    figure, tax = ternary.figure(scale=scale)
+    tax.boundary(linewidth=2.0)
+    tax.gridlines(color="blue", multiple=scale / 10)
+    tax.set_title(rf'{title} $\phi_e$ No CSum')
+    # data is organized in top, right, left
+    tax.bottom_axis_label(r'$\nu_x$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
+    tax.right_axis_label(r'$\bar{\nu_e}$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
+    tax.left_axis_label(r'$\nu_e$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
+
+    if heatmap:
+        print("Generating heatmap (this might take a while)...")
+        tax.heatmap(generate_heatmap_dict_phi_est(unfolded_pre_csum, unfolded_ternary_points_pre_csum, ndet_raw_combined_per_time_pre_csum),
+                    cmap=plt.get_cmap('PuOr'), colorbar=False)
+        print("Done")
+    tax.plot_colored_trajectory(unfolded_ternary_points_pre_csum, cmap=plt.get_cmap('binary'))
+    # we also want to paint the starting point and end point differently
+    tax.scatter([tuple(unfolded_ternary_points_pre_csum[-1])], marker='s', color='yellow', linewidth=10)
+    tax.scatter([tuple(unfolded_ternary_points_pre_csum[0])], marker='^', linewidth=10, color='cyan')
+
+    tax.ticks(axis='lbr', linewidth=1, multiple=scale / 10)
+    tax.clear_matplotlib_ticks()
+    tax.get_axes().axis('off')
+
+    # fig, tax = t.create_default_flux_plot(t_normalize(unfolded_csum), rf'{title} $\phi_e$', save=False, show=False)
+    tax.show()
+    tax.savefig(f'./fluxes/{title} Unfolded no CSum.png')
     #endregion
 
     Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined_per_time), f'{title} Ndet',save=False,show=False)
