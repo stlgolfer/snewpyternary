@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13228818.svg)](https://doi.org/10.5281/zenodo.13228818)
+
 # snewpyternary
 `snewpyternary` is a Python library that integrates SNEWPY and SNOwGLoBES to compare theoretical fluxes from neutrino progenitors and the simulated detected results on Earth. It facilitates the creation of ternary diagrams of such fluxes and event rates.
 
