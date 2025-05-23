@@ -5,7 +5,7 @@
 echo Bind heatma t/f
 read heat
 
-for model in Kuroda_2020 Nakazato_2013 Tamborra_2014 Walk_2018 Walk_2019 Warren_2020 Zha_2021
+for model in Kuroda_2020 Tamborra_2014 Walk_2018 Walk_2019
 do
 python sigma_average.py $model -p AdiabaticMSW_IMO -flavor nux && python sigma_average.py $model -p AdiabaticMSW_IMO -flavor nue && python sigma_average.py $model -p AdiabaticMSW_IMO -flavor anue &&
 python sigma_average.py $model -p AdiabaticMSW_NMO -flavor nux && python sigma_average.py $model -p AdiabaticMSW_NMO -flavor nue && python sigma_average.py $model -p AdiabaticMSW_NMO -flavor anue &&

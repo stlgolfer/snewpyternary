@@ -50,11 +50,14 @@ def estimate_cxn(
     #endregion
 
     #region flux ternary diagram
-    flux_td_title = f'{config.stringify(config.set_numbers[0])} Truth Flux'
+    flux_td_title = f'{config.stringify(config.set_numbers[0])} Truth Flux CSum'
     # need to divide the nux data by 6
-    flux_td_fig, flux_td_tax = t.create_default_flux_plot(t_normalize([(x[0]/6,x[1],x[2]) for x in raw_data]), flux_td_title)
+    # flux_td_fig, flux_td_tax = t.create_default_flux_plot(t_normalize([(x[0]/6,x[1],x[2]) for x in raw_data]), flux_td_title)
+    raw_data_processed = [(x[0] / 6, x[1], x[2]) for x in raw_data]
+    flux_td_fig, flux_td_tax = t.create_default_flux_plot(t_normalize(np.cumsum(np.array(raw_data_processed),0)), flux_td_title)
     flux_td_tax.show()
-    flux_td_tax.savefig(f'./plots/{flux_td_title} Ternary Diagram.png')
+    # flux_td_tax.savefig(f'./plots/{flux_td_title} Ternary Diagram.png') redundant since create_default_flux_plot
+    # already does this
     #endregion
 
     # region let's just try to plot phi_t over time, flux vs time, and flux vs energy

@@ -555,8 +555,8 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
-    tax.scatter([tuple(plotting_data[-1])], marker='s', color='red', linewidth=10)
-    tax.scatter([tuple(plotting_data[0])], marker='^', linewidth=10, color='blue')
+    tax.scatter([tuple(plotting_data[-1])], marker='s', color='yellow', linewidth=10)
+    tax.scatter([tuple(plotting_data[0])], marker='^', linewidth=10, color='cyan')
 
     if show == True:
         tax.show()

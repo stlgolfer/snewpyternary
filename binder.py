@@ -307,12 +307,12 @@ def bind(nux, nue, anue, title, heatmap):
     if heatmap:
         print("Generating heatmap (this might take a while)...")
         tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time),
-                    cmap=plt.get_cmap('PiYG'), colorbar=False)
+                    cmap=plt.get_cmap('PuOr'), colorbar=False)
         print("Done")
     tax.plot_colored_trajectory(t_normalize(unfolded_csum), cmap=plt.get_cmap('binary'))
     # we also want to paint the starting point and end point differently
-    tax.scatter([tuple(ternary_points[-1])], marker='s', color='red', linewidth=10)
-    tax.scatter([tuple(ternary_points[0])], marker='^', linewidth=10, color='blue')
+    tax.scatter([tuple(ternary_points[-1])], marker='s', color='yellow', linewidth=10)
+    tax.scatter([tuple(ternary_points[0])], marker='^', linewidth=10, color='cyan')
 
     tax.ticks(axis='lbr', linewidth=1, multiple=scale / 10)
     tax.clear_matplotlib_ticks()
