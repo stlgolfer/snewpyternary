@@ -87,6 +87,19 @@ def bind(nux, nue, anue, title, heatmap):
         )
     )
 
+    #region write out the computed ternary points
+    t.safe_create_folder('./binders')
+    print('Writing binders')
+    # going to just output the unfolded_csum
+    cumsum_unfolded_df = pd.DataFrame()
+    cumsum_unfolded_df['time'] = nux_df['time']
+    cumsum_unfolded_df['nux_df'] = np.array(unfolded_csum).T[0]
+    cumsum_unfolded_df['anue_df'] = np.array(unfolded_csum).T[1]
+    cumsum_unfolded_df['nue_df'] = np.array(unfolded_csum).T[2]
+    # np.array(unfolded_csum).T[0] # nuxdf
+    cumsum_unfolded_df.to_csv(f'./binders/{title}_cumsum_unfolded.csv')
+    #endregion
+
     # ndet_raw_combined_per_time_pre_csum = list(
     #     zip(
     #         np.divide(nux_df['Ndet'], nux_df['dt']),

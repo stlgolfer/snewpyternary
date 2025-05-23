@@ -65,6 +65,11 @@ def clean_newline(raw_title):
 
     return raw_title.replace("\n", "")
 
+def safe_create_folder(file):
+    import os
+    if not os.path.exists(file):
+        os.mkdir(file)
+
 def _sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
     '''
     Used internally to take the channels for a given proxy and sum them from the data
