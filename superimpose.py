@@ -16,6 +16,22 @@ import warnings
 # change matplotlib font sizes
 TERNARY_AXES_LABEL_FONT_SIZE = 20
 
+def paint_track(tax, df, colorscale='binary'):
+    unfolded_csum = list(
+                zip(
+                    df['nux_df'],
+                    df['anue_df'],
+                    df['nue_df']
+                )
+            )
+
+    ternary_points = t_normalize(unfolded_csum)
+    tax.plot_colored_trajectory(ternary_points, cmap=plt.get_cmap(colorscale))
+
+    # we also want to paint the starting point and end point differently
+    # tax.scatter([tuple(ternary_points[-1])], marker='s', color='yellow', linewidth=10)
+    # tax.scatter([tuple(ternary_points[0])], marker='^', linewidth=10, color='cyan')
+
 @click.command()
 @click.option('--config', required=True, help='File path to superimpose configuration')
 @click.option('--title', required=False, help='Title of the ternary plot', default='')
@@ -34,33 +50,25 @@ def superimpose(config, title):
     tax.right_axis_label(r'$\bar{\nu_e}$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
     tax.left_axis_label(r'$\nu_e$', fontsize=TERNARY_AXES_LABEL_FONT_SIZE)
 
-    with open(config, 'r') as file:
-        files = file.readlines()
-        for f in files:
-            df = pd.read_csv(f)
-            unfolded_csum = list(
-                zip(
-                    df['nux_df'],
-                    df['anue_df'],
-                    df['nue_df']
-                )
-            )
-            ternary_points = t_normalize(unfolded_csum)
-            tax.plot_colored_trajectory(t_normalize(unfolded_csum), cmap=plt.get_cmap('binary'))
-
-
-            # we also want to paint the starting point and end point differently
-            tax.scatter([tuple(ternary_points[-1])], marker='s', color='yellow', linewidth=10)
-            tax.scatter([tuple(ternary_points[0])], marker='^', linewidth=10, color='cyan')
-
+    # instead of reading plaintext, we will read in a CSV that has the NMO and IMO as columns
+    # and each row is an entry
+    # go through each line, read two files and paint a line for each
+    all_files = pd.read_csv(config)
+    for row in all_files.itertuples():
+        paint_track(tax, pd.read_csv(t.clean_newline(row.IMO)))
+        paint_track(tax, pd.read_csv(t.clean_newline(row.NMO)), colorscale='copper')
+        # for f in files:
+        #     df = pd.read_csv(t.clean_newline(f))
+            
     tax.ticks(axis='lbr', linewidth=1, multiple=scale / 10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off')
 
     # fig, tax = t.create_default_flux_plot(t_normalize(unfolded_csum), rf'{title} $\phi_e$', save=False, show=False)
     tax.show()
-    tax.savefig(f'./fluxes/test.png')
-    print(f'Ternary diagram painted {len(ternary_points)} points')
+    t.safe_create_folder('./superpositions')
+    tax.savefig(f'./superpositions/{title} Superimposed.png')
+    # print(f'Ternary diagram painted {len(ternary_points)} points')
     #endregion
 
 if __name__ == '__main__':
