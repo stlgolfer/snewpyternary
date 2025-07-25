@@ -162,16 +162,17 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
             else:
                 spt_full_content = np.column_stack((spt_full_content, spt_content[sptc_index[detector]['index']]))
             pbar.update(1)
-    spt_ax.set_ylabel('Energy (GeV)')
-    spt_ax.set_xlabel(r'Time + $t_0$ (s)')
+    spt_ax.set_ylabel('Energy (GeV)', fontsize=14)
+    spt_ax.set_xlabel(r'Time + $t_0$ (s)', fontsize=13)
     # spt_ax.set_zlabel('Event rate')
     spt_ax.set_title(spt_title)
     # x dim should be energy bins, y should be time?
     __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy'])
 
-    pc = spt_ax.contourf(__X, __Y, spt_full_content,10)
-    spt_fig.colorbar(pc, shrink=0.75, location='right', label='Event Count/(GeV*s)', format='%.0e')
+    pc = spt_ax.contourf(__X, __Y, spt_full_content, 10)
+    spt_fig.colorbar(pc, shrink=0.75, location='right', format='%.0e').set_label(fontsize=14,label='Event Count')
     spt_ax.set_xlim(0.0001, 20)
+    spt_ax.set_ylim(0,0.1)
     spt_ax.set_xscale('log')
 
     # dump the figure for later arrangement
