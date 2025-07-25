@@ -9,7 +9,7 @@ times = np.array(df['time'])
 print(times[0])
 times = times + np.abs(times[0]) + 0.001
 print(times)
-ax1.plot(times, df['raw_data_nux']/6, label=r'$\nu_x$')
+ax1.plot(times, df['raw_data_nux']/4, label=r'$\nu_x$')
 ax1.plot(times, df['raw_data_nue'], label=r'$\nu_e$')
 ax1.plot(times, df['raw_data_anue'], label=r'$\bar{\nu_e}$')
 ax1.set_xscale('log')
