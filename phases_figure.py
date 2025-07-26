@@ -1,12 +1,11 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from astropy import units as u
 
 df = pd.read_csv('./flux_saves/Nakazato_2013_s0_NoTransformation_BstChnl_flux_save.csv')
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,4.8))
 times = np.array(df['time'])
-print(times[0])
+
 times = times + np.abs(times[0]) + 0.001
 print(times)
 ax1.plot(times, df['raw_data_nux']/4, label=r'$\nu_x$')
