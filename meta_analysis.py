@@ -28,7 +28,6 @@ import caching as cache
 import sys
 import pickle
 from tqdm import tqdm
-from scipy.integrate import simpson
 import pandas as pd
 
 import snowglobes_wrapper
@@ -170,7 +169,7 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
     __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy'])
 
     pc = spt_ax.contourf(__X, __Y, spt_full_content, 10)
-    spt_fig.colorbar(pc, shrink=0.75, location='right', format='%.0e').set_label(fontsize=14,label='Event Count')
+    spt_fig.colorbar(pc, shrink=0.75, location='right', format='%.0e').set_label(fontsize=14,label='Event Count / (0.2 MeV * Time Bin)')
     spt_ax.set_xlim(0.0001, 20)
     spt_ax.set_ylim(0,0.1)
     spt_ax.set_xscale('log')
