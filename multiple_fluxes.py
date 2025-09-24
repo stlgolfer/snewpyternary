@@ -11,7 +11,7 @@ times = np.array(nakazato_vanilla['time'])
 times = times + np.abs(times[0]) + 0.001
 # print(times)
 
-def slice_bins(axes, xvals, slices=20):
+def slice_bins(axes, xvals, slices=20, color='black', alpha=0.1):
     # want to plot vertical lines where bins are
     axes_y_lims = axes.get_ylim()
     # print(len(xvals))
@@ -21,8 +21,8 @@ def slice_bins(axes, xvals, slices=20):
         xvals[bar_slices],
         axes_y_lims[0], axes_y_lims[1],
         linestyles='dashed',
-        color='black',
-        alpha=0.1
+        color=color,
+        alpha=alpha
         )
     return len(bar_slices)
 
