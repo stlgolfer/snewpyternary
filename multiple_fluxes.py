@@ -24,6 +24,7 @@ def slice_bins(axes, xvals, slices=20, color='black', alpha=0.1):
         color=color,
         alpha=alpha
         )
+    print(f'Showing every {len(xvals)/len(bar_slices)} bins, each of which are {(xvals[-1]-xvals[0])/len(xvals)} s')
     return len(bar_slices)
 
 ax1.plot(times, nakazato_vanilla['raw_data_nux']/4, label=r'$\nu_x$')

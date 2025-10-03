@@ -15,6 +15,7 @@ import warnings
 
 # change matplotlib font sizes
 TERNARY_AXES_LABEL_FONT_SIZE = 20
+WATER_NDET_MULTIPLIER = 2 # to rescale 100kt -> 200kt
 
 def project_ternary_points(points):
     scale = 100
@@ -74,7 +75,7 @@ def bind(nux, nue, anue, title, heatmap):
     ndet_raw_combined_per_time = list(
         zip(
             np.cumsum(nux_df['Ndet']),
-            np.cumsum(anue_df['Ndet']),
+            np.cumsum(anue_df['Ndet']*WATER_NDET_MULTIPLIER),
             np.cumsum(nue_df['Ndet'])
         )
     )
@@ -82,7 +83,7 @@ def bind(nux, nue, anue, title, heatmap):
     ndet_raw_combined_per_time_pre_csum = list(
         zip(
             nux_df['Ndet'],
-            anue_df['Ndet'],
+            anue_df['Ndet']*WATER_NDET_MULTIPLIER,
             nue_df['Ndet']
         )
     )
@@ -369,7 +370,8 @@ def bind(nux, nue, anue, title, heatmap):
 
     Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined_per_time), f'{title} Ndet',save=False,show=False)
     if heatmap:
-        Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined_per_time,t_normalize(ndet_raw_combined_per_time)))
+        Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined_per_time,t_normalize(ndet_raw_combined_per_time)),
+        cmap=plt.get_cmap('PuOr'), colorbar=False)
     Ndet_tax.show()
     Ndet_tax.savefig(f'./plots/{title} Ndet.png')
 

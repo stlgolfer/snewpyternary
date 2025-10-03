@@ -55,7 +55,7 @@ transforms_to_analyze = complete_transform_list # ['NoTransformation'] #['Adiaba
 
 # global params
 show_charts: bool = True
-use_log: bool = False
+use_log: bool = True
 use_cache: bool = True
 use_presn: bool = False
 use_all_submodules: bool = False
@@ -101,7 +101,7 @@ def _column_sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
 
     return proxies
 
-def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str, ax=None) -> None:
+def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str, ax=None, cmap='Reds', multiplier=1) -> None:
     global use_log
 
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
@@ -125,6 +125,10 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str, a
         log_bins=use_log,
         presn=use_presn
     )
+    time_bins_x_axis = time_bins_x_axis/u.s
+    time_bins_x_axis = time_bins_x_axis+np.abs(time_bins_x_axis[0])+0.0001
+    # print()
+    # assert 0
 
     # 3d spectra in time plot (https://matplotlib.org/stable/gallery/mplot3d/bars3d.html#sphx-glr-gallery-mplot3d-bars3d-py)
     # going to calculate here now
@@ -169,14 +173,14 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str, a
         # spt_ax.set_zlabel('Event rate')
         spt_ax.set_title(spt_title)
     # x dim should be energy bins, y should be time?
-    __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy']*1000)
-
-    pc = spt_ax.contourf(__X, __Y, spt_full_content, 10, cmap='Reds')
+    __X, __Y = np.meshgrid((time_bins_x_axis), l_data[0]['Energy']*1000)
+    import matplotlib.colors as colors
+    pc = spt_ax.contourf(__X, __Y, spt_full_content*multiplier, 20, cmap=cmap)#
     spt_fig.colorbar(pc, shrink=0.75, location='right', format='%.0e').set_label(fontsize=14,label='Event Count / (0.2 MeV * Time Bin)')
-    spt_ax.set_xlim(0.0001, 20)
+    spt_ax.set_xlim(10e-3, time_bins_x_axis[-1])
     spt_ax.set_ylim(0,100)
     spt_ax.set_xscale('log')
-    # slice_bins(spt_ax, time_bins_x_axis/u.s, 50)
+    slice_bins(spt_ax, time_bins_x_axis, 25)
 
     # dump the figure for later arrangement
     spt_fig.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
