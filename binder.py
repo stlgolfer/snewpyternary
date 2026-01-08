@@ -99,6 +99,14 @@ def bind(nux, nue, anue, title, heatmap):
     cumsum_unfolded_df['nue_df'] = np.array(unfolded_csum).T[2]
     # np.array(unfolded_csum).T[0] # nuxdf
     cumsum_unfolded_df.to_csv(f'./binders/{title}_cumsum_unfolded.csv')
+
+    # we'd also like to save just the regular unfolded version
+    unfolded_df = pd.DataFrame()
+    unfolded_df['time'] = nux_df['time']
+    unfolded_df['nux_df'] = np.array(unfolded_pre_csum).T[0]
+    unfolded_df['anue_df'] = np.array(unfolded_pre_csum).T[1]
+    unfolded_df['nue_df'] = np.array(unfolded_pre_csum).T[2]
+    unfolded_df.to_csv(f'./binders/{title}_nocsum_unfolded.csv')
     #endregion
 
     # ndet_raw_combined_per_time_pre_csum = list(
