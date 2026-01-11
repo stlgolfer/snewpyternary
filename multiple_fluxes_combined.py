@@ -40,7 +40,7 @@ ax1.set_ylabel(r'Neutrinos/($cm^2$*Time Bin)', fontsize=16)
 # ax1.set_title('Neutronization Burst', fontsize=14)
 ax1.set_title('NoTrans. Flux')
 ax1.set_xlabel(r'Time $t+t_0$ (s)', fontsize=12)
-ax1.legend(fontsize=14)
+ax1.legend(fontsize=14, loc='upper left')
 ax1_bins = slice_bins(ax1, times)
 # test cumsum
 ax1_csum = ax1.twinx()
