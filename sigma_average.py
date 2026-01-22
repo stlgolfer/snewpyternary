@@ -269,6 +269,7 @@ def estimate_cxn(
         fdf = pd.DataFrame()
         fdf['flux_energy_bins'] = labeled[0][0]
         fdf['flux_vs_energy'] = flux_vs_energy # units don't matter in the end since constants and units will drop out after doing average
+        fdf['truth_cxn'] = truth_calculation
         fdf.to_csv(f'./flux_spectra/{config.stringify(config.set_numbers[0])}_{cxn_truth_chan_key}_flux_spectra.csv')
 
         print('Done')

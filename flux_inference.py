@@ -34,9 +34,11 @@ if __name__ == '__main__':
     )
     print(Alpha0)
     
-    ax.plot(energy_bins, garching(energy_bins, N0, Alpha0, Ev))
-    ax.scatter(energy_bins, flux_vs_energy)
+    ax.plot(energy_bins, garching(energy_bins, N0, Alpha0, Ev), label='fit')
+    ax.plot(energy_bins, flux_vs_energy, label='Truth')
     ax.set_ylabel(r'$\frac{dn}{dE_\nu}$')
     ax.set_xlabel(r'$E_\nu$' + ' (MeV)')
     ax.set_yscale('log')
+    ax.legend()
+    ax.set_title('Nakazato s0 ' + r'$\bar{\nu}_e$' + 'Time-Integrated Flux')
     fig.savefig('./flux_spectra.png')
