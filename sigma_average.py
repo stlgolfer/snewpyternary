@@ -19,7 +19,8 @@ def estimate_cxn(
         cxn_truth_chan_key: str,
         det_name: str,
         det_chan_name: str,
-        Nt: float
+        Nt: float,
+        use_time_average: bool
 ):
     submodel_number = config.set_numbers[0]
     time_bins_x_axis, dt_not_needed = snowglobes_wrapper.calculate_time_bins(
@@ -201,6 +202,8 @@ def estimate_cxn(
                 (nux_fluence if det_name == 'scint20kt' else labeled[time][flux_chan]),
                 truth_calculation)
         ) / phi_t_over_time[time]
+    if use_time_average:
+        sigma_average = ((sigma_average @ dts) / np.sum(dts)) * np.ones_like(times_unitless)
 
     # now plot the flux-averaged cxn
     fig, ax = plt.subplots(1, 1)
@@ -261,6 +264,13 @@ def estimate_cxn(
         df['Ndet'] = Ndet_over_time
 
         df.to_csv(f'./sigmas/{config.stringify(config.set_numbers[0])}_{cxn_truth_chan_key}_sigma_average.csv')
+        
+        t.safe_create_folder('./flux_spectra')
+        fdf = pd.DataFrame()
+        fdf['flux_energy_bins'] = labeled[0][0]
+        fdf['flux_vs_energy'] = flux_vs_energy # units don't matter in the end since constants and units will drop out after doing average
+        fdf.to_csv(f'./flux_spectra/{config.stringify(config.set_numbers[0])}_{cxn_truth_chan_key}_flux_spectra.csv')
+
         print('Done')
 
     return sigma_average
@@ -271,7 +281,8 @@ def estimate_cxn(
 @click.option('-p', required=True, type=str)
 @click.option('-flavor', required=True, type=str) # help='nue, anue, or nux'
 @click.option('--submodel', required=False, type=int, help='Internal submodel index number', default=0)
-def configure(model, p, flavor, submodel):
+@click.option('--time_average', required=False, type=bool, help='After calculating flux-averaged cxn, time average it to get it to one number', default=False)
+def configure(model, p, flavor, submodel, time_average):
     warnings.warn('Will use global settings found in meta_analysis.py')
     warnings.warn('Only BstChnl configuration supported')
     '''
@@ -321,7 +332,8 @@ def configure(model, p, flavor, submodel):
         flavor_to_config[flavor]['cxn_truth_chan_key'],
         flavor_to_config[flavor]['det_name'],
         flavor_to_config[flavor]['det_chan_name'],
-        flavor_to_config[flavor]['Nt']
+        flavor_to_config[flavor]['Nt'],
+        time_average
     )
 
 if __name__ == '__main__':
