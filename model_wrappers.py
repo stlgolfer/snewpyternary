@@ -24,11 +24,11 @@ snewpy_models = {}
 
 __sn_model_def_time_step_lib = {}
 #TODO: might make a function that pulls the time and serves a default time if a key isn't found
-__sn_model_def_time_step_lib['Bollig_2016'] = 0.1*u.s #0.014
+__sn_model_def_time_step_lib['Bollig_2016'] = 0.015*u.s #0.014
 __sn_model_def_time_step_lib['Fornax_2019'] = 0.1*u.s
 __sn_model_def_time_step_lib['Fornax_2021'] = 0.025*u.s # don't use for now as of Issue #20
 __sn_model_def_time_step_lib['Kuroda_2020'] = 0.1*u.s #0.005*u.s
-__sn_model_def_time_step_lib['Nakazato_2013'] = 0.1*u.s#0.1*u.s
+__sn_model_def_time_step_lib['Nakazato_2013'] = 0.1*u.s #0.1*u.s#0.1*u.s
 __sn_model_def_time_step_lib['Sukhbold_2015'] = 0.1*u.s
 __sn_model_def_time_step_lib['Tamborra_2014'] = 0.009*u.s
 __sn_model_def_time_step_lib['Walk_2018'] = 0.005*u.s

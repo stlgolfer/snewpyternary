@@ -15,6 +15,7 @@ import warnings
 
 # change matplotlib font sizes
 TERNARY_AXES_LABEL_FONT_SIZE = 20
+WATER_NDET_MULTIPLIER = 2 # to rescale 100kt -> 200kt
 
 def project_ternary_points(points):
     scale = 100
@@ -74,7 +75,7 @@ def bind(nux, nue, anue, title, heatmap):
     ndet_raw_combined_per_time = list(
         zip(
             np.cumsum(nux_df['Ndet']),
-            np.cumsum(anue_df['Ndet']),
+            np.cumsum(anue_df['Ndet']*WATER_NDET_MULTIPLIER),
             np.cumsum(nue_df['Ndet'])
         )
     )
@@ -82,10 +83,31 @@ def bind(nux, nue, anue, title, heatmap):
     ndet_raw_combined_per_time_pre_csum = list(
         zip(
             nux_df['Ndet'],
-            anue_df['Ndet'],
+            anue_df['Ndet']*WATER_NDET_MULTIPLIER,
             nue_df['Ndet']
         )
     )
+
+    #region write out the computed ternary points
+    t.safe_create_folder('./binders')
+    print('Writing binders')
+    # going to just output the unfolded_csum
+    cumsum_unfolded_df = pd.DataFrame()
+    cumsum_unfolded_df['time'] = nux_df['time']
+    cumsum_unfolded_df['nux_df'] = np.array(unfolded_csum).T[0]
+    cumsum_unfolded_df['anue_df'] = np.array(unfolded_csum).T[1]
+    cumsum_unfolded_df['nue_df'] = np.array(unfolded_csum).T[2]
+    # np.array(unfolded_csum).T[0] # nuxdf
+    cumsum_unfolded_df.to_csv(f'./binders/{title}_cumsum_unfolded.csv')
+
+    # we'd also like to save just the regular unfolded version
+    unfolded_df = pd.DataFrame()
+    unfolded_df['time'] = nux_df['time']
+    unfolded_df['nux_df'] = np.array(unfolded_pre_csum).T[0]
+    unfolded_df['anue_df'] = np.array(unfolded_pre_csum).T[1]
+    unfolded_df['nue_df'] = np.array(unfolded_pre_csum).T[2]
+    unfolded_df.to_csv(f'./binders/{title}_nocsum_unfolded.csv')
+    #endregion
 
     # ndet_raw_combined_per_time_pre_csum = list(
     #     zip(
@@ -307,12 +329,12 @@ def bind(nux, nue, anue, title, heatmap):
     if heatmap:
         print("Generating heatmap (this might take a while)...")
         tax.heatmap(generate_heatmap_dict_phi_est(unfolded_csum, ternary_points, ndet_raw_combined_per_time),
-                    cmap=plt.get_cmap('PiYG'), colorbar=False)
+                    cmap=plt.get_cmap('PuOr'), colorbar=False)
         print("Done")
     tax.plot_colored_trajectory(t_normalize(unfolded_csum), cmap=plt.get_cmap('binary'))
     # we also want to paint the starting point and end point differently
-    tax.scatter([tuple(ternary_points[-1])], marker='s', color='red', linewidth=10)
-    tax.scatter([tuple(ternary_points[0])], marker='^', linewidth=10, color='blue')
+    tax.scatter([tuple(ternary_points[-1])], marker='s', color='yellow', linewidth=10)
+    tax.scatter([tuple(ternary_points[0])], marker='^', linewidth=10, color='cyan')
 
     tax.ticks(axis='lbr', linewidth=1, multiple=scale / 10)
     tax.clear_matplotlib_ticks()
@@ -356,7 +378,8 @@ def bind(nux, nue, anue, title, heatmap):
 
     Ndet_fig, Ndet_tax = t.create_default_flux_plot(t_normalize(ndet_raw_combined_per_time), f'{title} Ndet',save=False,show=False)
     if heatmap:
-        Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined_per_time,t_normalize(ndet_raw_combined_per_time)))
+        Ndet_tax.heatmap(generate_heatmap_dict(ndet_raw_combined_per_time,t_normalize(ndet_raw_combined_per_time)),
+        cmap=plt.get_cmap('PuOr'), colorbar=False)
     Ndet_tax.show()
     Ndet_tax.savefig(f'./plots/{title} Ndet.png')
 

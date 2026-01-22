@@ -65,6 +65,11 @@ def clean_newline(raw_title):
 
     return raw_title.replace("\n", "")
 
+def safe_create_folder(file):
+    import os
+    if not os.path.exists(file):
+        os.mkdir(file)
+
 def _sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
     '''
     Used internally to take the channels for a given proxy and sum them from the data
@@ -555,8 +560,8 @@ def create_default_flux_plot(plotting_data,plot_title,save=True,show=True):
     tax.ticks(axis='lbr', linewidth=1, multiple=scale/10)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis('off') # disables regular matlab plot axes
-    tax.scatter([tuple(plotting_data[-1])], marker='s', color='red', linewidth=10)
-    tax.scatter([tuple(plotting_data[0])], marker='^', linewidth=10, color='blue')
+    tax.scatter([tuple(plotting_data[-1])], marker='s', color='yellow', linewidth=10)
+    tax.scatter([tuple(plotting_data[0])], marker='^', linewidth=10, color='cyan')
 
     if show == True:
         tax.show()

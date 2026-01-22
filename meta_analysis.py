@@ -28,7 +28,6 @@ import caching as cache
 import sys
 import pickle
 from tqdm import tqdm
-from scipy.integrate import simpson
 import pandas as pd
 
 import snowglobes_wrapper
@@ -40,6 +39,8 @@ from SURF2020fork.ternary_helpers import shared_plotting_script,generate_heatmap
 from model_wrappers import snewpy_models, sn_model_default_time_step
 import click
 from IPython import display
+import warnings
+from multiple_fluxes import slice_bins
 
 #simulation details
 snowglobes_out_name="snowglobes-output"
@@ -100,7 +101,7 @@ def _column_sum_proxy(data: dict, channels: ([str], [str], [str])) -> [float]:
 
     return proxies
 
-def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -> None:
+def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str, ax=None, cmap='Reds', multiplier=1) -> None:
     global use_log
 
     plot_data, raw_data, l_data = t.create_detector_event_scatter(
@@ -124,12 +125,16 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
         log_bins=use_log,
         presn=use_presn
     )
+    time_bins_x_axis = time_bins_x_axis/u.s
+    time_bins_x_axis = time_bins_x_axis+np.abs(time_bins_x_axis[0])+0.0001
+    # print()
+    # assert 0
 
     # 3d spectra in time plot (https://matplotlib.org/stable/gallery/mplot3d/bars3d.html#sphx-glr-gallery-mplot3d-bars3d-py)
     # going to calculate here now
 
     spt_fig = plt.figure()
-    spt_ax = spt_fig.add_subplot()
+    spt_ax = spt_fig.add_subplot() if ax is None else ax
 
     sptc_index = {
         'ar40kt': {
@@ -162,17 +167,20 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
             else:
                 spt_full_content = np.column_stack((spt_full_content, spt_content[sptc_index[detector]['index']]))
             pbar.update(1)
-    spt_ax.set_ylabel('Energy (GeV)')
-    spt_ax.set_xlabel(r'Time + $t_0$ (s)')
-    # spt_ax.set_zlabel('Event rate')
-    spt_ax.set_title(spt_title)
+    if ax is None:
+        spt_ax.set_ylabel('Energy (MeV)', fontsize=14)
+        spt_ax.set_xlabel(r'Time + $t_0$ (s)', fontsize=13)
+        # spt_ax.set_zlabel('Event rate')
+        spt_ax.set_title(spt_title)
     # x dim should be energy bins, y should be time?
-    __X, __Y = np.meshgrid((time_bins_x_axis/u.s), l_data[0]['Energy'])
-
-    pc = spt_ax.contourf(__X, __Y, spt_full_content,10)
-    spt_fig.colorbar(pc, shrink=0.75, location='right', label='Event Count/(GeV*s)', format='%.0e')
-    spt_ax.set_xlim(0.0001, 20)
+    __X, __Y = np.meshgrid((time_bins_x_axis), l_data[0]['Energy']*1000)
+    import matplotlib.colors as colors
+    pc = spt_ax.contourf(__X, __Y, spt_full_content*multiplier, 20, cmap=cmap)#
+    spt_fig.colorbar(pc, shrink=0.75, location='right', format='%.0e').set_label(fontsize=14,label='Event Count / (0.2 MeV * Time Bin)')
+    spt_ax.set_xlim(10e-3, time_bins_x_axis[-1])
+    spt_ax.set_ylim(0,100)
     spt_ax.set_xscale('log')
+    slice_bins(spt_ax, time_bins_x_axis, 25)
 
     # dump the figure for later arrangement
     spt_fig.savefig(f'./spectra/{t.clean_newline(spt_title)}.png')
@@ -265,8 +273,11 @@ def process_detector(config: t.MetaAnalysisConfig, set_no: int, detector: str) -
             flux_spect_fig.show()
     #endregion
 
-
-    return plot_data, raw_data, l_data
+    if ax is None:
+        return plot_data, raw_data, l_data
+    else:
+        warnings.warn('Since an ax was specified, we are assuming you are trying to plot something, so the return type is different')
+        return pc
 
 def process_flux(config: t.MetaAnalysisConfig, set_no: int, divide=1):
 
