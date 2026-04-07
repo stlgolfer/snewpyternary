@@ -137,7 +137,7 @@ print(f'Showing every {len(times)/ax1_bins} bins, each of which are {(times[-1]-
 # now create the unfolded versions
 ax4.plot(times, unfolded_nakazato_vanilla['nux_df']*(3/2), label=r'$\nu_x$')
 ax4.plot(times, unfolded_nakazato_vanilla['nue_df'], label=r'$\nu_e$')
-ax4.plot(times, unfolded_nakazato_vanilla['anue_df'], label=r'$\bar{\nu_e}$')
+ax4.plot(times, unfolded_nakazato_vanilla['anue_df'], label=r'$\bar{\nu}_e$')
 ax4.set_xscale('log')
 # ax4.set_xlim(0.001,1)
 ax4.set_ylabel(r'Neutrinos/($cm^2$*Time Bin)', fontsize=16)
@@ -173,7 +173,7 @@ log_times = log_times + np.abs(log_times[0]) + 0.001
 
 ax5.plot(log_times, unfolded_nakazato_imo['nux_df']*(3/2), label=r'$\nu_x$')
 ax5.plot(log_times, unfolded_nakazato_imo['nue_df'], label=r'$\nu_e$')
-ax5.plot(log_times, unfolded_nakazato_imo['anue_df'], label=r'$\bar{\nu_e}$')
+ax5.plot(log_times, unfolded_nakazato_imo['anue_df'], label=r'$\bar{\nu}_e$')
 ax5.set_xscale('log')
 # ax2.set_ylabel(r'neutrinos/cm^2', fontsize=16)
 # ax1.set_title('Neutronization Burst', fontsize=14)
@@ -206,7 +206,7 @@ ax5_csum.plot(
 
 ax6.plot(log_times, unfolded_nakazato_nmo['nux_df']*(3/2), label=r'$\nu_x$')
 ax6.plot(log_times, unfolded_nakazato_nmo['nue_df'], label=r'$\nu_e$')
-ax6.plot(log_times, unfolded_nakazato_nmo['anue_df'], label=r'$\bar{\nu_e}$')
+ax6.plot(log_times, unfolded_nakazato_nmo['anue_df'], label=r'$\bar{\nu}_e$')
 # td_ax_inset = td_ax.inset_axes([0.55,0.1, 0.4,0.5])
 ax6.set_title('Adia. NMO Unfolded')
 ax6.set_xscale('log')

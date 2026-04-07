@@ -29,7 +29,7 @@ def slice_bins(axes, xvals, slices=20, color='black', alpha=0.1):
 
 ax1.plot(times, nakazato_vanilla['nux_df']*(3/2), label=r'$\nu_x$')
 ax1.plot(times, nakazato_vanilla['nue_df'], label=r'$\nu_e$')
-ax1.plot(times, nakazato_vanilla['anue_df'], label=r'$\bar{\nu_e}$')
+ax1.plot(times, nakazato_vanilla['anue_df'], label=r'$\bar{\nu}_e$')
 ax1.set_xscale('log')
 # ax1.set_xlim(0.001,1)
 ax1.set_ylabel(r'Neutrinos/($cm^2$*Time Bin)', fontsize=16)
@@ -45,7 +45,7 @@ log_times = log_times + np.abs(log_times[0]) + 0.001
 
 ax2.plot(log_times, nakazato_imo['nux_df']*(3/2), label=r'$\nu_x$')
 ax2.plot(log_times, nakazato_imo['nue_df'], label=r'$\nu_e$')
-ax2.plot(log_times, nakazato_imo['anue_df'], label=r'$\bar{\nu_e}$')
+ax2.plot(log_times, nakazato_imo['anue_df'], label=r'$\bar{\nu}_e$')
 ax2.set_xscale('log')
 # ax2.set_ylabel(r'neutrinos/cm^2', fontsize=16)
 # ax1.set_title('Neutronization Burst', fontsize=14)
@@ -57,7 +57,7 @@ slice_bins(ax2, log_times)
 
 ax3.plot(log_times, nakazato_nmo['nux_df']*(3/2), label=r'$\nu_x$')
 ax3.plot(log_times, nakazato_nmo['nue_df'], label=r'$\nu_e$')
-ax3.plot(log_times, nakazato_nmo['anue_df'], label=r'$\bar{\nu_e}$')
+ax3.plot(log_times, nakazato_nmo['anue_df'], label=r'$\bar{\nu}_e$')
 # td_ax_inset = td_ax.inset_axes([0.55,0.1, 0.4,0.5])
 ax3.set_title('Adia. NMO Log Time Bins')
 ax3.set_xscale('log')
