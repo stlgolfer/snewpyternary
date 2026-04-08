@@ -29,7 +29,7 @@ if __name__ == '__main__':
     ax2.set_xlabel(r'Time + $t_0$ (s)', fontsize=13)
     ax3.set_xlabel(r'Time + $t_0$ (s)', fontsize=13)
 
-    ax1.set_ylabel('Smeared Energy (MeV)', fontsize=14)
+    ax1.set_ylabel('Detected Energy (MeV)', fontsize=14)
 
     ax1.set_title('Argon 40kt', fontsize=13)
     ax2.set_title('Water 200kt', fontsize=13)
